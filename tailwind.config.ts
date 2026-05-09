@@ -8,9 +8,15 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        display: ["var(--font-display)", "serif"],
+        body: ["var(--font-body)", "Georgia", "serif"],
+      },
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        void: "var(--bg-void)",
+        deep: "var(--bg-deep)",
+        card: "var(--bg-card)",
+        gold: "var(--gold-mid)",
       },
     },
   },
