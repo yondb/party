@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -20,6 +21,19 @@ export type MapPin = {
 
 const controlFocus =
   "outline-none transition focus-visible:border-[var(--gold-mid)] focus-visible:ring-2 focus-visible:ring-[var(--gold-mid)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-card)]";
+
+const filterLabelClass =
+  "font-display text-[11px] font-semibold uppercase leading-tight tracking-[0.14em] text-[var(--text-muted)]";
+
+/** Same vertical rhythm for every filter — fixes misaligned selects vs range in multi-column grids. */
+function MapFilterField({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="flex min-h-0 min-w-0 flex-col gap-2">
+      <span className={filterLabelClass}>{label}</span>
+      <div className="flex min-h-[2.75rem] flex-col justify-center">{children}</div>
+    </div>
+  );
+}
 
 export function MapSlots({ pins }: { pins: MapPin[] }) {
   const { lang } = useLanguage();
@@ -125,74 +139,84 @@ export function MapSlots({ pins }: { pins: MapPin[] }) {
     );
   }
 
+  const radiusCaption = `${m.radius} · ${radiusKm} ${m.km}`;
+
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-1 gap-4 rounded-lg border border-[var(--gold-dim)] bg-[var(--bg-card)] p-4 sm:grid-cols-2 sm:gap-4 sm:p-5 xl:grid-cols-5">
-        <label className="text-sm font-medium leading-snug text-[var(--text-secondary)]">
-          {m.activity}
-          <select
-            value={activity}
-            onChange={(e) => setActivity(e.target.value as "all" | ActivityKey)}
-            className={`input-wow mt-1 ${controlFocus}`}
-          >
-            <option value="all">{m.all}</option>
-            {ACTIVITY_KEYS.map((key) => (
-              <option key={key} value={key}>
-                {activityLabel(lang, key)}
-              </option>
-            ))}
-          </select>
-        </label>
+      <section
+        className="rounded-lg border border-[var(--gold-dim)] bg-[var(--bg-card)] p-4 shadow-[inset_0_1px_0_rgba(240,192,64,0.04)] sm:p-5"
+        aria-label={lang === "pl" ? "Filtry mapy" : "Map filters"}
+      >
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
+          <MapFilterField label={m.activity}>
+            <select
+              value={activity}
+              onChange={(e) => setActivity(e.target.value as "all" | ActivityKey)}
+              className={`input-wow ${controlFocus}`}
+            >
+              <option value="all">{m.all}</option>
+              {ACTIVITY_KEYS.map((key) => (
+                <option key={key} value={key}>
+                  {activityLabel(lang, key)}
+                </option>
+              ))}
+            </select>
+          </MapFilterField>
 
-        <label className="text-sm font-medium leading-snug text-[var(--text-secondary)]">
-          {m.hostGender}
-          <select
-            value={hostGender}
-            onChange={(e) => setHostGender(e.target.value as "all" | "female" | "male")}
-            className={`input-wow mt-1 font-mono text-base ${controlFocus}`}
-          >
-            <option value="all">{ICON_ANY}</option>
-            <option value="female">{ICON_FEMALE}</option>
-            <option value="male">{ICON_MALE}</option>
-          </select>
-        </label>
+          <MapFilterField label={m.hostGender}>
+            <select
+              value={hostGender}
+              onChange={(e) => setHostGender(e.target.value as "all" | "female" | "male")}
+              className={`input-wow font-mono text-base ${controlFocus}`}
+            >
+              <option value="all">{ICON_ANY}</option>
+              <option value="female">{ICON_FEMALE}</option>
+              <option value="male">{ICON_MALE}</option>
+            </select>
+          </MapFilterField>
 
-        <label className="text-sm font-medium leading-snug text-[var(--text-secondary)]">
-          {m.audience}
-          <select
-            value={audience}
-            onChange={(e) => setAudience(e.target.value as "all" | "any" | "female" | "male")}
-            className={`input-wow mt-1 text-sm ${controlFocus}`}
-          >
-            <option value="all">{m.audienceAll}</option>
-            <option value="any">{m.audienceOpen}</option>
-            <option value="female">{m.audienceWomen}</option>
-            <option value="male">{m.audienceMen}</option>
-          </select>
-        </label>
+          <MapFilterField label={m.audience}>
+            <select
+              value={audience}
+              onChange={(e) => setAudience(e.target.value as "all" | "any" | "female" | "male")}
+              className={`input-wow text-sm ${controlFocus}`}
+            >
+              <option value="all">{m.audienceAll}</option>
+              <option value="any">{m.audienceOpen}</option>
+              <option value="female">{m.audienceWomen}</option>
+              <option value="male">{m.audienceMen}</option>
+            </select>
+          </MapFilterField>
+        </div>
 
-        <label className="text-sm font-medium leading-snug text-[var(--text-secondary)]">
-          {m.date}
-          <input
-            type="date"
-            value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value)}
-            className={`input-wow mt-1 ${controlFocus}`}
-          />
-        </label>
+        <div className="mt-4 grid grid-cols-1 gap-4 border-t border-[var(--gold-dim)]/60 pt-4 sm:grid-cols-2 sm:gap-5 lg:mt-5 lg:pt-5">
+          <MapFilterField label={m.date}>
+            <input
+              type="date"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              className={`input-wow ${controlFocus}`}
+            />
+          </MapFilterField>
 
-        <label className="text-sm font-medium leading-snug text-[var(--text-secondary)]">
-          {m.radius} ({radiusKm} {m.km})
-          <input
-            type="range"
-            min={1}
-            max={10}
-            value={radiusKm}
-            onChange={(e) => setRadiusKm(Number(e.target.value))}
-            className={`mt-2 w-full accent-[var(--gold-mid)] ${controlFocus} rounded-full`}
-          />
-        </label>
-      </div>
+          <MapFilterField label={radiusCaption}>
+            <div className="flex min-h-[2.75rem] items-center px-0.5">
+              <input
+                type="range"
+                min={1}
+                max={10}
+                value={radiusKm}
+                onChange={(e) => setRadiusKm(Number(e.target.value))}
+                aria-valuemin={1}
+                aria-valuemax={10}
+                aria-valuenow={radiusKm}
+                aria-label={radiusCaption}
+                className={`h-2.5 w-full cursor-pointer accent-[var(--gold-mid)] ${controlFocus} rounded-full bg-[var(--bg-input)]`}
+              />
+            </div>
+          </MapFilterField>
+        </div>
+      </section>
 
       <div
         ref={ref}
