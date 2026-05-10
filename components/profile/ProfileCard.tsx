@@ -136,9 +136,9 @@ export function ProfileCard({
     <motion.article
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="wow-card relative overflow-hidden rounded-lg p-4"
+      className="wow-card relative overflow-hidden rounded-lg px-6 py-8 text-base text-[var(--text-secondary)] sm:px-8"
     >
-      <div className="relative flex flex-col items-center pt-4">
+      <div className="relative flex flex-col items-center gap-8 pt-1">
         <div className="relative">
           {user.avatar_url ? (
             <Image
@@ -153,36 +153,52 @@ export function ProfileCard({
             <Avatar src={null} name={user.name} size={120} />
           )}
           <div className="absolute -right-1 -top-1">
-            <LevelBadge level={user.level} />
+            <LevelBadge level={user.level} size="lg" />
           </div>
         </div>
 
-        <h2 className="mt-4 font-display text-2xl font-bold text-[var(--text-bright)]">
-          {user.name}
-        </h2>
-        <p className="mt-1 font-body text-sm italic text-[var(--text-primary)]">{title}</p>
-
-        <div className="mt-3 w-full max-w-xs">
-          <ExpBar progress={progress} label={next ? `${user.exp} → +${expToNext} do Lvl ${next.level}` : "Max level"} />
+        <div className="flex w-full max-w-md flex-col items-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2">
+            <h2 className="text-center font-display text-3xl font-bold leading-tight text-[var(--text-bright)] sm:text-4xl">
+              {user.name}
+            </h2>
+            <span
+              className="inline-flex h-12 min-w-[3rem] items-center justify-center rounded-lg border-2 border-[var(--gold-mid)] bg-[var(--bg-input)] px-2 font-mono text-3xl leading-none text-[var(--gold-bright)] shadow-[0_0_14px_rgba(240,192,64,0.18)] sm:h-14 sm:min-w-[3.25rem] sm:text-4xl"
+              aria-label={user.gender === "female" ? "Female" : "Male"}
+              title={user.gender === "female" ? "Female" : "Male"}
+            >
+              {user.gender === "female" ? ICON_FEMALE : ICON_MALE}
+            </span>
+          </div>
+          <p className="text-center font-display text-lg font-semibold uppercase tracking-[0.14em] text-[var(--text-primary)] sm:text-xl sm:tracking-[0.16em]">
+            {title}
+          </p>
         </div>
 
-        <div className="mt-4 flex items-center gap-3">
-          <ReliabilityScore score={rel} size={40} />
+        <div className="w-full max-w-md px-1">
+          <ExpBar
+            progress={progress}
+            label={next ? `${user.exp} → +${expToNext} do Lvl ${next.level}` : "Max level"}
+            comfortable
+          />
+        </div>
+
+        <div className="flex items-center gap-5">
+          <ReliabilityScore score={rel} size={52} />
           <div>
-            <p className="text-sm text-[var(--text-secondary)]">Reliability</p>
-            <p className="font-display text-lg text-[var(--status-open)]">
+            <p className="font-display text-base uppercase tracking-[0.14em] text-[var(--text-secondary)] sm:text-lg">
+              Reliability
+            </p>
+            <p className="font-display text-2xl text-[var(--status-open)]">
               {Math.round(rel * 100)}%
             </p>
           </div>
         </div>
-        <p className="mt-2 font-mono text-lg text-[var(--text-muted)]" aria-label={user.gender}>
-          {user.gender === "female" ? ICON_FEMALE : ICON_MALE}
-        </p>
       </div>
 
-      <Divider />
+      <Divider className="!my-8" />
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 gap-3 sm:gap-4">
         <StatBlock label="Aktyw." value={user.total_activities} />
         <StatBlock label="Host" value={user.total_hosted} />
         <StatBlock label="Ocena" value={avgRating != null ? avgRating.toFixed(1) : "—"} />
@@ -190,11 +206,11 @@ export function ProfileCard({
 
       {activityCounts && Object.keys(activityCounts).length > 0 ? (
         <>
-          <Divider />
-          <h3 className="font-display text-xs uppercase tracking-widest text-[var(--text-muted)]">
+          <Divider className="!my-10" />
+          <h3 className="font-display text-sm uppercase tracking-[0.16em] text-[var(--text-muted)]">
             Klasy aktywności
           </h3>
-          <ul className="mt-3 space-y-2">
+          <ul className="mt-5 space-y-3">
             {(Object.keys(activityCounts) as ActivityKey[]).map((key) => {
               const c = activityCounts[key] ?? 0;
               if (!c) return null;
@@ -202,10 +218,10 @@ export function ProfileCard({
               const lv = barLevel(c);
               const p = Math.min(1, lv / 20);
               return (
-                <li key={key} className="flex items-center gap-2 text-sm">
-                  <span className="w-8 text-center">{act.icon}</span>
-                  <span className="flex-1 text-[var(--text-secondary)]">{act.label}</span>
-                  <div className="h-1.5 w-24 overflow-hidden rounded border border-[var(--gold-dim)] bg-[var(--exp-bar-bg)]">
+                <li key={key} className="flex items-center gap-3 text-base">
+                  <span className="w-9 shrink-0 text-center text-lg">{act.icon}</span>
+                  <span className="min-w-0 flex-1 text-[var(--text-secondary)]">{act.label}</span>
+                  <div className="h-2 w-28 shrink-0 overflow-hidden rounded border border-[var(--gold-dim)] bg-[var(--exp-bar-bg)]">
                     <div
                       className="h-full rounded-sm"
                       style={{
@@ -214,7 +230,7 @@ export function ProfileCard({
                       }}
                     />
                   </div>
-                  <span className="font-display text-xs text-[var(--gold-bright)]">Lv.{lv}</span>
+                  <span className="shrink-0 font-display text-sm text-[var(--gold-bright)]">Lv.{lv}</span>
                 </li>
               );
             })}
@@ -222,22 +238,20 @@ export function ProfileCard({
         </>
       ) : null}
 
-      <Divider />
-      <h3 className="font-display text-xs uppercase tracking-widest text-[var(--text-muted)]">
-        Odznaki
-      </h3>
-      <div className="mt-2 flex flex-wrap gap-2">
+      <Divider className="!my-10" />
+      <h3 className="font-display text-sm uppercase tracking-[0.16em] text-[var(--text-muted)]">Odznaki</h3>
+      <div className="mt-5 flex flex-wrap gap-3">
         {visibleAchievements.length ? (
           visibleAchievements.map((a) => <AchievementBadge key={a.title} {...a} />)
         ) : (
-          <span className="text-xs text-[var(--text-muted)]">No badges unlocked yet.</span>
+          <span className="text-sm text-[var(--text-muted)]">No badges unlocked yet.</span>
         )}
       </div>
 
       {user.bio ? (
         <>
-          <Divider />
-          <p className="text-center text-sm text-[var(--text-secondary)]">{user.bio}</p>
+          <Divider className="!my-10" />
+          <p className="mt-3 text-center text-lg leading-relaxed text-[var(--text-secondary)]">{user.bio}</p>
         </>
       ) : null}
 

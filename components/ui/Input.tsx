@@ -8,15 +8,15 @@ export type InputProps = InputHTMLAttributes<HTMLInputElement> & {
 export function Input({ label, error, className = "", id, ...rest }: InputProps) {
   const inputId = id ?? rest.name;
   return (
-    <label className="flex flex-col gap-1 text-sm" htmlFor={inputId}>
+    <label className="flex flex-col gap-1.5 text-base" htmlFor={inputId}>
       {label ? (
-        <span className="font-display text-xs uppercase tracking-widest text-[var(--text-secondary)]">
+        <span className="font-display text-sm font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">
           {label}
         </span>
       ) : null}
       <input id={inputId} className={`input-wow ${className}`} {...rest} />
       {error ? (
-        <span className="text-xs text-[var(--status-full)]">{error}</span>
+        <span className="text-sm text-[var(--status-full)]">{error}</span>
       ) : null}
     </label>
   );

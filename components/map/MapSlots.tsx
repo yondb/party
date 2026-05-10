@@ -124,8 +124,8 @@ export function MapSlots({ pins }: { pins: MapPin[] }) {
 
   return (
     <div className="space-y-3">
-      <div className="grid gap-2 rounded border border-[var(--gold-dim)] bg-[var(--bg-card)] p-3 sm:grid-cols-2 lg:grid-cols-5">
-        <label className="text-xs text-[var(--text-secondary)]">
+      <div className="grid gap-3 rounded border border-[var(--gold-dim)] bg-[var(--bg-card)] p-4 sm:grid-cols-2 lg:grid-cols-5">
+        <label className="text-sm font-medium leading-snug text-[var(--text-secondary)]">
           {m.activity}
           <select
             value={activity}
@@ -141,7 +141,7 @@ export function MapSlots({ pins }: { pins: MapPin[] }) {
           </select>
         </label>
 
-        <label className="text-xs text-[var(--text-secondary)]">
+        <label className="text-sm font-medium leading-snug text-[var(--text-secondary)]">
           {m.hostGender}
           <select
             value={hostGender}
@@ -154,7 +154,7 @@ export function MapSlots({ pins }: { pins: MapPin[] }) {
           </select>
         </label>
 
-        <label className="text-xs text-[var(--text-secondary)]">
+        <label className="text-sm font-medium leading-snug text-[var(--text-secondary)]">
           {m.audience}
           <select
             value={audience}
@@ -168,7 +168,7 @@ export function MapSlots({ pins }: { pins: MapPin[] }) {
           </select>
         </label>
 
-        <label className="text-xs text-[var(--text-secondary)]">
+        <label className="text-sm font-medium leading-snug text-[var(--text-secondary)]">
           {m.date}
           <input
             type="date"
@@ -178,7 +178,7 @@ export function MapSlots({ pins }: { pins: MapPin[] }) {
           />
         </label>
 
-        <label className="text-xs text-[var(--text-secondary)]">
+        <label className="text-sm font-medium leading-snug text-[var(--text-secondary)]">
           {m.radius} ({radiusKm} {m.km})
           <input
             type="range"
@@ -195,7 +195,7 @@ export function MapSlots({ pins }: { pins: MapPin[] }) {
         ref={ref}
         className="h-[70dvh] w-full overflow-hidden rounded-lg border border-[var(--gold-dim)]"
       />
-      <p className="text-xs text-[var(--text-muted)]">
+      <p className="text-sm text-[var(--text-muted)]">
         {m.results}: {filteredPins.length}
         {myPosition ? ` — ${m.within} ${radiusKm} ${m.km}` : ""}
       </p>

@@ -155,10 +155,10 @@ export function SlotForm() {
       <PageHeader title={t.header} backHref="/feed" backLabel={pageHeaderUi(lang).back} />
       <form onSubmit={onSubmit} className="space-y-6">
         <section>
-          <h2 className="mb-3 font-display text-xs uppercase tracking-widest text-[var(--text-muted)]">
+          <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">
             {t.activityType}
           </h2>
-          <p className="mb-2 text-xs text-[var(--text-muted)]">{t.top10Hint}</p>
+          <p className="mb-2 text-sm text-[var(--text-muted)]">{t.top10Hint}</p>
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-3">
             {ACTIVITY_KEYS.map((key, i) => {
               const def = ACTIVITIES[key];
@@ -178,7 +178,7 @@ export function SlotForm() {
                   }`}
                 >
                   <ActivityIcon activity={def} size="sm" />
-                  <span className="font-display text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">
+                  <span className="font-display text-xs uppercase tracking-[0.08em] text-[var(--text-secondary)] sm:text-sm">
                     {def.label}
                   </span>
                 </motion.button>
@@ -215,7 +215,7 @@ export function SlotForm() {
         </section>
 
         <section>
-          <h2 className="mb-2 font-display text-xs uppercase tracking-widest text-[var(--text-muted)]">
+          <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">
             {t.audience}
           </h2>
           <div className="flex gap-2">
@@ -263,11 +263,11 @@ export function SlotForm() {
           placeholder={t.locationPlaceholder}
         />
         <div>
-          <label className="mb-2 block font-display text-xs uppercase tracking-widest text-[var(--text-secondary)]">
+          <label className="mb-2 block font-display text-sm font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">
             {t.pickOnMap}
           </label>
           <LocationPickerMap value={pickedPoint} onChange={setPickedPoint} />
-          <p className="mt-1 text-xs text-[var(--text-muted)]">{t.clickMapHint}</p>
+          <p className="mt-1 text-sm text-[var(--text-muted)]">{t.clickMapHint}</p>
         </div>
 
         <div className="flex items-center justify-between rounded border border-[var(--gold-dim)] bg-[var(--bg-input)] px-3 py-2">
@@ -296,7 +296,7 @@ export function SlotForm() {
         <Textarea label={t.description} value={description} onChange={(e) => setDescription(e.target.value)} />
 
         <div>
-          <label className="mb-1 block font-display text-xs uppercase tracking-widest text-[var(--text-secondary)]">
+          <label className="mb-1 block font-display text-sm font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">
             {t.minReliability} ({minRel}%)
           </label>
           <input
@@ -310,7 +310,7 @@ export function SlotForm() {
         </div>
 
         <div>
-          <label className="mb-1 block font-display text-xs uppercase tracking-widest text-[var(--text-secondary)]">
+          <label className="mb-1 block font-display text-sm font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">
             {t.minLevel}
           </label>
           <select
@@ -352,7 +352,7 @@ export function SlotForm() {
       </form>
 
       <section className="mt-10">
-        <h3 className="mb-2 font-display text-xs uppercase tracking-widest text-[var(--text-muted)]">
+        <h3 className="mb-2 font-display text-sm font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">
           {t.preview}
         </h3>
         <div

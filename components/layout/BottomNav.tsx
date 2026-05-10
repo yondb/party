@@ -19,7 +19,7 @@ export function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-[var(--gold-dim)] bg-[var(--bg-void)]/95 pb-safe backdrop-blur-sm">
-      <div className="mx-auto flex max-w-lg items-stretch justify-around px-2 pt-2">
+      <div className="mx-auto flex max-w-lg items-stretch justify-around px-1 pt-2 sm:px-3">
         {links.map((l) => {
           const active = pathname === l.href || pathname.startsWith(`${l.href}/`);
           const label = n[l.key];
@@ -27,14 +27,20 @@ export function BottomNav() {
             <Link
               key={l.href}
               href={l.href}
-              className={`flex flex-1 flex-col items-center gap-0.5 rounded-md py-2 text-[10px] font-display uppercase tracking-widest transition ${
+              className={`flex min-h-[3.25rem] flex-1 flex-col items-center justify-center gap-1 rounded-md py-2 text-[11px] font-display font-semibold uppercase leading-tight tracking-[0.12em] transition sm:min-h-[3.5rem] sm:text-xs sm:tracking-[0.14em] ${
                 active
                   ? "text-[var(--gold-bright)] drop-shadow-[0_0_8px_rgba(240,192,64,0.35)]"
-                  : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
               }`}
             >
-              <span className="text-lg">{l.icon}</span>
-              {label}
+              <span
+                className={`font-display text-xl leading-none sm:text-2xl ${
+                  active ? "text-[var(--gold-bright)]" : "text-[var(--gold-mid)]"
+                }`}
+              >
+                {l.icon}
+              </span>
+              <span>{label}</span>
             </Link>
           );
         })}

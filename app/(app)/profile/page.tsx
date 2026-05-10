@@ -84,7 +84,7 @@ export default async function OwnProfilePage() {
         right={
           <Link
             href="/profile/edit"
-            className="font-display text-xs uppercase tracking-widest text-[var(--gold-mid)]"
+            className="inline-flex min-h-[2.75rem] items-center justify-center rounded-md border-2 border-[var(--gold-dim)] bg-[linear-gradient(180deg,#2a2210,#14110c)] px-4 py-2 font-display text-sm font-bold uppercase tracking-[0.14em] text-[var(--gold-bright)] shadow-[var(--shadow-glow-gold)] transition hover:border-[var(--gold-bright)] hover:brightness-110"
           >
             Edit
           </Link>
@@ -115,8 +115,13 @@ export default async function OwnProfilePage() {
         }}
         isOwn
       />
-      <form className="mt-6" action={signOut}>
-        <Button type="submit" variant="secondary" fullWidth>
+      <form className="mt-8" action={signOut}>
+        <Button
+          type="submit"
+          variant="secondary"
+          fullWidth
+          className="!min-h-[5.75rem] !border-[var(--gold-dim)] !bg-[linear-gradient(180deg,#1a1510,#0d0b09)] !py-3 !font-display !text-base !font-bold !tracking-[0.1em] !text-[var(--gold-mid)] hover:!border-[var(--gold-mid)] hover:!text-[var(--gold-bright)]"
+        >
           Sign out
         </Button>
       </form>

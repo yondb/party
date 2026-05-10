@@ -42,7 +42,7 @@ export function ApplicationCard({ row, index = 0 }: ApplicationCardProps) {
             <LevelBadge level={row.level} />
             <ReliabilityScore score={row.reliability_score} size={28} />
           </div>
-          <p className="text-xs text-[var(--text-muted)]">EXP {row.exp}</p>
+          <p className="text-sm text-[var(--text-muted)]">EXP {row.exp}</p>
           {row.message ? (
             <p className="mt-2 rounded border border-[var(--gold-dim)] bg-[var(--bg-input)] p-2 text-sm text-[var(--text-secondary)]">
               {row.message}
@@ -74,7 +74,7 @@ export function ApplicationCard({ row, index = 0 }: ApplicationCardProps) {
           </form>
         </div>
       ) : (
-        <p className="font-display text-center text-xs uppercase tracking-widest text-[var(--text-muted)]">
+        <p className="font-display text-center text-sm uppercase tracking-[0.12em] text-[var(--text-muted)]">
           {row.status === "accepted" ? "W party" : "Odrzucony"}
         </p>
       )}

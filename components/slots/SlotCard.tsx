@@ -81,23 +81,23 @@ export function SlotCard({ slot, index = 0, applicationStatus = "none", isHost }
       }}
     >
       <div
-        className="wow-card wow-card-hover relative flex gap-3 overflow-hidden rounded-lg p-4"
+        className="wow-card wow-card-hover relative flex gap-4 overflow-hidden rounded-lg p-5 sm:p-6"
         style={{ borderTop: `2px solid ${act.color}` }}
       >
         <ActivityIcon activity={act} />
         <div className="min-w-0 flex-1">
           <Link
             href={`/slots/${slot.id}`}
-            className="font-display text-lg font-semibold text-[var(--text-bright)] hover:text-[var(--gold-bright)]"
+            className="font-display text-xl font-semibold leading-snug text-[var(--text-bright)] hover:text-[var(--gold-bright)] sm:text-2xl"
           >
             {slot.title}
           </Link>
-          <p className="mt-0.5 text-sm text-[var(--text-secondary)]">
+          <p className="mt-1 text-base text-[var(--text-secondary)]">
             {activityLabel(lang, slot.activity_type)} · {formatWhen(slot.date_time, locale)}
           </p>
-          <p className="mt-1 text-sm text-[var(--text-muted)]">📍 {slot.location_name}</p>
+          <p className="mt-1.5 text-base text-[var(--text-muted)]">📍 {slot.location_name}</p>
           {audience ? (
-            <p className="mt-1.5 inline-block rounded-full border border-[var(--gold-dim)] bg-[var(--bg-input)] px-2 py-0.5 font-display text-[10px] uppercase tracking-wider text-[var(--gold-mid)]">
+            <p className="mt-2 inline-block rounded-full border border-[var(--gold-dim)] bg-[var(--bg-input)] px-3 py-1 font-display text-xs uppercase tracking-[0.12em] text-[var(--gold-mid)]">
               {audience}
             </p>
           ) : null}
@@ -108,10 +108,14 @@ export function SlotCard({ slot, index = 0, applicationStatus = "none", isHost }
               name={slot.host?.name ?? "Host"}
               size={36}
             />
-            <div className="min-w-0 text-sm">
+            <div className="min-w-0 text-base">
               <span className="text-[var(--text-muted)]">{t.host} </span>
               <span className="text-[var(--text-primary)]">{slot.host?.name ?? "—"}</span>
-              {gIcon ? <span className="ml-1 font-mono text-[var(--text-secondary)]">{gIcon}</span> : null}
+              {gIcon ? (
+                <span className="ml-1.5 inline-flex min-w-[1.5rem] items-center justify-center font-mono text-lg text-[var(--gold-bright)]">
+                  {gIcon}
+                </span>
+              ) : null}
               {slot.host?.reliability_score != null ? (
                 <span className="ml-2 text-[var(--status-open)]">
                   ✓{Math.round(slot.host.reliability_score * 100)}%
@@ -121,7 +125,7 @@ export function SlotCard({ slot, index = 0, applicationStatus = "none", isHost }
           </div>
 
           <div className="mt-3">
-            <div className="mb-1 flex justify-between text-xs text-[var(--text-muted)]">
+            <div className="mb-1.5 flex justify-between text-sm font-medium tracking-wide text-[var(--text-muted)]">
               <span>{t.partyMembers}</span>
               <span>
                 {occupiedSpots}/{totalPartySize}

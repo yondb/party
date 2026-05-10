@@ -15,12 +15,12 @@ export function PageHeader({ title, backHref, backLabel = "← Back", right }: P
       {backHref ? (
         <Link
           href={backHref}
-          className="font-display text-sm uppercase tracking-widest text-[var(--gold-mid)] hover:text-[var(--gold-bright)]"
+          className="shrink-0 font-display text-sm font-semibold uppercase tracking-[0.1em] text-[var(--gold-mid)] hover:text-[var(--gold-bright)] sm:text-base"
         >
           {backLabel}
         </Link>
       ) : null}
-      <h1 className="font-display flex-1 text-2xl font-bold text-[var(--text-bright)]">
+      <h1 className="font-display flex-1 text-2xl font-bold leading-tight text-[var(--text-bright)] sm:text-3xl">
         {title}
       </h1>
       {right}

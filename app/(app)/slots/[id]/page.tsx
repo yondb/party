@@ -97,15 +97,15 @@ export default async function SlotDetailPage({ params }: { params: { id: string 
             <p className="mt-2 text-sm text-white/85">📍 {slot.location_name}</p>
           </div>
         </div>
-        <div className="space-y-4 p-4">
+        <div className="space-y-5 p-5 sm:p-6">
           {audienceLine ? (
-            <p className="rounded border border-[var(--gold-dim)] bg-[var(--bg-input)] px-3 py-2 text-center text-xs text-[var(--gold-mid)]">
+            <p className="rounded border border-[var(--gold-dim)] bg-[var(--bg-input)] px-3 py-2.5 text-center text-sm font-medium text-[var(--gold-mid)]">
               {audienceLine}
             </p>
           ) : null}
           {host ? (
             <section>
-              <h2 className="font-display text-xs uppercase tracking-widest text-[var(--text-muted)]">
+              <h2 className="font-display text-sm font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">
                 {d.host}
               </h2>
               <Link href={`/profile/${host.id}`} className="mt-2 flex items-center gap-3">
@@ -122,16 +122,16 @@ export default async function SlotDetailPage({ params }: { params: { id: string 
           ) : null}
 
           {slot.description ? (
-            <p className="text-sm text-[var(--text-secondary)]">{slot.description}</p>
+            <p className="text-base leading-relaxed text-[var(--text-secondary)]">{slot.description}</p>
           ) : null}
 
           <section>
-            <h2 className="font-display text-xs uppercase tracking-widest text-[var(--text-muted)]">
+            <h2 className="font-display text-sm font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">
               {d.partyMembers}
             </h2>
-            <div className="mt-2 flex flex-wrap gap-2">
+            <div className="mt-3 flex flex-wrap gap-2">
               {host ? (
-                <span className="flex items-center gap-1 rounded-full border border-[var(--gold-dim)] px-2 py-1 text-xs">
+                <span className="flex items-center gap-1 rounded-full border border-[var(--gold-dim)] px-2.5 py-1.5 text-sm">
                   <Avatar src={host.avatar_url} name={host.name} size={24} />
                   {host.name} ({d.hostTag})
                 </span>
@@ -139,14 +139,14 @@ export default async function SlotDetailPage({ params }: { params: { id: string 
               {cleanMembers.map((m) => (
                 <span
                   key={m.id}
-                  className="flex items-center gap-1 rounded-full border border-[var(--gold-dim)] px-2 py-1 text-xs"
+                  className="flex items-center gap-1 rounded-full border border-[var(--gold-dim)] px-2.5 py-1.5 text-sm"
                 >
                   <Avatar src={m.avatar_url} name={m.name} size={24} />
                   {m.name}
                 </span>
               ))}
             </div>
-            <p className="mt-2 text-sm text-[var(--text-muted)]">
+            <p className="mt-2 text-base text-[var(--text-muted)]">
               {d.openSpots}: {Math.max(0, guestCap - slot.spots_taken)} / {guestCap}
             </p>
           </section>
@@ -155,7 +155,7 @@ export default async function SlotDetailPage({ params }: { params: { id: string 
             {isHost ? (
               <Link
                 href={`/slots/${slot.id}/manage`}
-                className="btn-primary inline-flex min-h-[2.75rem] flex-1 items-center justify-center rounded-md px-4 py-2 text-center font-display text-sm font-bold uppercase tracking-widest"
+                className="btn-primary inline-flex min-h-[3rem] flex-1 items-center justify-center rounded-md px-4 py-3 text-center font-display text-base font-bold uppercase tracking-[0.08em]"
               >
                 {d.manage}
               </Link>
@@ -163,7 +163,7 @@ export default async function SlotDetailPage({ params }: { params: { id: string 
             {inParty ? (
               <Link
                 href={`/slots/${slot.id}/chat`}
-                className="btn-secondary inline-flex min-h-[2.75rem] flex-1 items-center justify-center rounded-md px-4 py-2 text-center font-display text-sm font-semibold uppercase tracking-widest"
+                className="btn-secondary inline-flex min-h-[3rem] flex-1 items-center justify-center rounded-md px-4 py-3 text-center font-display text-base font-semibold uppercase tracking-[0.08em]"
               >
                 {d.chat}
               </Link>

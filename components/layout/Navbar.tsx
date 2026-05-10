@@ -23,10 +23,10 @@ export async function Navbar() {
 
   return (
     <header className="fixed left-0 right-0 top-0 z-40 border-b border-[var(--gold-dim)] bg-[var(--bg-void)]/95 backdrop-blur-sm">
-      <div className="mx-auto flex h-14 max-w-lg items-center justify-between px-4">
+      <div className="mx-auto flex h-16 max-w-lg items-center justify-between px-4 sm:px-5">
         <Link
           href="/"
-          className="font-display text-lg font-bold tracking-wide text-[var(--gold-bright)]"
+          className="font-display text-xl font-bold tracking-wide text-[var(--gold-bright)] sm:text-2xl"
           style={{ textShadow: "0 0 12px rgba(240,192,64,0.25)" }}
         >
           PartyFinder
