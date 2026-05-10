@@ -18,6 +18,9 @@ export type MapPin = {
   gender_scope: "any" | "female" | "male";
 };
 
+const controlFocus =
+  "outline-none transition focus-visible:border-[var(--gold-mid)] focus-visible:ring-2 focus-visible:ring-[var(--gold-mid)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-card)]";
+
 export function MapSlots({ pins }: { pins: MapPin[] }) {
   const { lang } = useLanguage();
   const m = mapUi(lang);
@@ -130,7 +133,7 @@ export function MapSlots({ pins }: { pins: MapPin[] }) {
           <select
             value={activity}
             onChange={(e) => setActivity(e.target.value as "all" | ActivityKey)}
-            className="input-wow mt-1"
+            className={`input-wow mt-1 ${controlFocus}`}
           >
             <option value="all">{m.all}</option>
             {ACTIVITY_KEYS.map((key) => (
@@ -146,7 +149,7 @@ export function MapSlots({ pins }: { pins: MapPin[] }) {
           <select
             value={hostGender}
             onChange={(e) => setHostGender(e.target.value as "all" | "female" | "male")}
-            className="input-wow mt-1 font-mono text-base"
+            className={`input-wow mt-1 font-mono text-base ${controlFocus}`}
           >
             <option value="all">{ICON_ANY}</option>
             <option value="female">{ICON_FEMALE}</option>
@@ -159,7 +162,7 @@ export function MapSlots({ pins }: { pins: MapPin[] }) {
           <select
             value={audience}
             onChange={(e) => setAudience(e.target.value as "all" | "any" | "female" | "male")}
-            className="input-wow mt-1 text-sm"
+            className={`input-wow mt-1 text-sm ${controlFocus}`}
           >
             <option value="all">{m.audienceAll}</option>
             <option value="any">{m.audienceOpen}</option>
@@ -174,7 +177,7 @@ export function MapSlots({ pins }: { pins: MapPin[] }) {
             type="date"
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
-            className="input-wow mt-1"
+            className={`input-wow mt-1 ${controlFocus}`}
           />
         </label>
 
@@ -193,7 +196,10 @@ export function MapSlots({ pins }: { pins: MapPin[] }) {
 
       <div
         ref={ref}
-        className="h-[70dvh] w-full overflow-hidden rounded-lg border border-[var(--gold-dim)]"
+        tabIndex={0}
+        role="application"
+        aria-label={m.title}
+        className="h-[70dvh] w-full overflow-hidden rounded-lg border border-[var(--gold-dim)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold-mid)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-deep)]"
       />
       <p className="text-sm text-[var(--text-muted)]">
         {m.results}: {filteredPins.length}

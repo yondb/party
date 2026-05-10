@@ -87,9 +87,43 @@ a:hover {
   color: var(--gold-bright);
 }
 
+@keyframes brand-glow-soft {
+  0%,
+  100% {
+    text-shadow: 0 0 10px rgba(240, 192, 64, 0.22);
+    filter: brightness(1);
+  }
+  50% {
+    text-shadow: 0 0 18px rgba(240, 192, 64, 0.38);
+    filter: brightness(1.06);
+  }
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  .animate-brand-soft {
+    animation: brand-glow-soft 4s ease-in-out infinite;
+  }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  /** Main content clears fixed bottom nav + home indicator (iOS). */
+  .pb-bottom-main {
+    padding-bottom: calc(7.25rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  /** Space below fixed top bar + notch. */
+  .pt-nav-safe {
+    padding-top: calc(4rem + env(safe-area-inset-top, 0px));
   }
 
   .wow-card {

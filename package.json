@@ -10,7 +10,8 @@
     "dev:clean": "node -e \"require('fs').rmSync('.next',{recursive:true,force:true})\" && next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "npm run lint && npm run build"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",

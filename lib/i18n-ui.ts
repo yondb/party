@@ -188,6 +188,66 @@ export function slotDetailUi(lang: Lang) {
       };
 }
 
+export function slotChatUi(lang: Lang) {
+  return lang === "pl"
+    ? {
+        subtitle: "Czat party — tylko host i zaakceptowani goście",
+        empty: "Brak wiadomości — zacznij rozmowę.",
+        placeholder: "Napisz wiadomość…",
+        send: "Wyślij",
+        sending: "Wysyłanie…",
+        hostProfile: "Profil hosta",
+        sendFailed: "Nie udało się wysłać. Spróbuj ponownie.",
+      }
+    : {
+        subtitle: "Party chat — host and accepted guests only",
+        empty: "No messages yet — say hello.",
+        placeholder: "Write a message…",
+        send: "Send",
+        sending: "Sending…",
+        hostProfile: "Host profile",
+        sendFailed: "Could not send. Try again.",
+      };
+}
+
+export function notificationsUi(lang: Lang) {
+  return lang === "pl"
+    ? {
+        title: "Powiadomienia",
+        markAll: "Oznacz wszystkie jako przeczytane",
+        empty:
+          "Brak powiadomień. Nowe aplikacje, akceptacje, wiadomości z czatu i przypomnienia o ocenach pojawią się tutaj.",
+        openSlot: "Otwórz quest",
+        ok: "OK",
+      }
+    : {
+        title: "Notifications",
+        markAll: "Mark all as read",
+        empty: "No notifications yet. Applications, approvals, chat, and rating reminders will appear here.",
+        openSlot: "Open quest",
+        ok: "OK",
+      };
+}
+
+export function settingsUi(lang: Lang) {
+  return lang === "pl"
+    ? {
+        title: "Ustawienia",
+        accountHeading: "Konto i prywatność",
+        accountBody:
+          "Przełączniki powiadomień push i zaawansowane opcje prywatności pojawią się w kolejnej iteracji.",
+        prefsLabel: "Preferowane aktywności:",
+        prefsNone: "brak",
+      }
+    : {
+        title: "Settings",
+        accountHeading: "Account and privacy",
+        accountBody: "Push notification toggles and advanced privacy options are planned for a future update.",
+        prefsLabel: "Preferred activities:",
+        prefsNone: "none",
+      };
+}
+
 export function applyFormUi(lang: Lang) {
   return lang === "pl"
     ? {

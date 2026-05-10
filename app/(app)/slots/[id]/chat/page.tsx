@@ -35,12 +35,26 @@ export default async function SlotChatPage({ params }: { params: { id: string } 
     .eq("slot_id", slot.id)
     .order("created_at", { ascending: true });
 
+  const senderIds = Array.from(new Set((messages ?? []).map((m) => m.sender_id)));
+  const senderMap: Record<string, { name: string; avatar_url: string | null }> = {};
+  if (senderIds.length) {
+    const { data: senders } = await supabase
+      .from("users")
+      .select("id, name, avatar_url")
+      .in("id", senderIds);
+    (senders ?? []).forEach((u) => {
+      senderMap[u.id] = { name: u.name, avatar_url: u.avatar_url };
+    });
+  }
+
   return (
     <SlotChat
       slotId={slot.id}
+      hostId={slot.host_id}
       title={slot.title}
       initial={messages ?? []}
       currentUserId={user.id}
+      senderMap={senderMap}
     />
   );
 }

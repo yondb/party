@@ -1,5 +1,7 @@
-﻿import { PageHeader } from "@/components/layout/PageHeader";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { createClient } from "@/lib/supabase/server";
+import { getServerLang } from "@/lib/i18n-server";
+import { pageHeaderUi, settingsUi } from "@/lib/i18n-ui";
 
 export const dynamic = "force-dynamic";
 
@@ -9,15 +11,23 @@ export default async function SettingsPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const lang = getServerLang();
+  const t = settingsUi(lang);
+  const back = pageHeaderUi(lang);
+
   const prefs = (user?.user_metadata?.preferred_activities as string[] | undefined) ?? [];
 
   return (
     <div className="pb-6">
-      <PageHeader title="Settings" />
+      <PageHeader title={t.title} backHref="/profile" backLabel={back.back} />
       <div className="wow-card rounded-lg p-4">
-        <h2 className="font-display text-sm uppercase tracking-widest text-[var(--text-secondary)]">Account and privacy</h2>
-        <p className="mt-2 text-sm text-[var(--text-muted)]">Push notification toggles and advanced privacy are in the next iteration.</p>
-        <p className="mt-4 text-xs text-[var(--text-muted)]">Preferred activities: {prefs.length ? prefs.join(", ") : "none"}</p>
+        <h2 className="font-display text-sm uppercase tracking-widest text-[var(--text-secondary)]">
+          {t.accountHeading}
+        </h2>
+        <p className="mt-2 text-sm text-[var(--text-muted)]">{t.accountBody}</p>
+        <p className="mt-4 text-xs text-[var(--text-muted)]">
+          {t.prefsLabel} {prefs.length ? prefs.join(", ") : t.prefsNone}
+        </p>
       </div>
     </div>
   );

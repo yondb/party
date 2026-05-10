@@ -185,7 +185,7 @@ function FilterPill({ href, label, active }: { href: string; label: string; acti
   return (
     <Link
       href={href}
-      className={`shrink-0 rounded-full border px-3 py-2 font-display text-xs font-semibold uppercase tracking-[0.12em] transition sm:text-sm ${
+      className={`inline-flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full border px-3 py-2 font-display text-xs font-semibold uppercase tracking-[0.12em] transition active:scale-[0.98] sm:text-sm ${
         active
           ? "border-[var(--gold-bright)] bg-[linear-gradient(180deg,#c9963a,#8a6420)] text-[var(--bg-void)]"
           : "border-[var(--gold-dim)] text-[var(--text-secondary)] hover:border-[var(--gold-dark)]"
