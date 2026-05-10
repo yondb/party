@@ -4,12 +4,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLanguage } from "@/components/i18n/LanguageProvider";
 import { navUi } from "@/lib/i18n-ui";
+import { shellMaxClass } from "@/lib/layout-shell";
+import {
+  BottomIconFeed,
+  BottomIconMap,
+  BottomIconProfile,
+  BottomIconQuest,
+} from "@/components/layout/BottomNavIcons";
 
 const links = [
-  { href: "/feed", key: "feed" as const, icon: "F" },
-  { href: "/map", key: "map" as const, icon: "M" },
-  { href: "/slots/new", key: "quest" as const, icon: "+" },
-  { href: "/profile", key: "profile" as const, icon: "P" },
+  { href: "/feed", key: "feed" as const, Icon: BottomIconFeed },
+  { href: "/map", key: "map" as const, Icon: BottomIconMap },
+  { href: "/slots/new", key: "quest" as const, Icon: BottomIconQuest },
+  { href: "/profile", key: "profile" as const, Icon: BottomIconProfile },
 ] as const;
 
 export function BottomNav() {
@@ -19,28 +26,23 @@ export function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-[var(--gold-dim)] bg-[var(--bg-void)]/95 pb-safe backdrop-blur-sm">
-      <div className="mx-auto flex max-w-lg items-stretch justify-around px-1 pt-2 sm:px-3">
+      <div className={`${shellMaxClass} flex items-stretch justify-around px-1 pt-2 sm:px-3`}>
         {links.map((l) => {
           const active = pathname === l.href || pathname.startsWith(`${l.href}/`);
           const label = n[l.key];
+          const Icon = l.Icon;
           return (
             <Link
               key={l.href}
               href={l.href}
-              className={`flex min-h-[3.25rem] flex-1 flex-col items-center justify-center gap-1 rounded-md py-2 text-[11px] font-display font-semibold uppercase leading-tight tracking-[0.12em] transition sm:min-h-[3.5rem] sm:text-xs sm:tracking-[0.14em] ${
+              className={`flex min-h-[3.25rem] min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-md py-2 text-[11px] font-display font-semibold uppercase leading-tight tracking-[0.12em] transition sm:min-h-[3.5rem] sm:text-xs sm:tracking-[0.14em] ${
                 active
                   ? "text-[var(--gold-bright)] drop-shadow-[0_0_8px_rgba(240,192,64,0.35)]"
                   : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
               }`}
             >
-              <span
-                className={`font-display text-xl leading-none sm:text-2xl ${
-                  active ? "text-[var(--gold-bright)]" : "text-[var(--gold-mid)]"
-                }`}
-              >
-                {l.icon}
-              </span>
-              <span>{label}</span>
+              <Icon active={active} />
+              <span className="max-w-[5.5rem] truncate sm:max-w-none">{label}</span>
             </Link>
           );
         })}

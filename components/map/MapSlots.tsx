@@ -127,7 +127,7 @@ export function MapSlots({ pins }: { pins: MapPin[] }) {
 
   return (
     <div className="space-y-3">
-      <div className="grid gap-3 rounded border border-[var(--gold-dim)] bg-[var(--bg-card)] p-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 rounded-lg border border-[var(--gold-dim)] bg-[var(--bg-card)] p-4 sm:grid-cols-2 sm:gap-4 sm:p-5 xl:grid-cols-5">
         <label className="text-sm font-medium leading-snug text-[var(--text-secondary)]">
           {m.activity}
           <select
@@ -189,7 +189,7 @@ export function MapSlots({ pins }: { pins: MapPin[] }) {
             max={10}
             value={radiusKm}
             onChange={(e) => setRadiusKm(Number(e.target.value))}
-            className="mt-2 w-full accent-[var(--gold-mid)]"
+            className={`mt-2 w-full accent-[var(--gold-mid)] ${controlFocus} rounded-full`}
           />
         </label>
       </div>
@@ -199,7 +199,7 @@ export function MapSlots({ pins }: { pins: MapPin[] }) {
         tabIndex={0}
         role="application"
         aria-label={m.title}
-        className="h-[70dvh] w-full overflow-hidden rounded-lg border border-[var(--gold-dim)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold-mid)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-deep)]"
+        className="h-[min(70dvh,32rem)] w-full overflow-hidden rounded-lg border border-[var(--gold-dim)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold-mid)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-deep)] md:h-[min(68dvh,40rem)] xl:h-[min(65dvh,44rem)]"
       />
       <p className="text-sm text-[var(--text-muted)]">
         {m.results}: {filteredPins.length}

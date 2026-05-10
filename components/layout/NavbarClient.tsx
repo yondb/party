@@ -21,7 +21,7 @@ export function NavbarClient({
 
   return (
     <nav
-      className="flex shrink-0 items-center gap-1.5 sm:gap-2"
+      className="flex w-full flex-wrap items-center justify-end gap-x-2 gap-y-1.5 sm:w-auto sm:flex-nowrap sm:gap-x-3"
       aria-label={lang === "pl" ? "Główne odnośniki" : "Main links"}
     >
       <Link
@@ -50,7 +50,7 @@ export function NavbarClient({
           {t.admin}
         </Link>
       ) : null}
-      <div className="shrink-0 pl-0.5">
+      <div className="ml-1 shrink-0 border-l border-[var(--gold-dim)] pl-2 sm:ml-2 sm:pl-3">
         <LanguageToggle />
       </div>
     </nav>
