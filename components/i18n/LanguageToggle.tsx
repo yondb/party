@@ -14,7 +14,7 @@ export function LanguageToggle() {
   }
 
   return (
-    <div className="relative shrink-0">
+    <div className="relative shrink-0 pl-0.5">
       <select
         value={lang}
         onChange={(e) => pick(parseLang(e.target.value))}

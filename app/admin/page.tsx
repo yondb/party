@@ -1,6 +1,20 @@
+import {
+  banReportFormAction,
+  dismissReportFormAction,
+  unbanUserFormAction,
+} from "@/app/actions/admin-moderation";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 
 export const dynamic = "force-dynamic";
+
+type ProfileReportRow = {
+  id: string;
+  reported_user_id: string;
+  reporter_id: string;
+  reason: string;
+  status: string;
+  created_at: string;
+};
 
 type SlotRow = {
   id: string;
@@ -33,6 +47,7 @@ export default async function AdminDashboardPage() {
   let notifUnread = 0;
   let recentSlots: SlotRow[] = [];
   let recentApps: AppRow[] = [];
+  let pendingReports: ProfileReportRow[] = [];
   const userNames = new Map<string, string>();
 
   try {
@@ -50,6 +65,7 @@ export default async function AdminDashboardPage() {
       nUnread,
       slotsRes,
       appsRes,
+      reportsRes,
     ] = await Promise.all([
       admin.from("users").select("id", { count: "exact", head: true }),
       admin.from("slots").select("id", { count: "exact", head: true }).eq("status", "open"),
@@ -70,6 +86,12 @@ export default async function AdminDashboardPage() {
         .select("id, slot_id, applicant_id, status, created_at")
         .order("created_at", { ascending: false })
         .limit(15),
+      admin
+        .from("profile_reports")
+        .select("id, reported_user_id, reporter_id, reason, status, created_at")
+        .eq("status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(50),
     ]);
 
     usersTotal = u.count ?? 0;
@@ -84,13 +106,16 @@ export default async function AdminDashboardPage() {
 
     if (slotsRes.error) throw new Error(slotsRes.error.message);
     if (appsRes.error) throw new Error(appsRes.error.message);
+    if (reportsRes.error) throw new Error(reportsRes.error.message);
 
     recentSlots = (slotsRes.data ?? []) as SlotRow[];
     recentApps = (appsRes.data ?? []) as AppRow[];
+    pendingReports = (reportsRes.data ?? []) as ProfileReportRow[];
 
     const hostIds = Array.from(new Set(recentSlots.map((s) => s.host_id)));
     const applicantIds = Array.from(new Set(recentApps.map((a) => a.applicant_id)));
-    const userIds = Array.from(new Set([...hostIds, ...applicantIds]));
+    const reportUserIds = pendingReports.flatMap((r) => [r.reported_user_id, r.reporter_id]);
+    const userIds = Array.from(new Set([...hostIds, ...applicantIds, ...reportUserIds]));
 
     if (userIds.length) {
       const { data: users, error: usersErr } = await admin.from("users").select("id, name").in("id", userIds);
@@ -129,6 +154,76 @@ export default async function AdminDashboardPage() {
           <Stat label="Apps rejected" value={appsRejected} />
           <Stat label="Notif. unread" value={notifUnread} />
         </div>
+      </section>
+
+      <section>
+        <h2 className="mb-3 font-display text-xs uppercase tracking-widest text-[var(--text-muted)]">
+          Profile reports (pending)
+        </h2>
+        <p className="mb-3 text-sm text-[var(--text-secondary)]">
+          Manual queue: read the reason, then dismiss the report or ban the reported account (Auth + app block).
+        </p>
+        <ul className="space-y-3 text-sm">
+          {pendingReports.length === 0 ? (
+            <li className="text-[var(--text-muted)]">No pending reports.</li>
+          ) : (
+            pendingReports.map((r) => (
+              <li key={r.id} className="wow-card rounded-md px-3 py-3">
+                <p className="text-[var(--text-bright)]">
+                  <span className="text-[var(--text-muted)]">Reported:</span>{" "}
+                  {userNames.get(r.reported_user_id) ?? r.reported_user_id}
+                </p>
+                <p className="mt-1">
+                  <span className="text-[var(--text-muted)]">Reporter:</span>{" "}
+                  {userNames.get(r.reporter_id) ?? r.reporter_id}
+                </p>
+                <p className="mt-2 whitespace-pre-wrap text-[var(--text-secondary)]">{r.reason}</p>
+                <p className="mt-2 text-xs text-[var(--text-muted)]">{new Date(r.created_at).toLocaleString()}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <form action={dismissReportFormAction}>
+                    <input type="hidden" name="reportId" value={r.id} />
+                    <button
+                      type="submit"
+                      className="btn-secondary inline-flex min-h-[2.5rem] items-center justify-center rounded-md px-3 py-2 font-display text-xs font-semibold uppercase tracking-widest"
+                    >
+                      Dismiss
+                    </button>
+                  </form>
+                  <form action={banReportFormAction}>
+                    <input type="hidden" name="reportId" value={r.id} />
+                    <input type="hidden" name="reportedUserId" value={r.reported_user_id} />
+                    <button
+                      type="submit"
+                      className="inline-flex min-h-[2.5rem] items-center justify-center rounded-md border border-[var(--status-full)] bg-transparent px-3 py-2 font-display text-xs font-semibold uppercase tracking-widest text-[var(--status-full)] hover:bg-[var(--status-full)]/10"
+                    >
+                      Ban user
+                    </button>
+                  </form>
+                </div>
+              </li>
+            ))
+          )}
+        </ul>
+      </section>
+
+      <section>
+        <h2 className="mb-3 font-display text-xs uppercase tracking-widest text-[var(--text-muted)]">Unban user</h2>
+        <p className="mb-2 text-sm text-[var(--text-secondary)]">
+          Paste the user UUID (from Supabase or the report row). Clears DB flag and Auth ban.
+        </p>
+        <form action={unbanUserFormAction} className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <input
+            name="userId"
+            placeholder="User UUID"
+            className="min-h-[2.75rem] flex-1 rounded-md border border-[var(--gold-dim)] bg-[var(--bg-input)] px-3 font-mono text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
+          />
+          <button
+            type="submit"
+            className="btn-secondary inline-flex min-h-[2.75rem] shrink-0 items-center justify-center rounded-md px-4 py-2 font-display text-xs font-semibold uppercase tracking-widest"
+          >
+            Unban
+          </button>
+        </form>
       </section>
 
       <section>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ProfileCard } from "@/components/profile/ProfileCard";
+import { ReportProfileDialog } from "@/components/profile/ReportProfileDialog";
 import { PageHeader } from "@/components/layout/PageHeader";
 import type { ActivityKey } from "@/lib/activities";
 
@@ -83,6 +84,8 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
         <Link href="/profile/edit" className="mb-4 block text-sm text-[var(--gold-mid)]">
           Edit profile
         </Link>
+      ) : user ? (
+        <ReportProfileDialog reportedUserId={profile.id} />
       ) : null}
       <ProfileCard
         user={{

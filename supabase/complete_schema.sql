@@ -19,6 +19,7 @@ create table if not exists public.users (
   level integer not null default 1,
   total_activities integer not null default 0,
   total_hosted integer not null default 0,
+  banned boolean not null default false,
   created_at timestamptz not null default now()
 );
 
@@ -34,6 +35,8 @@ alter table public.users alter column birth_date set default date '2000-01-01';
 alter table public.users drop constraint if exists users_gender_check;
 alter table public.users add constraint users_gender_check check (gender in ('male', 'female'));
 alter table public.users drop column if exists age;
+
+alter table public.users add column if not exists banned boolean not null default false;
 
 create table if not exists public.slots (
   id uuid primary key default gen_random_uuid(),
@@ -111,6 +114,18 @@ create table if not exists public.notifications (
   created_at timestamptz not null default now()
 );
 
+-- Profile moderation: user-submitted reports (reviewed manually in /admin)
+create table if not exists public.profile_reports (
+  id uuid primary key default gen_random_uuid(),
+  reported_user_id uuid not null references public.users (id) on delete cascade,
+  reporter_id uuid not null references public.users (id) on delete cascade,
+  reason text not null,
+  status text not null default 'pending' check (status in ('pending', 'dismissed', 'resolved')),
+  created_at timestamptz not null default now(),
+  constraint profile_reports_reason_len check (char_length(trim(reason)) between 10 and 2000),
+  constraint profile_reports_no_self check (reported_user_id <> reporter_id)
+);
+
 -- ---------------------------------------------------------------------------
 -- 2. INDEXES
 -- ---------------------------------------------------------------------------
@@ -123,6 +138,10 @@ create index if not exists idx_applications_applicant_id on public.applications 
 create index if not exists idx_messages_slot_id on public.messages (slot_id);
 create index if not exists idx_notifications_user_id on public.notifications (user_id);
 create index if not exists idx_ratings_slot_id on public.ratings (slot_id);
+create index if not exists idx_profile_reports_status on public.profile_reports (status);
+create index if not exists idx_profile_reports_reported on public.profile_reports (reported_user_id);
+create index if not exists idx_profile_reports_created on public.profile_reports (created_at desc);
+create index if not exists idx_users_banned on public.users (banned) where banned = true;
 
 -- ---------------------------------------------------------------------------
 -- 3. RLS
@@ -134,6 +153,7 @@ alter table public.applications enable row level security;
 alter table public.ratings enable row level security;
 alter table public.messages enable row level security;
 alter table public.notifications enable row level security;
+alter table public.profile_reports enable row level security;
 
 -- Drop existing policies if re-running (idempotent-ish)
 do $$
@@ -144,7 +164,7 @@ begin
     select policyname, tablename
     from pg_policies
     where schemaname = 'public'
-      and tablename in ('users', 'slots', 'applications', 'ratings', 'messages', 'notifications')
+      and tablename in ('users', 'slots', 'applications', 'ratings', 'messages', 'notifications', 'profile_reports')
   loop
     execute format('drop policy if exists %I on public.%I', pol.policyname, pol.tablename);
   end loop;
@@ -332,9 +352,49 @@ create policy notifications_update_own
   using (user_id = auth.uid())
   with check (user_id = auth.uid());
 
+-- profile_reports (insert as reporter; read own submissions — admin reads via service role)
+create policy profile_reports_insert_reporter
+  on public.profile_reports for insert
+  to authenticated
+  with check (
+    reporter_id = auth.uid()
+    and reported_user_id <> auth.uid()
+    and char_length(trim(reason)) >= 10
+    and char_length(trim(reason)) <= 2000
+  );
+
+create policy profile_reports_select_own
+  on public.profile_reports for select
+  to authenticated
+  using (reporter_id = auth.uid());
+
 -- ---------------------------------------------------------------------------
 -- 4. FUNCTIONS & TRIGGERS — profile on signup, slot counts, notifications
 -- ---------------------------------------------------------------------------
+
+-- Only service_role JWT may change users.banned (app updates via service role; clients cannot unban)
+create or replace function public.users_preserve_banned_column()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  jwt_role text;
+begin
+  jwt_role := coalesce(auth.jwt() ->> 'role', '');
+  if tg_op = 'UPDATE' and (old.banned is distinct from new.banned) and jwt_role <> 'service_role' then
+    new.banned := old.banned;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists users_preserve_banned_column on public.users;
+create trigger users_preserve_banned_column
+  before update on public.users
+  for each row
+  execute procedure public.users_preserve_banned_column();
 
 create or replace function public.handle_new_user()
 returns trigger

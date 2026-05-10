@@ -1,7 +1,16 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_PREFIXES = ["/", "/landing", "/onboarding", "/auth", "/manifest.webmanifest", "/manifest.json", "/sw.js"];
+const PUBLIC_PREFIXES = [
+  "/",
+  "/landing",
+  "/onboarding",
+  "/auth",
+  "/banned",
+  "/manifest.webmanifest",
+  "/manifest.json",
+  "/sw.js",
+];
 const PROTECTED_PREFIXES = [
   "/feed",
   "/map",
@@ -71,6 +80,19 @@ export async function updateSession(request: NextRequest) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = "/feed";
       return NextResponse.redirect(redirectUrl);
+    }
+
+    if (setupDone) {
+      const { data: prof } = await supabase.from("users").select("banned").eq("id", user.id).maybeSingle();
+      if (prof?.banned === true) {
+        const allowedWhileBanned =
+          path === "/banned" || path.startsWith("/auth") || path.startsWith("/api");
+        if (!allowedWhileBanned) {
+          const redirectUrl = request.nextUrl.clone();
+          redirectUrl.pathname = "/banned";
+          return NextResponse.redirect(redirectUrl);
+        }
+      }
     }
   }
 

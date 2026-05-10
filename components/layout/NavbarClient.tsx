@@ -20,8 +20,10 @@ export function NavbarClient({
   const t = COPY[lang];
 
   return (
-    <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-      <LanguageToggle />
+    <div className="flex min-w-0 shrink-0 items-center gap-3 sm:gap-4">
+      <div className="mr-1 shrink-0 sm:mr-2">
+        <LanguageToggle />
+      </div>
       <Link
         href="/notifications"
         className="relative inline-flex min-h-[2.5rem] min-w-[2.5rem] items-center justify-center px-1 text-center font-display text-[11px] font-semibold uppercase leading-tight tracking-[0.12em] text-[var(--text-secondary)] hover:text-[var(--gold-bright)] sm:min-w-0 sm:px-2 sm:text-xs"

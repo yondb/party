@@ -102,25 +102,30 @@ export function SlotCard({ slot, index = 0, applicationStatus = "none", isHost }
             </p>
           ) : null}
 
-          <div className="mt-3 flex items-center gap-2">
+          <div className="mt-3 flex items-center gap-3">
             <Avatar
               src={slot.host?.avatar_url}
               name={slot.host?.name ?? "Host"}
               size={36}
             />
-            <div className="min-w-0 text-base">
-              <span className="text-[var(--text-muted)]">{t.host} </span>
-              <span className="text-[var(--text-primary)]">{slot.host?.name ?? "—"}</span>
-              {gIcon ? (
-                <span className="ml-1.5 inline-flex min-w-[1.5rem] items-center justify-center font-mono text-lg text-[var(--gold-bright)]">
-                  {gIcon}
-                </span>
-              ) : null}
-              {slot.host?.reliability_score != null ? (
-                <span className="ml-2 text-[var(--status-open)]">
-                  ✓{Math.round(slot.host.reliability_score * 100)}%
-                </span>
-              ) : null}
+            <div className="min-w-0 flex-1 text-base">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <span className="text-[var(--text-muted)]">{t.host}</span>
+                <span className="text-[var(--text-primary)]">{slot.host?.name ?? "—"}</span>
+                {gIcon ? (
+                  <span
+                    className="inline-flex shrink-0 items-center justify-center text-2xl leading-none text-[var(--gold-bright)]"
+                    aria-hidden
+                  >
+                    {gIcon}
+                  </span>
+                ) : null}
+                {slot.host?.reliability_score != null ? (
+                  <span className="text-[var(--status-open)]">
+                    ✓{Math.round(slot.host.reliability_score * 100)}%
+                  </span>
+                ) : null}
+              </div>
             </div>
           </div>
 
