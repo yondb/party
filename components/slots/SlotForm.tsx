@@ -12,7 +12,8 @@ import { ActivityIcon } from "./ActivityIcon";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { LocationPickerMap } from "@/components/map/LocationPickerMap";
 import { useLanguage } from "@/components/i18n/LanguageProvider";
-import { ICON_ANY, ICON_FEMALE, ICON_MALE, pageHeaderUi } from "@/lib/i18n-ui";
+import { activityLabel, ICON_ANY, ICON_FEMALE, ICON_MALE, pageHeaderUi } from "@/lib/i18n-ui";
+import type { ActivityDef } from "@/lib/activities";
 
 const DEFAULT_POINT = { lat: 52.2297, lng: 21.0122 };
 const COPY = {
@@ -83,6 +84,49 @@ const COPY = {
     audienceMenTitle: "Tylko mężczyźni",
   },
 } as const;
+
+function ActivityPickerTile({
+  def,
+  label,
+  selected,
+  index,
+  onSelect,
+}: {
+  def: ActivityDef;
+  label: string;
+  selected: boolean;
+  index: number;
+  onSelect: () => void;
+}) {
+  return (
+    <motion.button
+      type="button"
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.03 }}
+      onClick={onSelect}
+      className={`flex flex-col items-center gap-2 rounded-xl border px-1.5 pb-2 pt-2.5 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold-mid)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-deep)] ${
+        selected
+          ? "border-[var(--gold-bright)] bg-[var(--bg-panel)] shadow-[inset_0_0_0_1px_rgba(240,192,64,0.2)]"
+          : "border-[var(--gold-dim)] bg-[var(--bg-card)] hover:border-[var(--gold-dark)] hover:bg-[var(--bg-card-hover)]"
+      }`}
+    >
+      <div className="relative flex h-11 w-11 items-center justify-center rounded-lg border border-[var(--gold-dim)] bg-[linear-gradient(180deg,var(--bg-input),#100d08)] text-[1.35rem] leading-none">
+        <span aria-hidden className="relative z-[1] select-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]">
+          {def.icon}
+        </span>
+        <span
+          className="absolute inset-x-1.5 bottom-1 h-[3px] rounded-full opacity-90"
+          style={{ backgroundColor: def.color }}
+          aria-hidden
+        />
+      </div>
+      <span className="line-clamp-2 min-h-[2.25rem] w-full px-0.5 font-display text-[10px] font-semibold uppercase leading-tight tracking-[0.06em] text-[var(--text-secondary)] sm:text-[11px]">
+        {label}
+      </span>
+    </motion.button>
+  );
+}
 
 export function SlotForm() {
   const { lang } = useLanguage();
@@ -159,29 +203,19 @@ export function SlotForm() {
             {t.activityType}
           </h2>
           <p className="mb-2 text-sm text-[var(--text-muted)]">{t.top10Hint}</p>
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-3">
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-2.5">
             {ACTIVITY_KEYS.map((key, i) => {
               const def = ACTIVITIES[key];
               const sel = activity === key;
               return (
-                <motion.button
+                <ActivityPickerTile
                   key={key}
-                  type="button"
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.03 }}
-                  onClick={() => setActivity(key)}
-                  className={`flex flex-col items-center gap-2 rounded-lg border p-3 transition ${
-                    sel
-                      ? "border-[var(--gold-bright)] shadow-[var(--shadow-glow-gold)]"
-                      : "border-[var(--gold-dim)] bg-[var(--bg-card)] hover:border-[var(--gold-dark)]"
-                  }`}
-                >
-                  <ActivityIcon activity={def} size="sm" />
-                  <span className="font-display text-xs uppercase tracking-[0.08em] text-[var(--text-secondary)] sm:text-sm">
-                    {def.label}
-                  </span>
-                </motion.button>
+                  def={def}
+                  label={activityLabel(lang, key)}
+                  selected={sel}
+                  index={i}
+                  onSelect={() => setActivity(key)}
+                />
               );
             })}
           </div>
