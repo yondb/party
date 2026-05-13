@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { ACTIVITIES, ACTIVITY_KEYS, type ActivityKey } from "@/lib/activities";
+import { ACTIVITIES, type ActivityKey } from "@/lib/activities";
 import { createSlotAction } from "@/app/actions/slots";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
@@ -40,7 +39,10 @@ const COPY = {
     clickMapHint: "Click map to place a pin.",
     otherLabel: "Other activity",
     otherPlaceholder: "What are you looking for a team for?",
-    top10Hint: "Top 10 group activities + Other",
+    top10Hint: "Pick a category, then an activity type.",
+    groupMovement: "Movement",
+    groupSocial: "Social",
+    groupCustom: "Custom",
     audience: "Who can join",
     audienceAnyTitle: "Open to everyone",
     audienceWomenTitle: "Women only",
@@ -70,7 +72,10 @@ const COPY = {
     clickMapHint: "Kliknij mapę, aby ustawić pinezkę.",
     otherLabel: "Inna aktywność",
     otherPlaceholder: "Na co szukasz drużyny?",
-    top10Hint: "Top 10 wspólnych aktywności + Inne",
+    top10Hint: "Wybierz kategorię, potem typ aktywności.",
+    groupMovement: "Ruch",
+    groupSocial: "Społeczne",
+    groupCustom: "Własna aktywność",
     audience: "Kto może dołączyć",
     audienceAnyTitle: "Wszyscy",
     audienceWomenTitle: "Tylko kobiety",
@@ -78,39 +83,17 @@ const COPY = {
   },
 } as const;
 
-function ActivityPickerTile({
-  activityKey,
-  label,
-  selected,
-  index,
-  onSelect,
-}: {
-  activityKey: ActivityKey;
-  label: string;
-  selected: boolean;
-  index: number;
-  onSelect: () => void;
-}) {
-  return (
-    <motion.button
-      type="button"
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.03 }}
-      onClick={onSelect}
-      className={`flex flex-col items-center gap-2 rounded-xl border px-1.5 pb-2 pt-2.5 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold-mid)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-deep)] ${
-        selected
-          ? "border-[var(--gold-bright)] bg-[var(--bg-panel)] shadow-[inset_0_0_0_1px_rgba(240,192,64,0.2)]"
-          : "border-[var(--gold-dim)] bg-[var(--bg-card)] hover:border-[var(--gold-dark)] hover:bg-[var(--bg-card-hover)]"
-      }`}
-    >
-      <ActivityIcon activityType={activityKey} size="sm" />
-      <span className="line-clamp-2 min-h-[2.25rem] w-full px-0.5 font-display text-[10px] font-semibold uppercase leading-tight tracking-[0.06em] text-[var(--text-secondary)] sm:text-[11px]">
-        {label}
-      </span>
-    </motion.button>
-  );
-}
+const ACTIVITY_GROUPS: { titleKey: "groupMovement" | "groupSocial" | "groupCustom"; keys: ActivityKey[] }[] = [
+  {
+    titleKey: "groupMovement",
+    keys: ["running", "cycling", "hiking", "walking", "volleyball", "gym", "yoga"],
+  },
+  {
+    titleKey: "groupSocial",
+    keys: ["coffee", "boardgames", "movies", "food", "study"],
+  },
+  { titleKey: "groupCustom", keys: ["other"] },
+];
 
 export function SlotForm() {
   const { lang } = useLanguage();
@@ -187,20 +170,34 @@ export function SlotForm() {
             {t.activityType}
           </h2>
           <p className="mb-2 text-sm text-[var(--text-muted)]">{t.top10Hint}</p>
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-2.5">
-            {ACTIVITY_KEYS.map((key, i) => {
-              const sel = activity === key;
-              return (
-                <ActivityPickerTile
-                  key={key}
-                  activityKey={key}
-                  label={activityLabel(lang, key)}
-                  selected={sel}
-                  index={i}
-                  onSelect={() => setActivity(key)}
-                />
-              );
-            })}
+          <div className="space-y-5">
+            {ACTIVITY_GROUPS.map((group) => (
+              <div key={group.titleKey}>
+                <h3 className="mb-2 font-display text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
+                  {t[group.titleKey]}
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {group.keys.map((key) => {
+                    const sel = activity === key;
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => setActivity(key)}
+                        className={`inline-flex items-center gap-2 rounded-lg border px-2.5 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold-mid)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-deep)] ${
+                          sel
+                            ? "border-[var(--gold-bright)] bg-[var(--bg-panel)] text-[var(--text-primary)]"
+                            : "border-[var(--gold-dim)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:border-[var(--gold-dark)] hover:bg-[var(--bg-card-hover)]"
+                        }`}
+                      >
+                        <ActivityIcon activityType={key} size="sm" />
+                        {activityLabel(lang, key)}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
           {activity === "other" ? (
             <Input

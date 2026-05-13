@@ -6,6 +6,7 @@ const PUBLIC_PREFIXES = [
   "/landing",
   "/onboarding",
   "/auth",
+  "/dev",
   "/legal",
   "/manifest.webmanifest",
   "/manifest.json",
@@ -72,7 +73,7 @@ export async function updateSession(request: NextRequest) {
 
   if (user) {
     const setupDone = user.user_metadata?.setup_done === true;
-    if (!setupDone && path !== "/setup" && path !== "/auth") {
+    if (!setupDone && path !== "/setup" && path !== "/auth" && !path.startsWith("/dev")) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = "/setup";
       return NextResponse.redirect(redirectUrl);
