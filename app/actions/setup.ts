@@ -9,6 +9,8 @@ export async function completeSetup(input: {
   birth_date: string;
   avatar_url?: string | null;
   preferred_activities?: string[];
+  home_city?: string | null;
+  quest_goals?: string | null;
 }) {
   const supabase = createClient();
   const {
@@ -31,11 +33,17 @@ export async function completeSetup(input: {
   const { error: profileErr } = await supabase.from("users").update(updates).eq("id", user.id);
   if (profileErr) return { error: profileErr.message };
 
+  const prevMeta = (user.user_metadata ?? {}) as Record<string, unknown>;
+  const meta: Record<string, unknown> = {
+    ...prevMeta,
+    setup_done: true,
+    preferred_activities: input.preferred_activities ?? [],
+  };
+  if (input.home_city?.trim()) meta.home_city = input.home_city.trim();
+  if (input.quest_goals?.trim()) meta.quest_goals = input.quest_goals.trim();
+
   const { error: authErr } = await supabase.auth.updateUser({
-    data: {
-      setup_done: true,
-      preferred_activities: input.preferred_activities ?? [],
-    },
+    data: meta,
   });
   if (authErr) return { error: authErr.message };
 

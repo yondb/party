@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { getPusherClient } from "@/lib/pusher-client";
 import { slotChannelName } from "@/lib/realtime-channels";
@@ -64,14 +64,36 @@ export function SlotChat({
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
+  const [otherTyping, setOtherTyping] = useState(false);
   const bottom = useRef<HTMLDivElement>(null);
+  const channelRef = useRef<{ trigger?: (event: string, data: object) => boolean } | null>(null);
+  const typingHideRef = useRef<number | null>(null);
+  const typingEmitRef = useRef<number | null>(null);
 
   const channelName = useMemo(() => slotChannelName(slotId), [slotId]);
+
+  const emitTyping = useCallback(() => {
+    const ch = channelRef.current;
+    if (!ch?.trigger) return;
+    try {
+      ch.trigger("client-typing", { sender_id: currentUserId });
+    } catch {
+      // Client events must be enabled for the Pusher app key.
+    }
+  }, [currentUserId]);
+
+  const scheduleTypingEmit = useCallback(() => {
+    if (typingEmitRef.current) window.clearTimeout(typingEmitRef.current);
+    typingEmitRef.current = window.setTimeout(() => {
+      emitTyping();
+    }, 200);
+  }, [emitTyping]);
 
   useEffect(() => {
     const pusher = getPusherClient();
     if (!pusher) return;
     const ch = pusher.subscribe(channelName);
+    channelRef.current = ch as { trigger?: (event: string, data: object) => boolean };
     const handler = (payload: Msg) => {
       setItems((prev) => {
         if (prev.some((m) => m.id === payload.id)) return prev;
@@ -85,12 +107,23 @@ export function SlotChat({
         };
       });
     };
+    const onClientTyping = (data: { sender_id?: string }) => {
+      if (!data.sender_id || data.sender_id === currentUserId) return;
+      setOtherTyping(true);
+      if (typingHideRef.current) window.clearTimeout(typingHideRef.current);
+      typingHideRef.current = window.setTimeout(() => setOtherTyping(false), 2200);
+    };
     ch.bind("new-message", handler);
+    ch.bind("client-typing", onClientTyping);
     return () => {
       ch.unbind("new-message", handler);
+      ch.unbind("client-typing", onClientTyping);
       pusher.unsubscribe(channelName);
+      channelRef.current = null;
+      if (typingHideRef.current) window.clearTimeout(typingHideRef.current);
+      if (typingEmitRef.current) window.clearTimeout(typingEmitRef.current);
     };
-  }, [channelName]);
+  }, [channelName, currentUserId]);
 
   useEffect(() => {
     bottom.current?.scrollIntoView({ behavior: "smooth" });
@@ -138,6 +171,9 @@ export function SlotChat({
       />
       <div className="flex min-h-[min(520px,calc(100dvh-14rem))] flex-col rounded-lg border border-[var(--gold-dim)] bg-[var(--bg-panel)]/40">
         <div className="flex-1 space-y-3 overflow-y-auto px-2 py-3 sm:px-3">
+          {otherTyping ? (
+            <p className="text-center text-xs italic text-[var(--gold-mid)]">{ui.typing}</p>
+          ) : null}
           {items.length === 0 ? (
             <p className="text-center text-sm text-[var(--text-muted)]">{ui.empty}</p>
           ) : (
@@ -199,7 +235,10 @@ export function SlotChat({
             className={`input-wow flex-1 ${focusRing}`}
             placeholder={ui.placeholder}
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={(e) => {
+              setText(e.target.value);
+              scheduleTypingEmit();
+            }}
             autoComplete="off"
           />
           <Button type="submit" variant="primary" className="!px-4" disabled={loading}>

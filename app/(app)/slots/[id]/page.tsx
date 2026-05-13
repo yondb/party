@@ -80,7 +80,7 @@ export default async function SlotDetailPage({ params }: { params: { id: string 
         style={{ borderTop: `3px solid ${act.color}` }}
       >
         <div className="flex items-start gap-4 p-4" style={{ background: act.gradient }}>
-          <ActivityIcon activity={act} size="lg" />
+          <ActivityIcon activityType={slot.activity_type} size="lg" />
           <div>
             <h1 className="font-display text-2xl font-bold text-white drop-shadow-md">
               {slot.title}

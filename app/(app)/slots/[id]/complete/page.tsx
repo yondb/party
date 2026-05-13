@@ -2,10 +2,15 @@
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { HostCompleteRatings } from "@/components/slots/HostCompleteRatings";
+import { getServerLang } from "@/lib/i18n-server";
+import { slotCompleteUi } from "@/lib/i18n-ui";
 
 export const dynamic = "force-dynamic";
 
 export default async function CompleteSlotPage({ params }: { params: { id: string } }) {
+  const lang = getServerLang();
+  const c = slotCompleteUi(lang);
+
   const supabase = createClient();
   const {
     data: { user },
@@ -33,7 +38,7 @@ export default async function CompleteSlotPage({ params }: { params: { id: strin
 
   return (
     <div className="pb-6">
-      <PageHeader title="Complete quest" backHref={`/slots/${params.id}/manage`} />
+      <PageHeader title={c.title} backHref={`/slots/${params.id}/manage`} backLabel={c.backManage} />
       <p className="mb-3 text-sm text-[var(--text-muted)]">{slot.title}</p>
       <HostCompleteRatings slotId={params.id} participants={users ?? []} />
     </div>

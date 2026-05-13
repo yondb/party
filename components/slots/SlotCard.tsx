@@ -84,7 +84,7 @@ export function SlotCard({ slot, index = 0, applicationStatus = "none", isHost }
         className="wow-card wow-card-hover relative flex gap-4 overflow-hidden rounded-lg p-5 sm:p-6"
         style={{ borderTop: `2px solid ${act.color}` }}
       >
-        <ActivityIcon activity={act} />
+        <ActivityIcon activityType={slot.activity_type} />
         <div className="min-w-0 flex-1">
           <Link
             href={`/slots/${slot.id}`}

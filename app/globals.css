@@ -3,8 +3,9 @@
 @tailwind utilities;
 
 :root {
-  --font-display: "Cinzel", serif;
-  --font-body: "Crimson Pro", Georgia, serif;
+  /* System stacks — no build-time fetch (works behind TLS-inspecting proxies / CI). Optional: self-host Cinzel/Crimson woff2 later. */
+  --font-display: "Cinzel", ui-serif, Georgia, "Times New Roman", Times, serif;
+  --font-body: "Crimson Pro", "Crimson Text", ui-serif, Georgia, Cambria, serif;
 
   --bg-void: #0a0806;
   --bg-deep: #110e0a;

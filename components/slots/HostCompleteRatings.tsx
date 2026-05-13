@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { submitSlotRatings, type RatingInput } from "@/app/actions/ratings";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
+import { hostRatingsUi } from "@/lib/i18n-ui";
 
 type Participant = { id: string; name: string };
 
@@ -14,6 +16,8 @@ export function HostCompleteRatings({
   slotId: string;
   participants: Participant[];
 }) {
+  const { lang } = useLanguage();
+  const h = hostRatingsUi(lang);
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [rows, setRows] = useState<Record<string, { score: number; showed_up: boolean; comment: string }>>(
@@ -52,17 +56,17 @@ export function HostCompleteRatings({
     <div className="mt-6">
       {!open ? (
         <Button type="button" variant="primary" fullWidth onClick={() => setOpen(true)}>
-          Zakończ quest (oceny)
+          {h.openButton}
         </Button>
       ) : (
         <div className="wow-card space-y-4 rounded-lg p-4">
-          <p className="font-display text-sm text-[var(--text-bright)]">Oceń uczestników</p>
+          <p className="font-display text-sm text-[var(--text-bright)]">{h.title}</p>
           {participants.map((p) => (
             <div key={p.id} className="rounded border border-[var(--gold-dim)] p-3">
               <p className="font-display text-[var(--gold-bright)]">{p.name}</p>
               <div className="mt-2 grid gap-2 sm:grid-cols-2">
                 <label className="text-xs text-[var(--text-muted)]">
-                  Ocena 1–5
+                  {h.scoreLabel}
                   <input
                     type="number"
                     min={1}
@@ -89,11 +93,11 @@ export function HostCompleteRatings({
                     }
                     className="accent-[var(--gold-mid)]"
                   />
-                  Obecny
+                  {h.showedUp}
                 </label>
               </div>
               <label className="mt-2 block text-xs text-[var(--text-muted)]">
-                Komentarz
+                {h.comment}
                 <input
                   className="input-wow mt-1 w-full"
                   value={rows[p.id]?.comment ?? ""}
@@ -110,10 +114,10 @@ export function HostCompleteRatings({
           {error ? <p className="text-sm text-[var(--status-full)]">{error}</p> : null}
           <div className="flex gap-2">
             <Button type="button" variant="secondary" className="flex-1" onClick={() => setOpen(false)}>
-              Anuluj
+              {h.cancel}
             </Button>
             <Button type="button" variant="primary" className="flex-1" disabled={loading} onClick={submit}>
-              {loading ? "…" : "Zapisz i zamknij quest"}
+              {loading ? h.saving : h.submitClose}
             </Button>
           </div>
         </div>

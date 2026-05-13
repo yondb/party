@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Button } from "@/components/ui/Button";
 import { ActivityIcon } from "./ActivityIcon";
+import { ActivityGlyph } from "@/components/activities/ActivityGlyph";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { LocationPickerMap } from "@/components/map/LocationPickerMap";
 import { useLanguage } from "@/components/i18n/LanguageProvider";
@@ -87,12 +88,14 @@ const COPY = {
 
 function ActivityPickerTile({
   def,
+  activityKey,
   label,
   selected,
   index,
   onSelect,
 }: {
   def: ActivityDef;
+  activityKey: ActivityKey;
   label: string;
   selected: boolean;
   index: number;
@@ -111,10 +114,8 @@ function ActivityPickerTile({
           : "border-[var(--gold-dim)] bg-[var(--bg-card)] hover:border-[var(--gold-dark)] hover:bg-[var(--bg-card-hover)]"
       }`}
     >
-      <div className="relative flex h-11 w-11 items-center justify-center rounded-lg border border-[var(--gold-dim)] bg-[linear-gradient(180deg,var(--bg-input),#100d08)] text-[1.35rem] leading-none">
-        <span aria-hidden className="relative z-[1] select-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]">
-          {def.icon}
-        </span>
+      <div className="relative flex h-11 w-11 items-center justify-center rounded-lg border border-[var(--gold-dim)] bg-[linear-gradient(180deg,var(--bg-input),#100d08)]">
+        <ActivityGlyph activityKey={activityKey} size={22} className="text-[var(--gold-bright)]" />
         <span
           className="absolute inset-x-1.5 bottom-1 h-[3px] rounded-full opacity-90"
           style={{ backgroundColor: def.color }}
@@ -192,7 +193,7 @@ export function SlotForm() {
     }
   }
 
-  const previewAct = ACTIVITIES[activity];
+  const previewDef = ACTIVITIES[activity];
 
   return (
     <div>
@@ -211,6 +212,7 @@ export function SlotForm() {
                 <ActivityPickerTile
                   key={key}
                   def={def}
+                  activityKey={key}
                   label={activityLabel(lang, key)}
                   selected={sel}
                   index={i}
@@ -391,15 +393,15 @@ export function SlotForm() {
         </h3>
         <div
           className="wow-card rounded-lg p-4"
-          style={{ borderTop: `2px solid ${previewAct.color}` }}
+          style={{ borderTop: `2px solid ${previewDef.color}` }}
         >
           <div className="flex gap-3">
-            <ActivityIcon activity={previewAct} />
+            <ActivityIcon activityType={activity} />
             <div>
               <p className="font-display text-lg text-[var(--text-bright)]">
                 {title || t.previewTitle}
               </p>
-              <p className="text-sm text-[var(--text-muted)]">{previewAct.label}</p>
+              <p className="text-sm text-[var(--text-muted)]">{activityLabel(lang, activity)}</p>
               <p className="text-sm text-[var(--text-secondary)]">
                 📍 {locationName || t.previewLocation}
               </p>

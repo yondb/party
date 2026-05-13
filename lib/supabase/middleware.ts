@@ -6,7 +6,7 @@ const PUBLIC_PREFIXES = [
   "/landing",
   "/onboarding",
   "/auth",
-  "/banned",
+  "/legal",
   "/manifest.webmanifest",
   "/manifest.json",
   "/sw.js",
@@ -18,6 +18,7 @@ const PROTECTED_PREFIXES = [
   "/profile",
   "/notifications",
   "/settings",
+  "/premium",
   "/admin",
 ];
 

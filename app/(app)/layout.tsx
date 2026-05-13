@@ -2,7 +2,7 @@ import { AppShell } from "@/components/layout/AppShell";
 
 export const dynamic = "force-dynamic";
 
-export default function MainAppLayout({
+export default async function MainAppLayout({
   children,
 }: {
   children: React.ReactNode;

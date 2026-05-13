@@ -1,22 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Cinzel, Crimson_Pro } from "next/font/google";
 import "./globals.css";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { LanguageProvider } from "@/components/i18n/LanguageProvider";
 import { DocumentLang } from "@/components/i18n/DocumentLang";
-
-const display = Cinzel({
-  subsets: ["latin"],
-  variable: "--font-display",
-  weight: ["400", "600", "700", "900"],
-});
-
-const body = Crimson_Pro({
-  subsets: ["latin"],
-  variable: "--font-body",
-  weight: ["300", "400", "600"],
-  style: ["normal", "italic"],
-});
+import { ToastProvider } from "@/components/ui/ToastProvider";
+import { CookieConsent } from "@/components/layout/CookieConsent";
 
 export const metadata: Metadata = {
   title: "PartyFinder",
@@ -42,11 +30,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${display.variable} ${body.variable} font-body antialiased`}>
+      <body className="antialiased">
         <LanguageProvider>
           <DocumentLang />
-          {children}
-          <ServiceWorkerRegister />
+          <ToastProvider>
+            {children}
+            <ServiceWorkerRegister />
+            <CookieConsent />
+          </ToastProvider>
         </LanguageProvider>
       </body>
     </html>

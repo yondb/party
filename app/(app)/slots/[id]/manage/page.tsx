@@ -4,10 +4,17 @@ import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ApplicationCard, type ApplicantRow } from "@/components/slots/ApplicationCard";
 import { HostCompleteRatings } from "@/components/slots/HostCompleteRatings";
+import { getServerLang } from "@/lib/i18n-server";
+import { applicationCardUi, pageHeaderUi, slotManageUi } from "@/lib/i18n-ui";
 
 export const dynamic = "force-dynamic";
 
 export default async function ManageSlotPage({ params }: { params: { id: string } }) {
+  const lang = getServerLang();
+  const m = slotManageUi(lang);
+  const card = applicationCardUi(lang);
+  const back = pageHeaderUi(lang);
+
   const supabase = createClient();
   const {
     data: { user },
@@ -62,18 +69,16 @@ export default async function ManageSlotPage({ params }: { params: { id: string 
 
   return (
     <div className="pb-6">
-      <PageHeader title="Manage party" backHref={`/slots/${slot.id}`} />
+      <PageHeader title={m.title} backHref={`/slots/${slot.id}`} backLabel={back.back} />
       <p className="mb-4 text-sm text-[var(--text-muted)]">{slot.title}</p>
 
       {accepted.length ? (
         <section className="mb-6">
-          <h2 className="mb-2 font-display text-xs uppercase tracking-widest text-[var(--status-open)]">
-            In party
-          </h2>
+          <h2 className="mb-2 font-display text-xs uppercase tracking-widest text-[var(--status-open)]">{m.inParty}</h2>
           <ul className="flex flex-col gap-3">
             {accepted.map((r, i) => (
               <li key={r.applicationId}>
-                <ApplicationCard row={r} index={i} />
+                <ApplicationCard row={r} index={i} copy={card} />
               </li>
             ))}
           </ul>
@@ -82,13 +87,11 @@ export default async function ManageSlotPage({ params }: { params: { id: string 
 
       {pending.length ? (
         <section className="mb-6">
-          <h2 className="mb-2 font-display text-xs uppercase tracking-widest text-[var(--status-pending)]">
-            Pending
-          </h2>
+          <h2 className="mb-2 font-display text-xs uppercase tracking-widest text-[var(--status-pending)]">{m.pending}</h2>
           <ul className="flex flex-col gap-3">
             {pending.map((r, i) => (
               <li key={r.applicationId}>
-                <ApplicationCard row={r} index={i} />
+                <ApplicationCard row={r} index={i} copy={card} />
               </li>
             ))}
           </ul>
@@ -97,33 +100,28 @@ export default async function ManageSlotPage({ params }: { params: { id: string 
 
       {rejected.length ? (
         <section className="mb-6">
-          <h2 className="mb-2 font-display text-xs uppercase tracking-widest text-[var(--text-muted)]">
-            Rejected
-          </h2>
+          <h2 className="mb-2 font-display text-xs uppercase tracking-widest text-[var(--text-muted)]">{m.rejected}</h2>
           <ul className="flex flex-col gap-3">
             {rejected.map((r, i) => (
               <li key={r.applicationId}>
-                <ApplicationCard row={r} index={i} />
+                <ApplicationCard row={r} index={i} copy={card} />
               </li>
             ))}
           </ul>
         </section>
       ) : null}
 
-      {rows.length === 0 ? (
-        <p className="text-center text-sm text-[var(--text-muted)]">No applications yet.</p>
-      ) : null}
+      {rows.length === 0 ? <p className="text-center text-sm text-[var(--text-muted)]">{m.noApplications}</p> : null}
 
       {slot.status !== "completed" && slot.status !== "cancelled" ? (
         <HostCompleteRatings slotId={slot.id} participants={acceptedParticipants} />
       ) : (
-        <p className="mt-4 text-center text-sm text-[var(--text-muted)]">Quest is completed or cancelled.</p>
+        <p className="mt-4 text-center text-sm text-[var(--text-muted)]">{m.questDone}</p>
       )}
 
       <Link href={`/slots/${slot.id}`} className="mt-6 block text-center text-sm text-[var(--gold-mid)]">
-        Back to details
+        {m.backDetails}
       </Link>
     </div>
   );
 }
-

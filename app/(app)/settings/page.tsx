@@ -2,6 +2,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { createClient } from "@/lib/supabase/server";
 import { getServerLang } from "@/lib/i18n-server";
 import { pageHeaderUi, settingsUi } from "@/lib/i18n-ui";
+import { SettingsAccountPanel } from "@/components/settings/SettingsAccountPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,8 @@ export default async function SettingsPage() {
   const back = pageHeaderUi(lang);
 
   const prefs = (user?.user_metadata?.preferred_activities as string[] | undefined) ?? [];
+  const emailOn = user?.user_metadata?.notify_email_transactional !== false;
+  const marketing = user?.user_metadata?.marketing_opt_in === true;
 
   return (
     <div className="pb-6">
@@ -29,6 +32,7 @@ export default async function SettingsPage() {
           {t.prefsLabel} {prefs.length ? prefs.join(", ") : t.prefsNone}
         </p>
       </div>
+      <SettingsAccountPanel lang={lang} initialEmailTransactional={emailOn} initialMarketing={marketing} />
     </div>
   );
 }

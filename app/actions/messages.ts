@@ -2,15 +2,24 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { getServerLang } from "@/lib/i18n-server";
+import { commonErrors } from "@/lib/i18n-ui";
+import { isOverRateLimit } from "@/lib/action-rate-limit";
 import { getPusherServer } from "@/lib/pusher-server";
 import { slotChannelName } from "@/lib/realtime-channels";
 
 export async function sendSlotMessage(slotId: string, content: string) {
   const supabase = createClient();
+  const lang = getServerLang();
+  const errs = commonErrors(lang);
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: "Unauthorized" };
+  if (!user) return { error: errs.unauthorized };
+
+  if (await isOverRateLimit(supabase, user.id, "messages")) {
+    return { error: errs.rateMessages };
+  }
 
   const { data, error } = await supabase
     .from("messages")
@@ -18,7 +27,7 @@ export async function sendSlotMessage(slotId: string, content: string) {
     .select("id, content, created_at, sender_id")
     .single();
 
-  if (error) return { error: error.message };
+  if (error) return { error: error.message || errs.generic };
 
   const pusher = getPusherServer();
   if (pusher) {

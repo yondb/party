@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ACTIVITIES, ACTIVITY_KEYS } from "@/lib/activities";
 import { completeSetup } from "@/app/actions/setup";
@@ -8,26 +8,89 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { createClient } from "@/lib/supabase/client";
 import { ICON_FEMALE, ICON_MALE } from "@/lib/i18n-ui";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
+
+const STORAGE_GOALS = "pf_onboarding_goals";
+const STORAGE_CITY = "pf_onboarding_city";
 
 export default function SetupPage() {
   const router = useRouter();
+  const { lang } = useLanguage();
   const [name, setName] = useState("");
   const [gender, setGender] = useState<"male" | "female">("female");
   const [birthDate, setBirthDate] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
+  const [homeCity, setHomeCity] = useState("");
+  const [questGoals, setQuestGoals] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const g = window.sessionStorage.getItem(STORAGE_GOALS);
+      const c = window.sessionStorage.getItem(STORAGE_CITY);
+      if (g) setQuestGoals(g);
+      if (c) setHomeCity(c);
+    } catch {
+      // noop
+    }
+  }, []);
+
+  const copy =
+    lang === "pl"
+      ? {
+          title: "Stwórz postać",
+          subtitle: "Imię, awatar i ulubione aktywności.",
+          name: "Imię",
+          gender: "Płeć",
+          birth: "Data urodzenia",
+          avatar: "Awatar (z dysku)",
+          uploadBusy: "Przesyłanie awatara…",
+          avatarOk: "Awatar przesłany.",
+          avatarHint: "Opcjonalnie (max 5 MB).",
+          activities: "Wybierz aktywności",
+          cityLabel: "Miasto / okolica (opcjonalnie)",
+          goalsLabel: "Cele (opcjonalnie)",
+          cityPh: "Np. Kraków",
+          goalsPh: "Np. regularne bieganie",
+          submit: "Wejdź do gry",
+          saving: "Zapisywanie…",
+          imgErr: "Awatar musi być obrazem.",
+          bigErr: "Plik za duży (max 5 MB).",
+          unauth: "Brak autoryzacji",
+        }
+      : {
+          title: "Create your character",
+          subtitle: "Name, avatar and favorite activities.",
+          name: "Name",
+          gender: "Gender",
+          birth: "Date of birth",
+          avatar: "Avatar (upload from disk)",
+          uploadBusy: "Uploading avatar…",
+          avatarOk: "Avatar uploaded.",
+          avatarHint: "Optional (max 5MB).",
+          activities: "Choose activities",
+          cityLabel: "City / area (optional)",
+          goalsLabel: "Goals (optional)",
+          cityPh: "E.g. Berlin",
+          goalsPh: "E.g. weekly volleyball",
+          submit: "Enter the game",
+          saving: "Saving…",
+          imgErr: "Avatar must be an image file.",
+          bigErr: "Avatar file is too large (max 5MB).",
+          unauth: "Unauthorized",
+        };
 
   async function onAvatarSelected(file: File | null) {
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      setError("Avatar must be an image file.");
+      setError(copy.imgErr);
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      setError("Avatar file is too large (max 5MB).");
+      setError(copy.bigErr);
       return;
     }
 
@@ -39,7 +102,7 @@ export default function SetupPage() {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) {
-        setError("Unauthorized");
+        setError(copy.unauth);
         return;
       }
 
@@ -72,9 +135,19 @@ export default function SetupPage() {
         birth_date: birthDate,
         avatar_url: avatarUrl || null,
         preferred_activities: selected,
+        home_city: homeCity.trim() || null,
+        quest_goals: questGoals.trim() || null,
       });
       if (res.error) setError(res.error);
-      else router.push("/feed");
+      else {
+        try {
+          window.sessionStorage.removeItem(STORAGE_GOALS);
+          window.sessionStorage.removeItem(STORAGE_CITY);
+        } catch {
+          // noop
+        }
+        router.push("/feed");
+      }
     } finally {
       setLoading(false);
     }
@@ -86,14 +159,14 @@ export default function SetupPage() {
 
   return (
     <div className="mx-auto max-w-lg px-4 py-8">
-      <h1 className="font-display text-2xl text-[var(--text-bright)]">Create your character</h1>
-      <p className="mt-1 text-sm text-[var(--text-muted)]">Name, avatar and favorite activities.</p>
+      <h1 className="font-display text-2xl text-[var(--text-bright)]">{copy.title}</h1>
+      <p className="mt-1 text-sm text-[var(--text-muted)]">{copy.subtitle}</p>
 
       <form className="mt-6 space-y-4" onSubmit={onSubmit}>
-        <Input label="Name" value={name} onChange={(e) => setName(e.target.value)} required />
+        <Input label={copy.name} value={name} onChange={(e) => setName(e.target.value)} required />
         <div>
           <span className="mb-2 block font-display text-xs uppercase tracking-widest text-[var(--text-secondary)]">
-            Gender
+            {copy.gender}
           </span>
           <div className="flex gap-2">
             <button
@@ -124,16 +197,10 @@ export default function SetupPage() {
             </button>
           </div>
         </div>
-        <Input
-          label="Date of birth"
-          type="date"
-          value={birthDate}
-          onChange={(e) => setBirthDate(e.target.value)}
-          required
-        />
+        <Input label={copy.birth} type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} required />
         <div>
           <label className="mb-1 block font-display text-xs uppercase tracking-widest text-[var(--text-secondary)]">
-            Avatar (upload from disk)
+            {copy.avatar}
           </label>
           <input
             type="file"
@@ -142,16 +209,30 @@ export default function SetupPage() {
             className="input-wow w-full file:mr-3 file:rounded file:border file:border-[var(--gold-dark)] file:bg-[var(--bg-card)] file:px-3 file:py-1 file:text-xs file:text-[var(--text-secondary)]"
           />
           <p className="mt-1 text-xs text-[var(--text-muted)]">
-            {uploadingAvatar
-              ? "Uploading avatar..."
-              : avatarUrl
-                ? "Avatar uploaded."
-                : "Upload optional (max 5MB)."}
+            {uploadingAvatar ? copy.uploadBusy : avatarUrl ? copy.avatarOk : copy.avatarHint}
           </p>
         </div>
 
+        <Input
+          label={copy.cityLabel}
+          value={homeCity}
+          onChange={(e) => setHomeCity(e.target.value)}
+          placeholder={copy.cityPh}
+        />
         <div>
-          <p className="mb-2 font-display text-xs uppercase tracking-widest text-[var(--text-secondary)]">Choose activities</p>
+          <label className="mb-1 block font-display text-xs uppercase tracking-widest text-[var(--text-secondary)]">
+            {copy.goalsLabel}
+          </label>
+          <textarea
+            className="input-wow min-h-[4rem] w-full resize-y rounded-md border border-[var(--gold-dim)] bg-[var(--bg-input)] p-3 text-sm text-[var(--text-primary)]"
+            placeholder={copy.goalsPh}
+            value={questGoals}
+            onChange={(e) => setQuestGoals(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <p className="mb-2 font-display text-xs uppercase tracking-widest text-[var(--text-secondary)]">{copy.activities}</p>
           <div className="grid grid-cols-2 gap-2">
             {ACTIVITY_KEYS.map((k) => {
               const a = ACTIVITIES[k];
@@ -163,7 +244,8 @@ export default function SetupPage() {
                   onClick={() => toggle(k)}
                   className={`rounded-md border px-3 py-2 text-left text-sm ${on ? "border-[var(--gold-bright)] bg-[var(--bg-card-hover)]" : "border-[var(--gold-dim)] bg-[var(--bg-card)]"}`}
                 >
-                  <span className="mr-2">{a.icon}</span>{a.label}
+                  <span className="mr-2">{a.icon}</span>
+                  {a.label}
                 </button>
               );
             })}
@@ -172,7 +254,7 @@ export default function SetupPage() {
 
         {error ? <p className="text-sm text-[var(--status-full)]">{error}</p> : null}
         <Button type="submit" variant="primary" fullWidth disabled={loading || uploadingAvatar || selected.length === 0 || !birthDate}>
-          {loading ? "Saving..." : "Enter the game"}
+          {loading ? copy.saving : copy.submit}
         </Button>
       </form>
     </div>

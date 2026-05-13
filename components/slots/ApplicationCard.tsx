@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { LevelBadge } from "@/components/ui/LevelBadge";
 import { ReliabilityScore } from "@/components/ui/ReliabilityScore";
 import { respondToApplication } from "@/app/actions/applications";
+import { applicationCardUi } from "@/lib/i18n-ui";
 
 export type ApplicantRow = {
   applicationId: string;
@@ -19,12 +20,15 @@ export type ApplicantRow = {
   status: "pending" | "accepted" | "rejected";
 };
 
+export type ApplicationCardCopy = ReturnType<typeof applicationCardUi>;
+
 type ApplicationCardProps = {
   row: ApplicantRow;
   index?: number;
+  copy: ApplicationCardCopy;
 };
 
-export function ApplicationCard({ row, index = 0 }: ApplicationCardProps) {
+export function ApplicationCard({ row, index = 0, copy }: ApplicationCardProps) {
   const dim = row.status === "rejected";
 
   return (
@@ -42,7 +46,9 @@ export function ApplicationCard({ row, index = 0 }: ApplicationCardProps) {
             <LevelBadge level={row.level} />
             <ReliabilityScore score={row.reliability_score} size={28} />
           </div>
-          <p className="text-sm text-[var(--text-muted)]">EXP {row.exp}</p>
+          <p className="text-sm text-[var(--text-muted)]">
+            {copy.exp} {row.exp}
+          </p>
           {row.message ? (
             <p className="mt-2 rounded border border-[var(--gold-dim)] bg-[var(--bg-input)] p-2 text-sm text-[var(--text-secondary)]">
               {row.message}
@@ -59,7 +65,7 @@ export function ApplicationCard({ row, index = 0 }: ApplicationCardProps) {
             }}
           >
             <Button type="submit" variant="primary" fullWidth>
-              Akceptuj
+              {copy.accept}
             </Button>
           </form>
           <form
@@ -69,13 +75,13 @@ export function ApplicationCard({ row, index = 0 }: ApplicationCardProps) {
             }}
           >
             <Button type="submit" variant="secondary" fullWidth>
-              Odrzuć
+              {copy.reject}
             </Button>
           </form>
         </div>
       ) : (
         <p className="font-display text-center text-sm uppercase tracking-[0.12em] text-[var(--text-muted)]">
-          {row.status === "accepted" ? "W party" : "Odrzucony"}
+          {row.status === "accepted" ? copy.inParty : copy.rejected}
         </p>
       )}
     </motion.div>

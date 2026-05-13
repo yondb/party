@@ -117,6 +117,12 @@ export const ACTIVITIES: Record<ActivityKey, ActivityDef> = {
 
 export const ACTIVITY_KEYS = Object.keys(ACTIVITIES) as ActivityKey[];
 
+/** Maps DB `activity_type` string to known key; unknown → `other`. */
+export function normalizeActivityKey(raw: string): ActivityKey {
+  if (raw in ACTIVITIES) return raw as ActivityKey;
+  return "other";
+}
+
 export function getActivity(key: string): ActivityDef {
   const k = key as ActivityKey;
   return ACTIVITIES[k] ?? {

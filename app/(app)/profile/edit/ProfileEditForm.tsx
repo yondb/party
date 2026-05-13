@@ -7,15 +7,18 @@ import { Textarea } from "@/components/ui/Textarea";
 import { Button } from "@/components/ui/Button";
 import { updateProfile } from "@/app/actions/profile";
 import { createClient } from "@/lib/supabase/client";
-import { ICON_FEMALE, ICON_MALE } from "@/lib/i18n-ui";
+import { ICON_FEMALE, ICON_MALE, commonErrors, profileEditUi } from "@/lib/i18n-ui";
+import type { Lang } from "@/lib/i18n-lang";
 
 export function ProfileEditForm({
+  lang,
   initialName,
   initialBio,
   initialGender,
   initialBirthDate,
   initialAvatarUrl,
 }: {
+  lang: Lang;
   initialName: string;
   initialBio: string | null;
   initialGender: "male" | "female";
@@ -23,6 +26,8 @@ export function ProfileEditForm({
   initialAvatarUrl: string | null;
 }) {
   const router = useRouter();
+  const t = profileEditUi(lang);
+  const errs = commonErrors(lang);
   const [name, setName] = useState(initialName);
   const [bio, setBio] = useState(initialBio ?? "");
   const [gender, setGender] = useState(initialGender);
@@ -35,11 +40,11 @@ export function ProfileEditForm({
   async function onAvatarSelected(file: File | null) {
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      setError("Avatar must be an image file.");
+      setError(t.avatarMustImage);
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      setError("Avatar file is too large (max 5MB).");
+      setError(t.avatarTooBig);
       return;
     }
 
@@ -51,7 +56,7 @@ export function ProfileEditForm({
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) {
-        setError("Unauthorized");
+        setError(errs.unauthorized);
         return;
       }
 
@@ -94,11 +99,11 @@ export function ProfileEditForm({
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-      <Input label="Imię" value={name} onChange={(e) => setName(e.target.value)} required />
-      <Textarea label="Bio" value={bio} onChange={(e) => setBio(e.target.value)} />
+      <Input label={t.name} value={name} onChange={(e) => setName(e.target.value)} required />
+      <Textarea label={t.bio} value={bio} onChange={(e) => setBio(e.target.value)} />
       <div>
         <span className="mb-2 block font-display text-xs uppercase tracking-widest text-[var(--text-secondary)]">
-          Gender
+          {t.gender}
         </span>
         <div className="flex gap-2">
           <button
@@ -129,16 +134,10 @@ export function ProfileEditForm({
           </button>
         </div>
       </div>
-      <Input
-        label="Date of birth"
-        type="date"
-        value={birthDate}
-        onChange={(e) => setBirthDate(e.target.value)}
-        required
-      />
+      <Input label={t.birthDate} type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} required />
       <div>
         <label className="mb-1 block font-display text-xs uppercase tracking-widest text-[var(--text-secondary)]">
-          Avatar (upload from disk)
+          {t.avatarLabel}
         </label>
         <input
           type="file"
@@ -147,16 +146,12 @@ export function ProfileEditForm({
           className="input-wow w-full file:mr-3 file:rounded file:border file:border-[var(--gold-dark)] file:bg-[var(--bg-card)] file:px-3 file:py-1 file:text-xs file:text-[var(--text-secondary)]"
         />
         <p className="mt-1 text-xs text-[var(--text-muted)]">
-          {uploadingAvatar
-            ? "Uploading avatar..."
-            : avatarUrl
-              ? "Avatar uploaded."
-              : "No avatar uploaded yet."}
+          {uploadingAvatar ? t.avatarUploading : avatarUrl ? t.avatarDone : t.noAvatarYet}
         </p>
       </div>
       {error ? <p className="text-sm text-[var(--status-full)]">{error}</p> : null}
       <Button type="submit" variant="primary" fullWidth disabled={loading || uploadingAvatar || !birthDate}>
-        {loading ? "Zapis…" : "Zapisz"}
+        {loading ? t.saving : t.save}
       </Button>
     </form>
   );
