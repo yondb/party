@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ACTIVITIES, ACTIVITY_KEYS } from "@/lib/activities";
+import { ACTIVITY_KEYS } from "@/lib/activities";
 import { completeSetup } from "@/app/actions/setup";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { createClient } from "@/lib/supabase/client";
-import { ICON_FEMALE, ICON_MALE } from "@/lib/i18n-ui";
+import { ICON_FEMALE, ICON_MALE, activityLabel } from "@/lib/i18n-ui";
+import { ActivityIcon } from "@/components/slots/ActivityIcon";
 import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 const STORAGE_GOALS = "pf_onboarding_goals";
@@ -235,17 +236,18 @@ export default function SetupPage() {
           <p className="mb-2 font-display text-xs uppercase tracking-widest text-[var(--text-secondary)]">{copy.activities}</p>
           <div className="grid grid-cols-2 gap-2">
             {ACTIVITY_KEYS.map((k) => {
-              const a = ACTIVITIES[k];
               const on = selected.includes(k);
               return (
                 <button
                   key={k}
                   type="button"
                   onClick={() => toggle(k)}
-                  className={`rounded-md border px-3 py-2 text-left text-sm ${on ? "border-[var(--gold-bright)] bg-[var(--bg-card-hover)]" : "border-[var(--gold-dim)] bg-[var(--bg-card)]"}`}
+                  className={`flex items-center gap-2 rounded-lg border px-2.5 py-2 text-left text-sm transition ${
+                    on ? "border-[var(--gold-bright)] bg-[var(--bg-card-hover)]" : "border-[var(--gold-dim)] bg-[var(--bg-card)] hover:border-[var(--gold-dark)]"
+                  }`}
                 >
-                  <span className="mr-2">{a.icon}</span>
-                  {a.label}
+                  <ActivityIcon activityType={k} size="sm" />
+                  <span className="min-w-0 flex-1 leading-snug text-[var(--text-primary)]">{activityLabel(lang, k)}</span>
                 </button>
               );
             })}

@@ -9,12 +9,10 @@ import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Button } from "@/components/ui/Button";
 import { ActivityIcon } from "./ActivityIcon";
-import { ActivityGlyph } from "@/components/activities/ActivityGlyph";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { LocationPickerMap } from "@/components/map/LocationPickerMap";
 import { useLanguage } from "@/components/i18n/LanguageProvider";
 import { activityLabel, ICON_ANY, ICON_FEMALE, ICON_MALE, pageHeaderUi } from "@/lib/i18n-ui";
-import type { ActivityDef } from "@/lib/activities";
 
 const DEFAULT_POINT = { lat: 52.2297, lng: 21.0122 };
 const COPY = {
@@ -40,9 +38,6 @@ const COPY = {
     previewTitle: "Quest title",
     previewLocation: "Location",
     clickMapHint: "Click map to place a pin.",
-    suggestNew: "Suggest new",
-    suggestedLabel: "Suggest a new category",
-    suggestedPlaceholder: "e.g. photography walk, language exchange...",
     otherLabel: "Other activity",
     otherPlaceholder: "What are you looking for a team for?",
     top10Hint: "Top 10 group activities + Other",
@@ -73,9 +68,6 @@ const COPY = {
     previewTitle: "Tytuł questa",
     previewLocation: "Lokalizacja",
     clickMapHint: "Kliknij mapę, aby ustawić pinezkę.",
-    suggestNew: "Zasugeruj nowe",
-    suggestedLabel: "Zaproponuj nową kategorię",
-    suggestedPlaceholder: "np. fotografia, wymiana językowa...",
     otherLabel: "Inna aktywność",
     otherPlaceholder: "Na co szukasz drużyny?",
     top10Hint: "Top 10 wspólnych aktywności + Inne",
@@ -87,14 +79,12 @@ const COPY = {
 } as const;
 
 function ActivityPickerTile({
-  def,
   activityKey,
   label,
   selected,
   index,
   onSelect,
 }: {
-  def: ActivityDef;
   activityKey: ActivityKey;
   label: string;
   selected: boolean;
@@ -114,14 +104,7 @@ function ActivityPickerTile({
           : "border-[var(--gold-dim)] bg-[var(--bg-card)] hover:border-[var(--gold-dark)] hover:bg-[var(--bg-card-hover)]"
       }`}
     >
-      <div className="relative flex h-11 w-11 items-center justify-center rounded-lg border border-[var(--gold-dim)] bg-[linear-gradient(180deg,var(--bg-input),#100d08)]">
-        <ActivityGlyph activityKey={activityKey} size={22} className="text-[var(--gold-bright)]" />
-        <span
-          className="absolute inset-x-1.5 bottom-1 h-[3px] rounded-full opacity-90"
-          style={{ backgroundColor: def.color }}
-          aria-hidden
-        />
-      </div>
+      <ActivityIcon activityType={activityKey} size="sm" />
       <span className="line-clamp-2 min-h-[2.25rem] w-full px-0.5 font-display text-[10px] font-semibold uppercase leading-tight tracking-[0.06em] text-[var(--text-secondary)] sm:text-[11px]">
         {label}
       </span>
@@ -137,8 +120,6 @@ export function SlotForm() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [otherActivity, setOtherActivity] = useState("");
-  const [showSuggestNew, setShowSuggestNew] = useState(false);
-  const [suggestedCategory, setSuggestedCategory] = useState("");
   const [dateTime, setDateTime] = useState("");
   const [locationName, setLocationName] = useState("");
   const [pickedPoint, setPickedPoint] = useState<{ lat: number; lng: number } | null>(
@@ -169,8 +150,10 @@ export function SlotForm() {
           : activity;
       const mergedDescription =
         activity === "other" && otherActivity.trim()
-          ? `Custom activity: ${otherActivity.trim()}\n\n${description.trim()}`
-          : description.trim();
+          ? lang === "pl"
+            ? `Niestandardowa aktywność: ${otherActivity.trim()}${description.trim() ? `\n\n${description.trim()}` : ""}`
+            : `Custom activity: ${otherActivity.trim()}${description.trim() ? `\n\n${description.trim()}` : ""}`
+          : description.trim() || undefined;
       const res = await createSlotAction({
         activity_type: selectedActivityType,
         title: title.trim(),
@@ -206,12 +189,10 @@ export function SlotForm() {
           <p className="mb-2 text-sm text-[var(--text-muted)]">{t.top10Hint}</p>
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-2.5">
             {ACTIVITY_KEYS.map((key, i) => {
-              const def = ACTIVITIES[key];
               const sel = activity === key;
               return (
                 <ActivityPickerTile
                   key={key}
-                  def={def}
                   activityKey={key}
                   label={activityLabel(lang, key)}
                   selected={sel}
@@ -230,24 +211,6 @@ export function SlotForm() {
               required
             />
           ) : null}
-          <div className="mt-2">
-            <Button
-              type="button"
-              variant="secondary"
-              className="!py-1.5 !text-[11px]"
-              onClick={() => setShowSuggestNew((v) => !v)}
-            >
-              {t.suggestNew}
-            </Button>
-            {showSuggestNew ? (
-              <Input
-                label={t.suggestedLabel}
-                value={suggestedCategory}
-                onChange={(e) => setSuggestedCategory(e.target.value)}
-                placeholder={t.suggestedPlaceholder}
-              />
-            ) : null}
-          </div>
         </section>
 
         <section>

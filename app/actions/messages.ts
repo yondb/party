@@ -21,9 +21,15 @@ export async function sendSlotMessage(slotId: string, content: string) {
     return { error: errs.rateMessages };
   }
 
+  const trimmed = content.trim();
+  if (!trimmed) return { error: errs.generic };
+  if (trimmed.length > 4000) {
+    return { error: lang === "pl" ? "Wiadomość jest za długa (max 4000 znaków)." : "Message is too long (max 4000 characters)." };
+  }
+
   const { data, error } = await supabase
     .from("messages")
-    .insert({ slot_id: slotId, sender_id: user.id, content })
+    .insert({ slot_id: slotId, sender_id: user.id, content: trimmed })
     .select("id, content, created_at, sender_id")
     .single();
 

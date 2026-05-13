@@ -3,7 +3,7 @@ import type { ActivityKey } from "@/lib/activities";
 const stroke = {
   fill: "none",
   stroke: "currentColor",
-  strokeWidth: 1.6,
+  strokeWidth: 2,
   strokeLinecap: "round" as const,
   strokeLinejoin: "round" as const,
 };

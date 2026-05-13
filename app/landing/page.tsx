@@ -1,7 +1,7 @@
 ﻿import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { getActivity, normalizeActivityKey } from "@/lib/activities";
-import { ActivityGlyph } from "@/components/activities/ActivityGlyph";
+import { getActivity } from "@/lib/activities";
+import { ActivityIcon } from "@/components/slots/ActivityIcon";
 import { SplashGate } from "@/components/landing/SplashGate";
 import { LandingTopBar } from "@/components/landing/LandingTopBar";
 import { getServerLang } from "@/lib/i18n-server";
@@ -80,15 +80,8 @@ export default async function LandingPage() {
                         · {s.location_name}
                       </p>
                     </div>
-                    <div
-                      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-[var(--gold-dim)] bg-[var(--bg-input)] sm:h-14 sm:w-14"
-                      title={act.label}
-                    >
-                      <ActivityGlyph
-                        activityKey={normalizeActivityKey(s.activity_type)}
-                        size={30}
-                        className="text-[var(--gold-bright)]"
-                      />
+                    <div className="shrink-0" title={act.label}>
+                      <ActivityIcon activityType={s.activity_type} size="md" />
                     </div>
                   </div>
                   <p className="mt-3 font-display text-xs font-semibold uppercase tracking-[0.14em] text-[var(--gold-mid)] sm:text-sm">
