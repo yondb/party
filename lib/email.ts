@@ -1,6 +1,6 @@
 /**
  * Transactional email via Resend HTTP API.
- * Set RESEND_API_KEY and optionally RESEND_FROM (e.g. PartyFinder <onboarding@resend.dev>).
+ * Set RESEND_API_KEY and optionally RESEND_FROM (e.g. lfparty <noreply@lfparty.com>).
  */
 
 export type SendEmailInput = {
@@ -15,7 +15,7 @@ export async function sendTransactionalEmail(input: SendEmailInput): Promise<{ o
   if (!apiKey) {
     return { ok: false, reason: "RESEND_API_KEY not set" };
   }
-  const from = process.env.RESEND_FROM ?? "PartyFinder <onboarding@resend.dev>";
+  const from = process.env.RESEND_FROM ?? "lfparty <onboarding@resend.dev>";
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",

@@ -7,6 +7,7 @@ import { commonErrors, genderApplyBlocked } from "@/lib/i18n-ui";
 import { isOverRateLimit } from "@/lib/action-rate-limit";
 import { sendTransactionalEmail } from "@/lib/email";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
+import { SITE_NAME } from "@/lib/site";
 
 export async function applyToSlot(slotId: string, message?: string) {
   const supabase = createClient();
@@ -64,7 +65,7 @@ async function notifyApplicationAccepted(slotId: string, applicantId: string) {
     const meta = authBundle.user.user_metadata as Record<string, unknown> | undefined;
     if (meta?.notify_email_transactional === false) return;
 
-    const title = slot?.title ?? "PartyFinder quest";
+    const title = slot?.title ?? `${SITE_NAME} quest`;
     await sendTransactionalEmail({
       to: email,
       subject: `Accepted: ${title}`,
@@ -85,7 +86,7 @@ function escapeHtml(s: string) {
 
 export async function respondToApplication(
   applicationId: string,
-  decision: "accepted" | "rejected",
+  decision: "accepted" | "rejected" | "pending",
 ) {
   const supabase = createClient();
   const { data: row, error: fetchErr } = await supabase

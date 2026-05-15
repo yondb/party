@@ -1,18 +1,19 @@
 import type { Metadata } from "next";
+import { SITE_NAME, SITE_TAGLINE } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "PartyFinder — find your party",
+  title: `${SITE_NAME} — find your party`,
   description:
     "Create or join local quests: running, coffee, sports, games, and more. Meet people nearby and level up your profile.",
   openGraph: {
-    title: "PartyFinder",
-    description: "Find your party. Live the adventure.",
+    title: SITE_NAME,
+    description: SITE_TAGLINE,
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "PartyFinder",
-    description: "Find your party. Live the adventure.",
+    title: SITE_NAME,
+    description: SITE_TAGLINE,
   },
 };
 

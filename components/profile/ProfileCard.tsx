@@ -65,7 +65,7 @@ export function ProfileCard({
     {
       category: "Łatwe",
       items: [
-        { icon: "⚔️", title: "First Blood", description: "Dołącz do PartyFinder", show: true },
+        { icon: "⚔️", title: "First Blood", description: "Dołącz do lfparty", show: true },
         { icon: "👣", title: "Pierwszy krok", description: "Ukończ 1 aktywność", show: user.total_activities >= 1 },
         { icon: "🛡️", title: "Pierwszy host", description: "Zhostuj 1 quest", show: user.total_hosted >= 1 },
         { icon: "🏃", title: "Runner", description: "Ukończ aktywność running", show: (activityCounts?.running ?? 0) > 0 },

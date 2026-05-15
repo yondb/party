@@ -1,4 +1,5 @@
 import { AuthForm } from "./AuthForm";
+import { SITE_NAME, SITE_TAGLINE } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
@@ -17,10 +18,10 @@ export default function AuthPage() {
           className="text-center font-display text-4xl font-bold text-[var(--gold-bright)]"
           style={{ textShadow: "0 0 24px rgba(240,192,64,0.25)" }}
         >
-          PartyFinder
+          {SITE_NAME}
         </h1>
         <p className="mt-2 text-center font-body text-lg italic text-[var(--text-primary)]">
-          Find your party. Live the adventure.
+          {SITE_TAGLINE}
         </p>
         <p className="mt-2 text-center text-sm text-[var(--text-muted)]">
           Email/password authentication enabled (temporary replacement for SMS OTP).

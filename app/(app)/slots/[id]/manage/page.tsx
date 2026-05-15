@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ApplicationCard, type ApplicantRow } from "@/components/slots/ApplicationCard";
 import { HostCompleteRatings } from "@/components/slots/HostCompleteRatings";
+import { HostManageToolbar } from "@/components/slots/HostManageToolbar";
 import { getServerLang } from "@/lib/i18n-server";
 import { applicationCardUi, pageHeaderUi, slotManageUi } from "@/lib/i18n-ui";
 
@@ -26,6 +27,7 @@ export default async function ManageSlotPage({ params }: { params: { id: string 
     .eq("id", params.id)
     .single();
   if (error || !slot) notFound();
+  const canMutateQuest = slot.status === "open" || slot.status === "full";
   if (!user || user.id !== slot.host_id) redirect(`/slots/${slot.id}`);
 
   const { data: apps } = await supabase
@@ -72,13 +74,15 @@ export default async function ManageSlotPage({ params }: { params: { id: string 
       <PageHeader title={m.title} backHref={`/slots/${slot.id}`} backLabel={back.back} />
       <p className="mb-4 text-sm text-[var(--text-muted)]">{slot.title}</p>
 
+      <HostManageToolbar slotId={slot.id} canMutate={canMutateQuest} />
+
       {accepted.length ? (
         <section className="mb-6">
           <h2 className="mb-2 font-display text-xs uppercase tracking-widest text-[var(--status-open)]">{m.inParty}</h2>
           <ul className="flex flex-col gap-3">
             {accepted.map((r, i) => (
               <li key={r.applicationId}>
-                <ApplicationCard row={r} index={i} copy={card} />
+                <ApplicationCard row={r} index={i} copy={card} hostControls />
               </li>
             ))}
           </ul>
@@ -91,7 +95,7 @@ export default async function ManageSlotPage({ params }: { params: { id: string 
           <ul className="flex flex-col gap-3">
             {pending.map((r, i) => (
               <li key={r.applicationId}>
-                <ApplicationCard row={r} index={i} copy={card} />
+                <ApplicationCard row={r} index={i} copy={card} hostControls />
               </li>
             ))}
           </ul>
@@ -104,7 +108,7 @@ export default async function ManageSlotPage({ params }: { params: { id: string 
           <ul className="flex flex-col gap-3">
             {rejected.map((r, i) => (
               <li key={r.applicationId}>
-                <ApplicationCard row={r} index={i} copy={card} />
+                <ApplicationCard row={r} index={i} copy={card} hostControls />
               </li>
             ))}
           </ul>

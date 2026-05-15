@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ACTIVITIES, type ActivityKey } from "@/lib/activities";
-import { createSlotAction } from "@/app/actions/slots";
+import { createSlotAction, updateSlotAction, type CreateSlotInput } from "@/app/actions/slots";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Button } from "@/components/ui/Button";
@@ -47,6 +47,10 @@ const COPY = {
     audienceAnyTitle: "Open to everyone",
     audienceWomenTitle: "Women only",
     audienceMenTitle: "Men only",
+    headerEdit: "Edit quest",
+    saveQuest: "Save changes",
+    savingQuest: "Saving…",
+    backManage: "Back to manage",
   },
   pl: {
     header: "Nowy quest",
@@ -80,6 +84,10 @@ const COPY = {
     audienceAnyTitle: "Wszyscy",
     audienceWomenTitle: "Tylko kobiety",
     audienceMenTitle: "Tylko mężczyźni",
+    headerEdit: "Edytuj quest",
+    saveQuest: "Zapisz zmiany",
+    savingQuest: "Zapisywanie…",
+    backManage: "Wróć do zarządzania",
   },
 } as const;
 
@@ -95,25 +103,50 @@ const ACTIVITY_GROUPS: { titleKey: "groupMovement" | "groupSocial" | "groupCusto
   { titleKey: "groupCustom", keys: ["other"] },
 ];
 
-export function SlotForm() {
+export type SlotFormEdit = {
+  slotId: string;
+  activity_type: ActivityKey;
+  title: string;
+  description: string;
+  otherActivity: string;
+  dateTimeLocal: string;
+  location_name: string;
+  lat: number;
+  lng: number;
+  max_spots: number;
+  minRelPercent: number;
+  min_level: number;
+  recurring: boolean;
+  recurring_pattern: string | null;
+  gender_scope: "any" | "female" | "male";
+};
+
+type SlotFormProps = {
+  edit?: SlotFormEdit;
+};
+
+export function SlotForm({ edit }: SlotFormProps) {
+  const isEdit = Boolean(edit);
   const { lang } = useLanguage();
   const t = COPY[lang];
   const router = useRouter();
-  const [activity, setActivity] = useState<ActivityKey>("running");
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [otherActivity, setOtherActivity] = useState("");
-  const [dateTime, setDateTime] = useState("");
-  const [locationName, setLocationName] = useState("");
-  const [pickedPoint, setPickedPoint] = useState<{ lat: number; lng: number } | null>(
-    DEFAULT_POINT,
+  const [activity, setActivity] = useState<ActivityKey>(() => edit?.activity_type ?? "running");
+  const [title, setTitle] = useState(() => edit?.title ?? "");
+  const [description, setDescription] = useState(() => edit?.description ?? "");
+  const [otherActivity, setOtherActivity] = useState(() => edit?.otherActivity ?? "");
+  const [dateTime, setDateTime] = useState(() => edit?.dateTimeLocal ?? "");
+  const [locationName, setLocationName] = useState(() => edit?.location_name ?? "");
+  const [pickedPoint, setPickedPoint] = useState<{ lat: number; lng: number } | null>(() =>
+    edit ? { lat: edit.lat, lng: edit.lng } : DEFAULT_POINT,
   );
-  const [maxSpots, setMaxSpots] = useState(4);
-  const [minRel, setMinRel] = useState(0);
-  const [minLevel, setMinLevel] = useState(0);
-  const [recurring, setRecurring] = useState(false);
-  const [pattern, setPattern] = useState("");
-  const [genderScope, setGenderScope] = useState<"any" | "female" | "male">("any");
+  const [maxSpots, setMaxSpots] = useState(() => edit?.max_spots ?? 4);
+  const [minRel, setMinRel] = useState(() => edit?.minRelPercent ?? 0);
+  const [minLevel, setMinLevel] = useState(() => edit?.min_level ?? 0);
+  const [recurring, setRecurring] = useState(() => edit?.recurring ?? false);
+  const [pattern, setPattern] = useState(() => edit?.recurring_pattern ?? "");
+  const [genderScope, setGenderScope] = useState<"any" | "female" | "male">(
+    () => edit?.gender_scope ?? "any",
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -137,7 +170,7 @@ export function SlotForm() {
             ? `Niestandardowa aktywność: ${otherActivity.trim()}${description.trim() ? `\n\n${description.trim()}` : ""}`
             : `Custom activity: ${otherActivity.trim()}${description.trim() ? `\n\n${description.trim()}` : ""}`
           : description.trim() || undefined;
-      const res = await createSlotAction({
+      const payload: CreateSlotInput = {
         activity_type: selectedActivityType,
         title: title.trim(),
         description: mergedDescription || undefined,
@@ -151,9 +184,13 @@ export function SlotForm() {
         recurring,
         recurring_pattern: recurring ? pattern || null : null,
         gender_scope: genderScope,
-      });
+      };
+      const res = isEdit
+        ? await updateSlotAction(edit!.slotId, payload)
+        : await createSlotAction(payload);
       if ("error" in res && res.error) setError(res.error);
-      else if ("id" in res && res.id) router.push(`/slots/${res.id}`);
+      else if (!isEdit && "id" in res && res.id) router.push(`/slots/${res.id}`);
+      else if (isEdit && "ok" in res && res.ok) router.push(`/slots/${edit!.slotId}/manage`);
     } finally {
       setLoading(false);
     }
@@ -163,7 +200,11 @@ export function SlotForm() {
 
   return (
     <div>
-      <PageHeader title={t.header} backHref="/feed" backLabel={pageHeaderUi(lang).back} />
+      <PageHeader
+        title={isEdit ? t.headerEdit : t.header}
+        backHref={isEdit ? `/slots/${edit!.slotId}/manage` : "/feed"}
+        backLabel={isEdit ? t.backManage : pageHeaderUi(lang).back}
+      />
       <form onSubmit={onSubmit} className="space-y-6">
         <section>
           <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">
@@ -343,7 +384,7 @@ export function SlotForm() {
         {error ? <p className="text-sm text-[var(--status-full)]">{error}</p> : null}
 
         <Button type="submit" variant="primary" fullWidth disabled={loading}>
-          {loading ? t.publishing : t.publish}
+          {loading ? (isEdit ? t.savingQuest : t.publishing) : isEdit ? t.saveQuest : t.publish}
         </Button>
       </form>
 

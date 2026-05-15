@@ -52,7 +52,7 @@ export async function exportUserDataJson(): Promise<
   };
 
   const json = JSON.stringify(payload, null, 2);
-  return { ok: true, json, filename: `partyfinder-export-${uid.slice(0, 8)}.json` };
+  return { ok: true, json, filename: `lfparty-export-${uid.slice(0, 8)}.json` };
 }
 
 export async function deleteOwnAccount(): Promise<

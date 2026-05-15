@@ -5,14 +5,16 @@ import { LanguageProvider } from "@/components/i18n/LanguageProvider";
 import { DocumentLang } from "@/components/i18n/DocumentLang";
 import { ToastProvider } from "@/components/ui/ToastProvider";
 import { CookieConsent } from "@/components/layout/CookieConsent";
+import { getSiteUrl, SITE_NAME, SITE_TAGLINE } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "PartyFinder",
-  description: "Find your party. Live the adventure.",
+  metadataBase: getSiteUrl(),
+  title: SITE_NAME,
+  description: SITE_TAGLINE,
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "PartyFinder",
+    title: SITE_NAME,
   },
 };
 

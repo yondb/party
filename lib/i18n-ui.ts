@@ -168,6 +168,7 @@ export function slotDetailUi(lang: Lang) {
         partyMembers: "Skład",
         openSpots: "Wolne miejsca dla gości",
         manage: "Zarządzaj party",
+        editQuest: "Edytuj",
         chat: "Czat",
         waiting: "Oczekiwanie na decyzję hosta.",
         rejected: "Host odrzucił aplikację.",
@@ -180,6 +181,7 @@ export function slotDetailUi(lang: Lang) {
         partyMembers: "Party members",
         openSpots: "Open guest spots",
         manage: "Manage party",
+        editQuest: "Edit",
         chat: "Chat",
         waiting: "Waiting for host approval.",
         rejected: "The host rejected your application.",
@@ -372,6 +374,13 @@ export function slotManageUi(lang: Lang) {
         noApplications: "Brak aplikacji.",
         questDone: "Quest ukończony lub anulowany.",
         backDetails: "Wróć do szczegółów",
+        editQuest: "Edytuj quest",
+        cancelQuest: "Anuluj quest",
+        deleteQuest: "Usuń na zawsze",
+        confirmCancel: "Anulować ten quest? Uczestnicy stracą aktywny quest (status: anulowany).",
+        confirmDelete:
+          "Trwale usunąć quest? Znikną aplikacje, czat i oceny powiązane z tym slotem. Tego nie cofniesz.",
+        toolbarHint: "Edytuj szczegóły, anuluj lub usuń quest.",
       }
     : {
         title: "Manage party",
@@ -381,6 +390,13 @@ export function slotManageUi(lang: Lang) {
         noApplications: "No applications yet.",
         questDone: "Quest is completed or cancelled.",
         backDetails: "Back to details",
+        editQuest: "Edit quest",
+        cancelQuest: "Cancel quest",
+        deleteQuest: "Delete permanently",
+        confirmCancel: "Cancel this quest? Participants will see it as cancelled.",
+        confirmDelete:
+          "Permanently delete this quest? Applications, chat, and ratings for this slot will be removed. This cannot be undone.",
+        toolbarHint: "Edit details, cancel, or permanently delete the quest.",
       };
 }
 
@@ -392,6 +408,9 @@ export function applicationCardUi(lang: Lang) {
         inParty: "W party",
         rejected: "Odrzucony",
         exp: "EXP",
+        toPending: "Do oczekujących",
+        removeFromParty: "Wyrzuć z party",
+        acceptAgain: "Akceptuj ponownie",
       }
     : {
         accept: "Accept",
@@ -399,6 +418,9 @@ export function applicationCardUi(lang: Lang) {
         inParty: "In party",
         rejected: "Rejected",
         exp: "EXP",
+        toPending: "Move to pending",
+        removeFromParty: "Remove from party",
+        acceptAgain: "Accept again",
       };
 }
 
@@ -481,7 +503,7 @@ export function onboardingStepsUi(lang: Lang) {
     return [
       {
         title: "Questy w realnym świecie",
-        body: "PartyFinder łączy ludzi na spontaniczne aktywności: bieganie, kawa, siatkówka, planszówki i więcej.",
+        body: "lfparty łączy ludzi na spontaniczne aktywności: bieganie, kawa, siatkówka, planszówki i więcej.",
       },
       {
         title: "Zbuduj swoje party",
@@ -504,7 +526,7 @@ export function onboardingStepsUi(lang: Lang) {
   return [
     {
       title: "Quests in real life",
-      body: "PartyFinder matches people for spontaneous activities: running, coffee, volleyball, board games, and more.",
+      body: "lfparty matches people for spontaneous activities: running, coffee, volleyball, board games, and more.",
     },
     {
       title: "Build your party",

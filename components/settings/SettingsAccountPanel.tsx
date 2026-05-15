@@ -10,6 +10,7 @@ import { deleteOwnAccount, exportUserDataJson } from "@/app/actions/account-gdpr
 import { createClient } from "@/lib/supabase/client";
 import type { Lang } from "@/lib/i18n-lang";
 import { settingsUi } from "@/lib/i18n-ui";
+import { DEFAULT_SUPPORT_EMAIL } from "@/lib/site";
 
 export function SettingsAccountPanel({
   lang,
@@ -129,10 +130,10 @@ export function SettingsAccountPanel({
         <h2 className="font-display text-sm uppercase tracking-widest text-[var(--text-secondary)]">{t.supportHeading}</h2>
         <p className="mt-2 text-sm text-[var(--text-muted)]">{t.supportBody}</p>
         <a
-          href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@partyfinder.local"}`}
+          href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? DEFAULT_SUPPORT_EMAIL}`}
           className="mt-2 inline-block text-sm text-[var(--gold-mid)] hover:text-[var(--gold-bright)]"
         >
-          {process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@partyfinder.local"}
+          {process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? DEFAULT_SUPPORT_EMAIL}
         </a>
       </section>
 

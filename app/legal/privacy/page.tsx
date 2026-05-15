@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy — PartyFinder",
-  description: "How PartyFinder processes personal data (draft template).",
+  title: "Privacy — lfparty",
+  description: "How lfparty processes personal data (draft template).",
 };
 
 export default function PrivacyPage() {
@@ -16,7 +16,7 @@ export default function PrivacyPage() {
       <section className="space-y-3">
         <h2 className="font-display text-lg text-[var(--text-bright)]">1. Who we are</h2>
         <p>
-          PartyFinder is a social coordination app (&quot;Service&quot;) that helps you discover and join local
+          lfparty is a social coordination app (&quot;Service&quot;) that helps you discover and join local
           activities (&quot;quests&quot;). The operator of the Service is the project owner identified in your
           deployment (e.g. hosting account). For GDPR purposes, that operator is typically the data controller.
         </p>
@@ -67,7 +67,7 @@ export default function PrivacyPage() {
       <section className="space-y-3">
         <h3 className="font-display text-lg text-[var(--text-bright)]">1. Administrator</h3>
         <p>
-          Administratorem danych jest podmiot prowadzący wdrożenie PartyFinder (np. Twój podmiot / osoba fizyczna
+          Administratorem danych jest podmiot prowadzący wdrożenie lfparty (np. Twój podmiot / osoba fizyczna
           prowadząca działalność). W treści publicznej podaj nazwę, adres i e-mail kontaktowy.
         </p>
       </section>

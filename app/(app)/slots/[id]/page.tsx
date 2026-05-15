@@ -68,6 +68,7 @@ export default async function SlotDetailPage({ params }: { params: { id: string 
   const inParty = isHost || myApp === "accepted";
   const guestCap = Math.max(1, slot.max_spots - 1);
   const full = slot.status === "full" || slot.spots_taken >= guestCap;
+  const canHostEdit = isHost && (slot.status === "open" || slot.status === "full");
 
   const act = getActivity(slot.activity_type);
   const audienceLine = slotAudienceBadge(lang, (slot as { gender_scope?: string | null }).gender_scope);
@@ -155,15 +156,23 @@ export default async function SlotDetailPage({ params }: { params: { id: string 
             {isHost ? (
               <Link
                 href={`/slots/${slot.id}/manage`}
-                className="btn-primary inline-flex min-h-[3rem] flex-1 items-center justify-center rounded-md px-4 py-3 text-center font-display text-base font-bold uppercase tracking-[0.08em]"
+                className="btn-primary inline-flex min-h-[3rem] flex-1 min-w-[10rem] items-center justify-center rounded-md px-4 py-3 text-center font-display text-base font-bold uppercase tracking-[0.08em]"
               >
                 {d.manage}
+              </Link>
+            ) : null}
+            {canHostEdit ? (
+              <Link
+                href={`/slots/${slot.id}/edit`}
+                className="btn-secondary inline-flex min-h-[3rem] flex-1 min-w-[10rem] items-center justify-center rounded-md px-4 py-3 text-center font-display text-base font-semibold uppercase tracking-[0.08em]"
+              >
+                {d.editQuest}
               </Link>
             ) : null}
             {inParty ? (
               <Link
                 href={`/slots/${slot.id}/chat`}
-                className="btn-secondary inline-flex min-h-[3rem] flex-1 items-center justify-center rounded-md px-4 py-3 text-center font-display text-base font-semibold uppercase tracking-[0.08em]"
+                className="btn-secondary inline-flex min-h-[3rem] flex-1 min-w-[10rem] items-center justify-center rounded-md px-4 py-3 text-center font-display text-base font-semibold uppercase tracking-[0.08em]"
               >
                 {d.chat}
               </Link>

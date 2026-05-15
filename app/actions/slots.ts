@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { getServerLang } from "@/lib/i18n-server";
 import { normalizeActivityKey } from "@/lib/activities";
 
 export type CreateSlotInput = {
@@ -26,13 +27,23 @@ const LOCATION_MAX = 200;
 const DESCRIPTION_MAX = 12000;
 const RECURRING_PATTERN_MAX = 500;
 
-export async function createSlotAction(input: CreateSlotInput) {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { error: "Unauthorized" };
+type SlotRowValues = {
+  activity_type: string;
+  title: string;
+  description: string | null;
+  date_time: string;
+  location_name: string;
+  location_lat: number;
+  location_lng: number;
+  max_spots: number;
+  min_reliability: number;
+  min_level: number;
+  recurring: boolean;
+  recurring_pattern: string | null;
+  gender_scope: "any" | "female" | "male";
+};
 
+function parseSlotInput(input: CreateSlotInput): { error: string } | SlotRowValues {
   const title = input.title.trim();
   if (!title || title.length > TITLE_MAX) return { error: "Invalid title" };
 
@@ -79,23 +90,44 @@ export async function createSlotAction(input: CreateSlotInput) {
 
   const activity_type = normalizeActivityKey(input.activity_type);
 
+  return {
+    activity_type,
+    title,
+    description: descriptionRaw || null,
+    date_time: input.date_time,
+    location_name,
+    location_lat: input.location_lat,
+    location_lng: input.location_lng,
+    max_spots,
+    min_reliability,
+    min_level,
+    recurring,
+    recurring_pattern,
+    gender_scope,
+  };
+}
+
+function slotEditCapacityError(lang: "pl" | "en"): string {
+  return lang === "pl"
+    ? "Za mało miejsc: masz już tylu zaakceptowanych gości. Zwiększ limit albo cofnij akceptacje."
+    : "Party size too small: you already have that many accepted guests. Raise the limit or revoke an acceptance.";
+}
+
+export async function createSlotAction(input: CreateSlotInput) {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Unauthorized" };
+
+  const parsed = parseSlotInput(input);
+  if ("error" in parsed) return { error: parsed.error };
+
   const { data, error } = await supabase
     .from("slots")
     .insert({
       host_id: user.id,
-      activity_type,
-      title,
-      description: descriptionRaw || null,
-      date_time: input.date_time,
-      location_name,
-      location_lat: input.location_lat,
-      location_lng: input.location_lng,
-      max_spots,
-      min_reliability,
-      min_level,
-      recurring,
-      recurring_pattern,
-      gender_scope,
+      ...parsed,
       status: "open",
       spots_taken: 0,
     })
@@ -107,6 +139,81 @@ export async function createSlotAction(input: CreateSlotInput) {
   revalidatePath("/feed");
   revalidatePath("/map");
   return { id: data.id };
+}
+
+export async function updateSlotAction(slotId: string, input: CreateSlotInput) {
+  const lang = getServerLang();
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Unauthorized" };
+
+  const { data: slotRow, error: selErr } = await supabase
+    .from("slots")
+    .select("host_id, status, spots_taken")
+    .eq("id", slotId)
+    .maybeSingle();
+  if (selErr || !slotRow) return { error: "Not found" };
+  if (slotRow.host_id !== user.id) return { error: "Forbidden" };
+  if (slotRow.status !== "open" && slotRow.status !== "full") {
+    return { error: lang === "pl" ? "Nie można edytować zamkniętego questa." : "Cannot edit a closed quest." };
+  }
+
+  const parsed = parseSlotInput(input);
+  if ("error" in parsed) return { error: parsed.error };
+
+  const guestCap = parsed.max_spots - 1;
+  if (guestCap < slotRow.spots_taken) {
+    return { error: slotEditCapacityError(lang) };
+  }
+
+  let nextStatus = slotRow.status as string;
+  if (slotRow.status === "full" && slotRow.spots_taken < guestCap) {
+    nextStatus = "open";
+  }
+
+  const { error } = await supabase
+    .from("slots")
+    .update({
+      ...parsed,
+      status: nextStatus,
+    })
+    .eq("id", slotId);
+
+  if (error) return { error: error.message };
+  revalidatePath("/");
+  revalidatePath("/feed");
+  revalidatePath("/map");
+  revalidatePath(`/slots/${slotId}`);
+  revalidatePath(`/slots/${slotId}/manage`);
+  revalidatePath(`/slots/${slotId}/edit`);
+  return { ok: true };
+}
+
+export async function deleteSlotAction(slotId: string) {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Unauthorized" };
+
+  const { data: slotRow, error: selErr } = await supabase
+    .from("slots")
+    .select("host_id")
+    .eq("id", slotId)
+    .maybeSingle();
+  if (selErr || !slotRow) return { error: "Not found" };
+  if (slotRow.host_id !== user.id) return { error: "Forbidden" };
+
+  const { error } = await supabase.from("slots").delete().eq("id", slotId);
+  if (error) return { error: error.message };
+
+  revalidatePath("/");
+  revalidatePath("/feed");
+  revalidatePath("/map");
+  revalidatePath("/notifications");
+  return { ok: true };
 }
 
 export async function updateSlotStatus(slotId: string, status: "completed" | "cancelled") {
@@ -127,7 +234,10 @@ export async function updateSlotStatus(slotId: string, status: "completed" | "ca
   const { error } = await supabase.from("slots").update({ status }).eq("id", slotId);
   if (error) return { error: error.message };
   revalidatePath("/");
+  revalidatePath("/feed");
+  revalidatePath("/map");
   revalidatePath(`/slots/${slotId}`);
   revalidatePath(`/slots/${slotId}/manage`);
+  revalidatePath(`/slots/${slotId}/edit`);
   return { ok: true };
 }

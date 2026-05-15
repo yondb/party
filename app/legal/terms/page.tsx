@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Terms — PartyFinder",
-  description: "Terms of use for PartyFinder (draft template).",
+  title: "Terms — lfparty",
+  description: "Terms of use for lfparty (draft template).",
 };
 
 export default function TermsPage() {
@@ -16,7 +16,7 @@ export default function TermsPage() {
       <section className="space-y-3">
         <h2 className="font-display text-lg text-[var(--text-bright)]">1. The Service</h2>
         <p>
-          PartyFinder connects people for real-world activities. We do not guarantee participant behaviour, safety of
+          lfparty connects people for real-world activities. We do not guarantee participant behaviour, safety of
           locations, or outcomes of meetups. You participate at your own risk.
         </p>
       </section>
@@ -34,7 +34,7 @@ export default function TermsPage() {
         <h2 className="font-display text-lg text-[var(--text-bright)]">3. Content</h2>
         <p>
           You retain rights to content you post. You grant the Service a licence to host, display, and distribute that
-          content as needed to operate PartyFinder.
+          content as needed to operate lfparty.
         </p>
       </section>
 

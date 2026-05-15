@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { SITE_NAME } from "@/lib/site";
 
 export function SplashGate({ children }: { children: React.ReactNode }) {
   const [showSplash, setShowSplash] = useState(false);
@@ -41,12 +42,11 @@ export function SplashGate({ children }: { children: React.ReactNode }) {
               transition={{ duration: 0.45, ease: "easeOut" }}
               className="text-center"
             >
-              <p className="font-display text-5xl font-black text-[var(--gold-bright)]">P</p>
               <h1
-                className="mt-3 font-display text-3xl font-black tracking-widest text-[var(--gold-bright)]"
+                className="font-display text-4xl font-black tracking-tight text-[var(--gold-bright)] sm:text-5xl"
                 style={{ textShadow: "0 0 20px rgba(240,192,64,0.25)" }}
               >
-                PARTYFINDER
+                {SITE_NAME}
               </h1>
             </motion.div>
           </motion.div>

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { NavbarClient } from "@/components/layout/NavbarClient";
 import { isAdminUser } from "@/lib/admin";
 import { shellMaxClass } from "@/lib/layout-shell";
+import { SITE_NAME } from "@/lib/site";
 
 export async function Navbar() {
   const supabase = createClient();
@@ -32,7 +33,7 @@ export async function Navbar() {
           className="animate-brand-soft shrink-0 whitespace-nowrap font-display text-lg font-bold tracking-wide text-[var(--gold-bright)] sm:text-xl md:text-2xl"
           style={{ textShadow: "0 0 12px rgba(240,192,64,0.25)" }}
         >
-          PartyFinder
+          {SITE_NAME}
         </Link>
         <NavbarClient unread={unread} showAdmin={showAdmin} />
       </div>

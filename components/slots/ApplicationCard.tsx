@@ -26,9 +26,19 @@ type ApplicationCardProps = {
   row: ApplicantRow;
   index?: number;
   copy: ApplicationCardCopy;
+  /** When true (host manage view), host can move people between pending / accepted / rejected. */
+  hostControls?: boolean;
 };
 
-export function ApplicationCard({ row, index = 0, copy }: ApplicationCardProps) {
+function actionBarClass() {
+  return "flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-stretch";
+}
+
+function actionFormClass() {
+  return "min-w-0 flex-1 sm:min-w-[8.5rem]";
+}
+
+export function ApplicationCard({ row, index = 0, copy, hostControls = false }: ApplicationCardProps) {
   const dim = row.status === "rejected";
 
   return (
@@ -36,10 +46,10 @@ export function ApplicationCard({ row, index = 0, copy }: ApplicationCardProps) 
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04 }}
-      className={`wow-card flex flex-col gap-3 rounded-lg p-4 ${dim ? "opacity-50" : ""}`}
+      className={`wow-card flex flex-col gap-3 rounded-lg p-4 ${dim ? "opacity-60" : ""}`}
     >
-      <div className="flex gap-3">
-        <Avatar src={row.avatar_url} name={row.name} size={48} />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+        <Avatar src={row.avatar_url} name={row.name} size={48} className="shrink-0" />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-display text-lg text-[var(--text-bright)]">{row.name}</span>
@@ -50,16 +60,17 @@ export function ApplicationCard({ row, index = 0, copy }: ApplicationCardProps) 
             {copy.exp} {row.exp}
           </p>
           {row.message ? (
-            <p className="mt-2 rounded border border-[var(--gold-dim)] bg-[var(--bg-input)] p-2 text-sm text-[var(--text-secondary)]">
+            <p className="mt-2 break-words rounded border border-[var(--gold-dim)] bg-[var(--bg-input)] p-2 text-sm leading-relaxed text-[var(--text-secondary)]">
               {row.message}
             </p>
           ) : null}
         </div>
       </div>
+
       {row.status === "pending" ? (
-        <div className="flex gap-2">
+        <div className={actionBarClass()}>
           <form
-            className="flex-1"
+            className={actionFormClass()}
             action={async () => {
               await respondToApplication(row.applicationId, "accepted");
             }}
@@ -69,7 +80,7 @@ export function ApplicationCard({ row, index = 0, copy }: ApplicationCardProps) 
             </Button>
           </form>
           <form
-            className="flex-1"
+            className={actionFormClass()}
             action={async () => {
               await respondToApplication(row.applicationId, "rejected");
             }}
@@ -79,8 +90,54 @@ export function ApplicationCard({ row, index = 0, copy }: ApplicationCardProps) 
             </Button>
           </form>
         </div>
+      ) : hostControls && row.status === "accepted" ? (
+        <div className={actionBarClass()}>
+          <form
+            className={actionFormClass()}
+            action={async () => {
+              await respondToApplication(row.applicationId, "pending");
+            }}
+          >
+            <Button type="submit" variant="secondary" fullWidth>
+              {copy.toPending}
+            </Button>
+          </form>
+          <form
+            className={actionFormClass()}
+            action={async () => {
+              await respondToApplication(row.applicationId, "rejected");
+            }}
+          >
+            <Button type="submit" variant="secondary" fullWidth>
+              {copy.removeFromParty}
+            </Button>
+          </form>
+        </div>
+      ) : hostControls && row.status === "rejected" ? (
+        <div className={actionBarClass()}>
+          <form
+            className={actionFormClass()}
+            action={async () => {
+              await respondToApplication(row.applicationId, "accepted");
+            }}
+          >
+            <Button type="submit" variant="primary" fullWidth>
+              {copy.acceptAgain}
+            </Button>
+          </form>
+          <form
+            className={actionFormClass()}
+            action={async () => {
+              await respondToApplication(row.applicationId, "pending");
+            }}
+          >
+            <Button type="submit" variant="secondary" fullWidth>
+              {copy.toPending}
+            </Button>
+          </form>
+        </div>
       ) : (
-        <p className="font-display text-center text-sm uppercase tracking-[0.12em] text-[var(--text-muted)]">
+        <p className="text-center font-display text-sm uppercase tracking-[0.12em] text-[var(--text-muted)]">
           {row.status === "accepted" ? copy.inParty : copy.rejected}
         </p>
       )}
