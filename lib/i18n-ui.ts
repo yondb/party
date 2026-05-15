@@ -55,24 +55,24 @@ export function slotCardUi(lang: Lang) {
     ? {
         host: "Host",
         partyMembers: "Skład",
-        yourQuest: "Twój quest",
+        viewDetails: "Szczegóły",
+        joinQuest: "Dołącz do questa",
         partyFull: "Pełne party",
         accepted: "W party",
         waiting: "Oczekiwanie",
         declined: "Odrzucono",
-        apply: "Aplikuj",
         hostDot: "Host",
         guestDot: "Gość",
       }
     : {
         host: "Host",
         partyMembers: "Party members",
-        yourQuest: "Your quest",
+        viewDetails: "View Details",
+        joinQuest: "Join Quest",
         partyFull: "Party full",
         accepted: "Accepted to party",
         waiting: "Waiting for approval",
         declined: "Application declined",
-        apply: "Apply to party",
         hostDot: "Host spot",
         guestDot: "Guest spot",
       };
@@ -97,21 +97,21 @@ export function genderApplyBlocked(lang: Lang, scope: "female" | "male"): string
 export function feedUi(lang: Lang) {
   return lang === "pl"
     ? {
-        title: "Moje party",
+        title: "Questy",
         allActivities: "Wszystkie",
         allDates: "Wszystkie daty",
-        emptyTitle: "Brak wydarzeń",
-        emptyHint: "Utwórz pokój lub zgłoś się na mapie — wtedy pojawi się tutaj.",
+        emptyTitle: "Brak questów w okolicy — bądź pierwszy i utwórz quest",
+        createQuest: "Utwórz quest",
         signIn: "Zaloguj się, żeby zobaczyć feed.",
         errorPrefix: "Nie udało się wczytać feedu:",
       }
     : {
-        title: "My party feed",
+        title: "Quests",
         allActivities: "All",
         allDates: "All dates",
-        emptyTitle: "No events in your feed",
-        emptyHint: "Create a room or apply on the map to see it here.",
-        signIn: "You need to sign in to see your party feed.",
+        emptyTitle: "No quests nearby — be the first to create one",
+        createQuest: "Create Quest",
+        signIn: "You need to sign in to see quests.",
         errorPrefix: "Could not load feed:",
       };
 }
@@ -127,10 +127,14 @@ export function mapUi(lang: Lang) {
         audience: "Kto może dołączyć",
         date: "Data",
         radius: "Zasięg od Ciebie",
-        results: "Wyniki",
+        useMyLocation: "Użyj mojej lokalizacji",
+        locationDenied: "Brak dostępu do lokalizacji",
+        resultsFound: (n: number) =>
+          n === 1 ? "Znaleziono 1 quest" : `Znaleziono ${n} questów`,
         within: "w promieniu",
         km: "km",
         youHere: "Tu jesteś",
+        popupParty: "Skład",
         audienceAll: "Wszystkie wydarzenia",
         audienceOpen: `${ICON_ANY} Bez ograniczeń`,
         audienceWomen: `${ICON_FEMALE} Tylko kobiety`,
@@ -145,10 +149,13 @@ export function mapUi(lang: Lang) {
         audience: "Who can join",
         date: "Date",
         radius: "Radius from you",
-        results: "Results",
+        useMyLocation: "Use my location",
+        locationDenied: "Location access denied",
+        resultsFound: (n: number) => (n === 1 ? "1 quest found" : `${n} quests found`),
         within: "within",
         km: "km",
         youHere: "You are here",
+        popupParty: "Party",
         audienceAll: "All events",
         audienceOpen: `${ICON_ANY} Open to all`,
         audienceWomen: `${ICON_FEMALE} Women only`,
@@ -462,12 +469,45 @@ export function hostRatingsUi(lang: Lang) {
       };
 }
 
+export function profileUi(lang: Lang) {
+  return lang === "pl"
+    ? {
+        title: "Profil",
+        edit: "Edytuj",
+        reliability: "Reliability",
+        events: "Wydarzenia",
+        host: "Host",
+        rating: "Ocena",
+        noRatings: "Brak ocen",
+        activityClasses: "Klasy aktywności",
+        badges: "Odznaki",
+        noBadges: "Brak odznak",
+        signOut: "Wyloguj się",
+        maxLevel: "Maks. poziom",
+      }
+    : {
+        title: "Profile",
+        edit: "Edit",
+        reliability: "Reliability",
+        events: "Events",
+        host: "Host",
+        rating: "Rating",
+        noRatings: "No ratings yet",
+        activityClasses: "Activity classes",
+        badges: "Badges",
+        noBadges: "No badges unlocked yet",
+        signOut: "Sign out",
+        maxLevel: "Max level",
+      };
+}
+
 export function profileEditUi(lang: Lang) {
   return lang === "pl"
     ? {
         pageTitle: "Edycja profilu",
         name: "Imię",
         bio: "Bio",
+        bioPlaceholder: "Opowiedz innym o sobie…",
         gender: "Płeć",
         birthDate: "Data urodzenia",
         avatarLabel: "Awatar (z dysku)",
@@ -484,6 +524,7 @@ export function profileEditUi(lang: Lang) {
         pageTitle: "Edit profile",
         name: "Name",
         bio: "Bio",
+        bioPlaceholder: "Tell others about yourself…",
         gender: "Gender",
         birthDate: "Date of birth",
         avatarLabel: "Avatar (upload from disk)",

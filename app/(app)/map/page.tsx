@@ -20,7 +20,7 @@ export default async function MapPage() {
   type GenderFilter = "female" | "male";
   const { data: slots } = await supabase
     .from("slots")
-    .select("id, title, host_id, location_lat, location_lng, activity_type, date_time, gender_scope")
+    .select("id, title, host_id, location_lat, location_lng, activity_type, date_time, gender_scope, max_spots, spots_taken")
     .in("status", ["open", "full"]);
 
   const hostIds = Array.from(new Set((slots ?? []).map((s) => s.host_id)));
@@ -39,6 +39,8 @@ export default async function MapPage() {
       lng: s.location_lng,
       activity_type: s.activity_type,
       date_time: s.date_time,
+      max_spots: s.max_spots,
+      spots_taken: s.spots_taken,
       host_gender: hostGenderMap.get(s.host_id) ?? null,
       gender_scope: ((s as { gender_scope?: string }).gender_scope ?? "any") as "any" | "female" | "male",
     })) ?? [];

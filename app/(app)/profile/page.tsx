@@ -4,12 +4,15 @@ import { createClient } from "@/lib/supabase/server";
 import { ProfileCard } from "@/components/profile/ProfileCard";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { signOut } from "@/app/actions/profile";
-import { Button } from "@/components/ui/Button";
 import type { ActivityKey } from "@/lib/activities";
+import { getServerLang } from "@/lib/i18n-server";
+import { profileUi } from "@/lib/i18n-ui";
 
 export const dynamic = "force-dynamic";
 
 export default async function OwnProfilePage() {
+  const lang = getServerLang();
+  const p = profileUi(lang);
   const supabase = createClient();
   const {
     data: { user },
@@ -78,15 +81,15 @@ export default async function OwnProfilePage() {
   const hostAndPlayerMaster = (profile.total_hosted ?? 0) >= 10 && (profile.total_activities ?? 0) >= 10;
 
   return (
-    <div className="pb-6">
+    <div className="pb-10">
       <PageHeader
-        title="Profile"
+        title={p.title}
         right={
           <Link
             href="/profile/edit"
             className="inline-flex min-h-[2.75rem] items-center justify-center rounded-md border-2 border-[var(--gold-dim)] bg-[linear-gradient(180deg,#2a2210,#14110c)] px-4 py-2 font-display text-sm font-bold uppercase tracking-[0.14em] text-[var(--gold-bright)] shadow-[var(--shadow-glow-gold)] transition hover:border-[var(--gold-bright)] hover:brightness-110"
           >
-            Edit
+            {p.edit}
           </Link>
         }
       />
@@ -115,15 +118,13 @@ export default async function OwnProfilePage() {
         }}
         isOwn
       />
-      <form className="mt-8" action={signOut}>
-        <Button
+      <form action={signOut} className="mt-8 text-center">
+        <button
           type="submit"
-          variant="secondary"
-          fullWidth
-          className="!min-h-[5.75rem] !border-[var(--gold-dim)] !bg-[linear-gradient(180deg,#1a1510,#0d0b09)] !py-3 !font-display !text-base !font-bold !tracking-[0.1em] !text-[var(--gold-mid)] hover:!border-[var(--gold-mid)] hover:!text-[var(--gold-bright)]"
+          className="text-sm text-[var(--text-muted)] underline-offset-2 transition hover:text-[var(--gold-mid)] hover:underline"
         >
-          Sign out
-        </Button>
+          {p.signOut}
+        </button>
       </form>
     </div>
   );

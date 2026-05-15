@@ -24,6 +24,8 @@ export type SlotCardData = {
   activity_type: string;
   date_time: string;
   location_name: string;
+  location_lat?: number;
+  location_lng?: number;
   max_spots: number;
   spots_taken: number;
   status: string;
@@ -34,9 +36,8 @@ export type SlotCardData = {
 type SlotCardProps = {
   slot: SlotCardData;
   index?: number;
-  /** Current user's application status for this slot */
+  distanceLabel?: string;
   applicationStatus?: "none" | "pending" | "accepted" | "rejected";
-  /** Current user is host */
   isHost?: boolean;
 };
 
@@ -57,7 +58,16 @@ function hostGenderIcon(g?: "male" | "female") {
   return null;
 }
 
-export function SlotCard({ slot, index = 0, applicationStatus = "none", isHost }: SlotCardProps) {
+const joinQuestBtnClass =
+  "w-full border-2 border-[var(--gold-bright)] bg-[linear-gradient(180deg,#c9963a,#8a6420)] font-display font-bold uppercase tracking-[0.1em] text-[var(--bg-void)] shadow-[var(--shadow-glow-gold)] transition hover:brightness-110 hover:shadow-[0_0_20px_rgba(240,192,64,0.35)]";
+
+export function SlotCard({
+  slot,
+  index = 0,
+  distanceLabel,
+  applicationStatus = "none",
+  isHost,
+}: SlotCardProps) {
   const { lang } = useLanguage();
   const t = slotCardUi(lang);
   const locale = lang === "pl" ? "pl-PL" : "en-GB";
@@ -65,9 +75,13 @@ export function SlotCard({ slot, index = 0, applicationStatus = "none", isHost }
   const guestCap = Math.max(1, slot.max_spots - 1);
   const full = slot.status === "full" || slot.spots_taken >= guestCap;
   const totalPartySize = Math.max(2, slot.max_spots);
-  const occupiedSpots = Math.min(totalPartySize, 1 + slot.spots_taken); // host + accepted guests
+  const occupiedSpots = Math.min(totalPartySize, 1 + slot.spots_taken);
   const audience = slotAudienceBadge(lang, slot.gender_scope);
   const gIcon = hostGenderIcon(slot.host?.gender);
+
+  const locationLine = distanceLabel
+    ? `${slot.location_name} · ${distanceLabel}`
+    : slot.location_name;
 
   return (
     <motion.div
@@ -76,11 +90,10 @@ export function SlotCard({ slot, index = 0, applicationStatus = "none", isHost }
       transition={{ duration: 0.3, ease: "easeOut", delay: index * 0.05 }}
       whileHover={{
         y: -2,
-        boxShadow:
-          "0 8px 32px rgba(0,0,0,0.8), 0 0 16px rgba(240,192,64,0.08)",
+        boxShadow: "0 8px 32px rgba(0,0,0,0.8), 0 0 16px rgba(240,192,64,0.08)",
       }}
     >
-      <div
+      <motion.div
         className="wow-card wow-card-hover relative flex gap-4 overflow-hidden rounded-lg p-5 sm:p-6"
         style={{ borderTop: `2px solid ${act.color}` }}
       >
@@ -95,7 +108,7 @@ export function SlotCard({ slot, index = 0, applicationStatus = "none", isHost }
           <p className="mt-1 text-base text-[var(--text-secondary)]">
             {activityLabel(lang, slot.activity_type)} · {formatWhen(slot.date_time, locale)}
           </p>
-          <p className="mt-1.5 text-base text-[var(--text-muted)]">📍 {slot.location_name}</p>
+          <p className="mt-1.5 text-base text-[var(--text-muted)]">📍 {locationLine}</p>
           {audience ? (
             <p className="mt-2 inline-block rounded-full border border-[var(--gold-dim)] bg-[var(--bg-input)] px-3 py-1 font-display text-xs uppercase tracking-[0.12em] text-[var(--gold-mid)]">
               {audience}
@@ -103,11 +116,7 @@ export function SlotCard({ slot, index = 0, applicationStatus = "none", isHost }
           ) : null}
 
           <div className="mt-3 flex items-center gap-3">
-            <Avatar
-              src={slot.host?.avatar_url}
-              name={slot.host?.name ?? "Host"}
-              size={36}
-            />
+            <Avatar src={slot.host?.avatar_url} name={slot.host?.name ?? "Host"} size={36} />
             <div className="min-w-0 flex-1 text-base">
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 <span className="text-[var(--text-muted)]">{t.host}</span>
@@ -159,17 +168,23 @@ export function SlotCard({ slot, index = 0, applicationStatus = "none", isHost }
 
           <div className="mt-4">
             {isHost ? (
-              <Button variant="secondary" fullWidth disabled>
-                {t.yourQuest}
-              </Button>
+              <Link
+                href={`/slots/${slot.id}`}
+                className="btn-secondary inline-flex min-h-[2.75rem] w-full items-center justify-center rounded-md px-4 py-3 text-center font-display text-base font-semibold uppercase tracking-[0.08em]"
+              >
+                {t.viewDetails}
+              </Link>
             ) : full ? (
               <Button variant="secondary" fullWidth disabled>
                 {t.partyFull}
               </Button>
             ) : applicationStatus === "accepted" ? (
-              <Button variant="secondary" fullWidth disabled className="!border-[var(--status-open)]">
-                {t.accepted}
-              </Button>
+              <Link
+                href={`/slots/${slot.id}`}
+                className="btn-secondary inline-flex min-h-[2.75rem] w-full items-center justify-center rounded-md border-[var(--status-open)] px-4 py-3 text-center font-display text-base font-semibold uppercase tracking-[0.08em]"
+              >
+                {t.viewDetails}
+              </Link>
             ) : applicationStatus === "pending" ? (
               <Button variant="secondary" fullWidth disabled className="!border-[var(--status-pending)]">
                 {t.waiting}
@@ -184,14 +199,14 @@ export function SlotCard({ slot, index = 0, applicationStatus = "none", isHost }
                   await applyToSlot(slot.id);
                 }}
               >
-                <Button type="submit" variant="primary" fullWidth>
-                  {t.apply}
+                <Button type="submit" variant="primary" fullWidth className={joinQuestBtnClass}>
+                  {t.joinQuest}
                 </Button>
               </form>
             )}
           </div>
         </div>
-      </div>
+      </motion.div>
     </motion.div>
   );
 }

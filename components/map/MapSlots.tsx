@@ -15,6 +15,8 @@ export type MapPin = {
   lat: number;
   activity_type: string;
   date_time: string;
+  max_spots: number;
+  spots_taken: number;
   host_gender: "female" | "male" | null;
   gender_scope: "any" | "female" | "male";
 };
@@ -48,20 +50,29 @@ export function MapSlots({ pins }: { pins: MapPin[] }) {
   const [hostGender, setHostGender] = useState<"all" | "female" | "male">("all");
   const [audience, setAudience] = useState<"all" | "any" | "female" | "male">("all");
   const [dateFilter, setDateFilter] = useState("");
+  const [locationEnabled, setLocationEnabled] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
-  useEffect(() => {
-    if (!navigator.geolocation) return;
+  function requestMyLocation() {
+    if (!navigator.geolocation) {
+      setLocationError(m.locationDenied);
+      return;
+    }
+    setLocationError(null);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setMyPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setLocationEnabled(true);
       },
       () => {
+        setLocationError(m.locationDenied);
+        setLocationEnabled(false);
         setMyPosition(null);
       },
       { enableHighAccuracy: true, maximumAge: 60000, timeout: 8000 },
     );
-  }, []);
+  }
 
   const filteredPins = useMemo(() => {
     return pins.filter((pin) => {
@@ -82,13 +93,13 @@ export function MapSlots({ pins }: { pins: MapPin[] }) {
         const ymd = eventDate.toISOString().slice(0, 10);
         if (ymd !== dateFilter) return false;
       }
-      if (myPosition) {
+      if (locationEnabled && myPosition) {
         const km = distanceKm(myPosition.lat, myPosition.lng, pin.lat, pin.lng);
         if (km > radiusKm) return false;
       }
       return true;
     });
-  }, [pins, activity, hostGender, audience, dateFilter, myPosition, radiusKm]);
+  }, [pins, activity, hostGender, audience, dateFilter, locationEnabled, myPosition, radiusKm]);
 
   useEffect(() => {
     if (!token || !ref.current) return;
@@ -115,10 +126,29 @@ export function MapSlots({ pins }: { pins: MapPin[] }) {
         .addTo(map);
     }
 
+    const locale = lang === "pl" ? "pl-PL" : "en-US";
     for (const p of filteredPins) {
+      const when = new Date(p.date_time).toLocaleString(locale, {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      const total = Math.max(2, p.max_spots);
+      const occupied = Math.min(total, 1 + p.spots_taken);
+      const actLabel = activityLabel(lang, p.activity_type as ActivityKey);
+      const html = `
+        <div class="lfparty-map-popup">
+          <p class="lfparty-map-popup__title">${escapeHtml(p.title)}</p>
+          <p class="lfparty-map-popup__meta">${escapeHtml(actLabel)}</p>
+          <p class="lfparty-map-popup__meta">${escapeHtml(when)}</p>
+          <p class="lfparty-map-popup__party">${escapeHtml(m.popupParty)}: ${occupied}/${total}</p>
+          <a class="lfparty-map-popup__link" href="/slots/${p.id}">${lang === "pl" ? "Szczegóły →" : "View →"}</a>
+        </div>`;
       new mapboxgl.Marker({ color: "#c9963a" })
         .setLngLat([p.lng, p.lat])
-        .setPopup(new mapboxgl.Popup({ offset: 16 }).setHTML(`<strong>${p.title}</strong>`))
+        .setPopup(new mapboxgl.Popup({ offset: 16, className: "lfparty-map-popup-wrap" }).setHTML(html))
         .addTo(map);
     }
 
@@ -126,7 +156,7 @@ export function MapSlots({ pins }: { pins: MapPin[] }) {
       map.remove();
       mapRef.current = null;
     };
-  }, [token, filteredPins, myPosition, lang]);
+  }, [token, filteredPins, myPosition, lang, m.popupParty]);
 
   if (!token) {
     return (
@@ -200,18 +230,33 @@ export function MapSlots({ pins }: { pins: MapPin[] }) {
           </MapFilterField>
 
           <MapFilterField label={radiusCaption}>
-            <div className="flex min-h-[2.75rem] items-center px-0.5">
+            <div className="flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={requestMyLocation}
+                className={`min-h-[2.75rem] rounded-lg border px-3 text-sm font-semibold transition ${controlFocus} ${
+                  locationEnabled
+                    ? "border-[var(--gold-bright)] bg-[var(--bg-panel)] text-[var(--gold-bright)]"
+                    : "border-[var(--gold-dim)] bg-[var(--bg-input)] text-[var(--text-secondary)] hover:border-[var(--gold-dark)]"
+                }`}
+              >
+                {m.useMyLocation}
+              </button>
+              {locationError ? (
+                <p className="text-xs text-[var(--status-full)]">{locationError}</p>
+              ) : null}
               <input
                 type="range"
                 min={1}
                 max={10}
                 value={radiusKm}
+                disabled={!locationEnabled}
                 onChange={(e) => setRadiusKm(Number(e.target.value))}
                 aria-valuemin={1}
                 aria-valuemax={10}
                 aria-valuenow={radiusKm}
                 aria-label={radiusCaption}
-                className={`h-2.5 w-full cursor-pointer accent-[var(--gold-mid)] ${controlFocus} rounded-full bg-[var(--bg-input)]`}
+                className={`h-2.5 w-full cursor-pointer accent-[var(--gold-mid)] ${controlFocus} rounded-full bg-[var(--bg-input)] disabled:opacity-40`}
               />
             </div>
           </MapFilterField>
@@ -225,12 +270,24 @@ export function MapSlots({ pins }: { pins: MapPin[] }) {
         aria-label={m.title}
         className="h-[min(70dvh,32rem)] w-full overflow-hidden rounded-lg border border-[var(--gold-dim)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold-mid)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-deep)] md:h-[min(68dvh,40rem)] xl:h-[min(65dvh,44rem)]"
       />
-      <p className="text-sm text-[var(--text-muted)]">
-        {m.results}: {filteredPins.length}
-        {myPosition ? ` — ${m.within} ${radiusKm} ${m.km}` : ""}
+      <p className="mb-8 mt-2 font-display text-lg font-semibold text-[var(--text-bright)]">
+        {m.resultsFound(filteredPins.length)}
+        {locationEnabled && myPosition ? (
+          <span className="mt-1 block text-sm font-normal text-[var(--text-muted)]">
+            {m.within} {radiusKm} {m.km}
+          </span>
+        ) : null}
       </p>
     </div>
   );
+}
+
+function escapeHtml(s: string) {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 function distanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {

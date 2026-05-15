@@ -1,10 +1,12 @@
 ﻿import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { SlotCard, type SlotCardData, type SlotCardHost } from "@/components/slots/SlotCard";
+import { FeedList } from "@/components/feed/FeedList";
+import type { SlotCardData, SlotCardHost } from "@/components/slots/SlotCard";
 import { PageHeader } from "@/components/layout/PageHeader";
 import type { ActivityKey } from "@/lib/activities";
 import { getServerLang } from "@/lib/i18n-server";
 import { activityLabel, feedUi } from "@/lib/i18n-ui";
+import { formatFilterDate } from "@/lib/geo";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +18,8 @@ type SlotRow = {
   activity_type: string;
   date_time: string;
   location_name: string;
+  location_lat: number;
+  location_lng: number;
   max_spots: number;
   spots_taken: number;
   status: string;
@@ -37,12 +41,12 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
     );
   }
 
-  const { data: hostedSlots, error: hostedErr } = await supabase
+  const { data: slots, error: slotsErr } = await supabase
     .from("slots")
     .select("*")
-    .eq("host_id", user.id)
+    .in("status", ["open", "full"])
     .order("date_time", { ascending: true });
-  if (hostedErr) return <ErrorBox lang={lang} message={hostedErr.message} />;
+  if (slotsErr) return <ErrorBox lang={lang} message={slotsErr.message} />;
 
   const { data: myApps, error: appsErr } = await supabase
     .from("applications")
@@ -50,22 +54,12 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
     .eq("applicant_id", user.id);
   if (appsErr) return <ErrorBox lang={lang} message={appsErr.message} />;
 
-  const appStatusBySlot = new Map<string, "pending" | "accepted" | "rejected">();
-  (myApps ?? []).forEach((a) => appStatusBySlot.set(a.slot_id, a.status));
-  const appliedIds = Array.from(new Set((myApps ?? []).map((a) => a.slot_id)));
-  const { data: appliedSlots, error: appliedErr } = appliedIds.length
-    ? await supabase.from("slots").select("*").in("id", appliedIds)
-    : { data: [] as SlotRow[], error: null };
-  if (appliedErr) return <ErrorBox lang={lang} message={appliedErr.message} />;
+  const appStatusBySlot: Record<string, "pending" | "accepted" | "rejected"> = {};
+  (myApps ?? []).forEach((a) => {
+    appStatusBySlot[a.slot_id] = a.status;
+  });
 
-  const slotById = new Map<string, SlotRow>();
-  (hostedSlots ?? []).forEach((s) => slotById.set(s.id, s));
-  (appliedSlots ?? []).forEach((s) => slotById.set(s.id, s));
-  const slots = Array.from(slotById.values()).sort(
-    (a, b) => new Date(a.date_time).getTime() - new Date(b.date_time).getTime(),
-  );
-
-  const hostIds = Array.from(new Set(slots.map((s) => s.host_id)));
+  const hostIds = Array.from(new Set((slots ?? []).map((s) => s.host_id)));
   const { data: hosts } = hostIds.length
     ? await supabase.from("users").select("id, name, avatar_url, reliability_score, gender").in("id", hostIds)
     : {
@@ -91,18 +85,21 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
     ]),
   );
 
-  const allCards: SlotCardData[] = slots.map((s) => ({
+  const allCards: SlotCardData[] = (slots ?? []).map((s: SlotRow) => ({
     id: s.id,
     title: s.title,
     activity_type: s.activity_type,
     date_time: s.date_time,
     location_name: s.location_name,
+    location_lat: s.location_lat,
+    location_lng: s.location_lng,
     max_spots: s.max_spots,
     spots_taken: s.spots_taken,
     status: s.status,
     gender_scope: s.gender_scope ?? "any",
     host: hostMap.get(s.host_id) ?? null,
   }));
+
   const activityOptions = Array.from(new Set(allCards.map((c) => c.activity_type as ActivityKey)));
   const dateOptions = Array.from(new Set(allCards.map((c) => c.date_time.slice(0, 10)))).sort();
   const validActivity =
@@ -129,45 +126,32 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
     <div className="pb-6">
       <PageHeader title={ui.title} />
       <div className="relative mb-3">
-        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-          <FilterPill href={feedHref({ date: validDate })} label={ui.allActivities} active={!validActivity} />
-          {activityOptions.map((k) => (
+          <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            <FilterPill href={feedHref({ date: validDate })} label={ui.allActivities} active={!validActivity} />
+            {activityOptions.map((k) => (
+              <FilterPill
+                key={k}
+                href={feedHref({ activity: k, date: validDate })}
+                label={activityLabel(lang, k)}
+                active={validActivity === k}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="mb-4 flex flex-wrap gap-2">
+          <FilterPill href={feedHref({ activity: validActivity })} label={ui.allDates} active={!validDate} />
+          {dateOptions.map((d) => (
             <FilterPill
-              key={k}
-              href={feedHref({ activity: k, date: validDate })}
-              label={activityLabel(lang, k)}
-              active={validActivity === k}
+              key={d}
+              href={feedHref({ activity: validActivity, date: d })}
+              label={formatFilterDate(d, lang)}
+              active={validDate === d}
             />
           ))}
         </div>
-      </div>
 
-      <div className="mb-4 flex flex-wrap gap-2">
-        <FilterPill href={feedHref({ activity: validActivity })} label={ui.allDates} active={!validDate} />
-        {dateOptions.map((d) => (
-          <FilterPill key={d} href={feedHref({ activity: validActivity, date: d })} label={d} active={validDate === d} />
-        ))}
-      </div>
-
-      {cards.length === 0 ? (
-        <div className="wow-card rounded-lg p-8 text-center">
-          <p className="font-display text-lg text-[var(--text-bright)]">{ui.emptyTitle}</p>
-          <p className="mt-2 text-sm text-[var(--text-muted)]">{ui.emptyHint}</p>
-        </div>
-      ) : (
-        <ul className="flex flex-col gap-4">
-          {cards.map((slot, i) => (
-            <li key={slot.id}>
-              <SlotCard
-                slot={slot}
-                index={i}
-                applicationStatus={appStatusBySlot.get(slot.id) ?? "none"}
-                isHost={user.id === slot.host?.id}
-              />
-            </li>
-          ))}
-        </ul>
-      )}
+      <FeedList cards={cards} userId={user.id} appStatusBySlot={appStatusBySlot} />
     </div>
   );
 }

@@ -47,6 +47,15 @@ const COPY = {
     audienceAnyTitle: "Open to everyone",
     audienceWomenTitle: "Women only",
     audienceMenTitle: "Men only",
+    audienceAllShort: "All",
+    audienceWomenShort: "Women only",
+    audienceMenShort: "Men only",
+    locationHelper:
+      "Enter a display name above, then click the map to pin the exact spot.",
+    errTitle: "Quest title is required.",
+    errDate: "Pick a date and time.",
+    errLocation: "Location name is required.",
+    errPin: "Place a pin on the map.",
     headerEdit: "Edit quest",
     saveQuest: "Save changes",
     savingQuest: "Saving…",
@@ -84,6 +93,15 @@ const COPY = {
     audienceAnyTitle: "Wszyscy",
     audienceWomenTitle: "Tylko kobiety",
     audienceMenTitle: "Tylko mężczyźni",
+    audienceAllShort: "Wszyscy",
+    audienceWomenShort: "Tylko kobiety",
+    audienceMenShort: "Tylko mężczyźni",
+    locationHelper:
+      "Wpisz nazwę miejsca powyżej, potem kliknij mapę, aby wskazać dokładny punkt.",
+    errTitle: "Tytuł questa jest wymagany.",
+    errDate: "Wybierz datę i godzinę.",
+    errLocation: "Nazwa lokalizacji jest wymagana.",
+    errPin: "Wskaż pinezkę na mapie.",
     headerEdit: "Edytuj quest",
     saveQuest: "Zapisz zmiany",
     savingQuest: "Zapisywanie…",
@@ -149,10 +167,27 @@ export function SlotForm({ edit }: SlotFormProps) {
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{
+    title?: string;
+    dateTime?: string;
+    locationName?: string;
+    pin?: string;
+  }>({});
+
+  function validate(): boolean {
+    const next: typeof fieldErrors = {};
+    if (!title.trim()) next.title = t.errTitle;
+    if (!dateTime || Number.isNaN(Date.parse(dateTime))) next.dateTime = t.errDate;
+    if (!locationName.trim()) next.locationName = t.errLocation;
+    if (!pickedPoint) next.pin = t.errPin;
+    setFieldErrors(next);
+    return Object.keys(next).length === 0;
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (!validate()) return;
     if (!pickedPoint) {
       setError(t.pinRequired);
       return;
@@ -205,7 +240,7 @@ export function SlotForm({ edit }: SlotFormProps) {
         backHref={isEdit ? `/slots/${edit!.slotId}/manage` : "/feed"}
         backLabel={isEdit ? t.backManage : pageHeaderUi(lang).back}
       />
-      <form onSubmit={onSubmit} className="space-y-6">
+      <form id="slot-form" onSubmit={onSubmit} className="space-y-6 pb-28 md:pb-6">
         <section>
           <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">
             {t.activityType}
@@ -225,9 +260,9 @@ export function SlotForm({ edit }: SlotFormProps) {
                         key={key}
                         type="button"
                         onClick={() => setActivity(key)}
-                        className={`inline-flex items-center gap-2 rounded-lg border px-2.5 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold-mid)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-deep)] ${
+                        className={`inline-flex items-center gap-2 rounded-lg border px-2.5 py-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold-mid)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-deep)] ${
                           sel
-                            ? "border-[var(--gold-bright)] bg-[var(--bg-panel)] text-[var(--text-primary)]"
+                            ? "border-[var(--gold-bright)] bg-[linear-gradient(180deg,#e8c56a,#c9963a)] text-[var(--bg-void)] shadow-[var(--shadow-glow-gold)]"
                             : "border-[var(--gold-dim)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:border-[var(--gold-dark)] hover:bg-[var(--bg-card-hover)]"
                         }`}
                       >
@@ -258,11 +293,11 @@ export function SlotForm({ edit }: SlotFormProps) {
           <div className="flex gap-2">
             {(
               [
-                { key: "any" as const, icon: ICON_ANY, title: t.audienceAnyTitle },
-                { key: "female" as const, icon: ICON_FEMALE, title: t.audienceWomenTitle },
-                { key: "male" as const, icon: ICON_MALE, title: t.audienceMenTitle },
+                { key: "any" as const, icon: ICON_ANY, title: t.audienceAnyTitle, short: t.audienceAllShort },
+                { key: "female" as const, icon: ICON_FEMALE, title: t.audienceWomenTitle, short: t.audienceWomenShort },
+                { key: "male" as const, icon: ICON_MALE, title: t.audienceMenTitle, short: t.audienceMenShort },
               ] as const
-            ).map(({ key, icon, title }) => {
+            ).map(({ key, icon, title, short }) => {
               const sel = genderScope === key;
               return (
                 <button
@@ -271,40 +306,67 @@ export function SlotForm({ edit }: SlotFormProps) {
                   title={title}
                   aria-label={title}
                   onClick={() => setGenderScope(key)}
-                  className={`flex min-h-[3rem] flex-1 items-center justify-center rounded-lg border font-mono text-2xl transition ${
+                  className={`flex min-h-[4.5rem] flex-1 flex-col items-center justify-center gap-1 rounded-lg border px-1 py-2 transition ${
                     sel
-                      ? "border-[var(--gold-bright)] shadow-[var(--shadow-glow-gold)]"
+                      ? "border-[var(--gold-bright)] bg-[linear-gradient(180deg,#e8c56a,#c9963a)] shadow-[var(--shadow-glow-gold)]"
                       : "border-[var(--gold-dim)] bg-[var(--bg-card)] hover:border-[var(--gold-dark)]"
                   }`}
                 >
-                  {icon}
+                  <span className="font-mono text-2xl leading-none">{icon}</span>
+                  <span
+                    className={`text-center text-[10px] font-semibold uppercase leading-tight tracking-wide sm:text-xs ${
+                      sel ? "text-[var(--bg-void)]" : "text-[var(--text-muted)]"
+                    }`}
+                  >
+                    {short}
+                  </span>
                 </button>
               );
             })}
           </div>
         </section>
 
-        <Input label={t.title} value={title} onChange={(e) => setTitle(e.target.value)} required />
+        <Input
+          label={t.title}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          error={fieldErrors.title}
+          required
+        />
         <Input
           label={t.datetime}
           type="datetime-local"
+          lang={lang === "pl" ? "pl" : "en-US"}
           value={dateTime}
           onChange={(e) => setDateTime(e.target.value)}
+          error={fieldErrors.dateTime}
           required
         />
         <Input
           label={t.locationName}
           value={locationName}
           onChange={(e) => setLocationName(e.target.value)}
+          error={fieldErrors.locationName}
           required
           placeholder={t.locationPlaceholder}
         />
+        <p className="-mt-3 text-sm leading-snug text-[var(--text-muted)]">{t.locationHelper}</p>
         <div>
           <label className="mb-2 block font-display text-sm font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">
             {t.pickOnMap}
           </label>
-          <LocationPickerMap value={pickedPoint} onChange={setPickedPoint} />
-          <p className="mt-1 text-sm text-[var(--text-muted)]">{t.clickMapHint}</p>
+          <div
+            className={
+              fieldErrors.pin ? "rounded-lg ring-2 ring-[var(--gold-mid)] ring-offset-2 ring-offset-[var(--bg-deep)]" : ""
+            }
+          >
+            <LocationPickerMap value={pickedPoint} onChange={setPickedPoint} />
+          </div>
+          {fieldErrors.pin ? (
+            <p className="mt-1 text-sm text-[var(--gold-bright)]">{fieldErrors.pin}</p>
+          ) : (
+            <p className="mt-1 text-sm text-[var(--text-muted)]">{t.clickMapHint}</p>
+          )}
         </div>
 
         <div className="flex items-center justify-between rounded border border-[var(--gold-dim)] bg-[var(--bg-input)] px-3 py-2">
@@ -383,10 +445,22 @@ export function SlotForm({ edit }: SlotFormProps) {
 
         {error ? <p className="text-sm text-[var(--status-full)]">{error}</p> : null}
 
-        <Button type="submit" variant="primary" fullWidth disabled={loading}>
+        <Button type="submit" variant="primary" fullWidth disabled={loading} className="hidden md:inline-flex">
           {loading ? (isEdit ? t.savingQuest : t.publishing) : isEdit ? t.saveQuest : t.publish}
         </Button>
       </form>
+
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-[var(--gold-dim)] bg-[var(--bg-void)]/95 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-sm md:hidden">
+        <Button
+          type="submit"
+          form="slot-form"
+          variant="primary"
+          fullWidth
+          disabled={loading}
+        >
+          {loading ? (isEdit ? t.savingQuest : t.publishing) : isEdit ? t.saveQuest : t.publish}
+        </Button>
+      </div>
 
       <section className="mt-10">
         <h3 className="mb-2 font-display text-sm font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">

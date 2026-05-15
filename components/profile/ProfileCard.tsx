@@ -10,8 +10,9 @@ import { Divider } from "@/components/ui/Divider";
 import { StatBlock } from "./StatBlock";
 import { AchievementBadge } from "./AchievementBadge";
 import { getActivity, type ActivityKey } from "@/lib/activities";
-import { ICON_FEMALE, ICON_MALE } from "@/lib/i18n-ui";
-import { getLevelProgress, getTitleForExp, getExpToNextLevel, getNextLevelRow } from "@/lib/exp";
+import { ICON_FEMALE, ICON_MALE, profileUi } from "@/lib/i18n-ui";
+import { getLevelProgress, getTitleForExp, getNextLevelRow } from "@/lib/exp";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 export type ProfileUser = {
   id: string;
@@ -53,11 +54,13 @@ export function ProfileCard({
   occasionalStats,
   isOwn,
 }: ProfileCardProps) {
+  const { lang } = useLanguage();
+  const p = profileUi(lang);
   const title = getTitleForExp(user.exp);
   const progress = getLevelProgress(user.exp);
   const next = getNextLevelRow(user.exp);
-  const expToNext = getExpToNextLevel(user.exp);
   const rel = user.reliability_score ?? 1;
+  const expLabel = next ? `${user.exp} / ${next.expRequired} XP` : `${user.exp} XP · ${p.maxLevel}`;
   const hasAtLeastTypes = (n: number) =>
     Object.values(activityCounts ?? {}).filter((count) => (count ?? 0) > 0).length >= n;
 
@@ -176,18 +179,14 @@ export function ProfileCard({
         </div>
 
         <div className="w-full max-w-md px-1">
-          <ExpBar
-            progress={progress}
-            label={next ? `${user.exp} → +${expToNext} do Lvl ${next.level}` : "Max level"}
-            comfortable
-          />
+          <ExpBar progress={progress} label={expLabel} comfortable />
         </div>
 
         <div className="flex items-center gap-5">
           <ReliabilityScore score={rel} size={52} />
           <div>
             <p className="font-display text-base uppercase tracking-[0.14em] text-[var(--text-secondary)] sm:text-lg">
-              Reliability
+              {p.reliability}
             </p>
             <p className="font-display text-2xl text-[var(--status-open)]">
               {Math.round(rel * 100)}%
@@ -199,16 +198,16 @@ export function ProfileCard({
       <Divider className="!my-8" />
 
       <div className="grid grid-cols-3 gap-3 sm:gap-4">
-        <StatBlock label="Aktyw." value={user.total_activities} />
-        <StatBlock label="Host" value={user.total_hosted} />
-        <StatBlock label="Ocena" value={avgRating != null ? avgRating.toFixed(1) : "—"} />
+        <StatBlock label={p.events} value={user.total_activities} />
+        <StatBlock label={p.host} value={user.total_hosted} />
+        <StatBlock label={p.rating} value={avgRating != null ? avgRating.toFixed(1) : p.noRatings} />
       </div>
 
       {activityCounts && Object.keys(activityCounts).length > 0 ? (
         <>
           <Divider className="!my-10" />
           <h3 className="font-display text-sm uppercase tracking-[0.16em] text-[var(--text-muted)]">
-            Klasy aktywności
+            {p.activityClasses}
           </h3>
           <ul className="mt-5 space-y-3">
             {(Object.keys(activityCounts) as ActivityKey[]).map((key) => {
@@ -239,12 +238,12 @@ export function ProfileCard({
       ) : null}
 
       <Divider className="!my-10" />
-      <h3 className="font-display text-sm uppercase tracking-[0.16em] text-[var(--text-muted)]">Odznaki</h3>
+      <h3 className="font-display text-sm uppercase tracking-[0.16em] text-[var(--text-muted)]">{p.badges}</h3>
       <div className="mt-5 flex flex-wrap gap-3">
         {visibleAchievements.length ? (
           visibleAchievements.map((a) => <AchievementBadge key={a.title} {...a} />)
         ) : (
-          <span className="text-sm text-[var(--text-muted)]">No badges unlocked yet.</span>
+          <span className="text-sm text-[var(--text-muted)]">{p.noBadges}</span>
         )}
       </div>
 

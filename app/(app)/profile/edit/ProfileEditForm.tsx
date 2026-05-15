@@ -100,7 +100,12 @@ export function ProfileEditForm({
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <Input label={t.name} value={name} onChange={(e) => setName(e.target.value)} required />
-      <Textarea label={t.bio} value={bio} onChange={(e) => setBio(e.target.value)} />
+      <Textarea
+        label={t.bio}
+        value={bio}
+        onChange={(e) => setBio(e.target.value)}
+        placeholder={t.bioPlaceholder}
+      />
       <div>
         <span className="mb-2 block font-display text-xs uppercase tracking-widest text-[var(--text-secondary)]">
           {t.gender}

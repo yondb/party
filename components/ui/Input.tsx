@@ -14,9 +14,14 @@ export function Input({ label, error, className = "", id, ...rest }: InputProps)
           {label}
         </span>
       ) : null}
-      <input id={inputId} className={`input-wow ${className}`} {...rest} />
+      <input
+        id={inputId}
+        className={`input-wow ${error ? "border-[var(--gold-bright)] ring-1 ring-[var(--gold-mid)]/50" : ""} ${className}`}
+        aria-invalid={error ? true : undefined}
+        {...rest}
+      />
       {error ? (
-        <span className="text-sm text-[var(--status-full)]">{error}</span>
+        <span className="text-sm text-[var(--gold-bright)]">{error}</span>
       ) : null}
     </label>
   );
