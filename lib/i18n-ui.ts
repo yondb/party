@@ -56,7 +56,7 @@ export function slotCardUi(lang: Lang) {
         host: "Host",
         partyMembers: "Skład",
         viewDetails: "Szczegóły",
-        joinQuest: "Dołącz do questa",
+        joinQuest: "Dołącz do slotu",
         partyFull: "Pełne party",
         accepted: "W party",
         waiting: "Oczekiwanie",
@@ -68,7 +68,7 @@ export function slotCardUi(lang: Lang) {
         host: "Host",
         partyMembers: "Party members",
         viewDetails: "View Details",
-        joinQuest: "Join Quest",
+        joinQuest: "Join slot",
         partyFull: "Party full",
         accepted: "Accepted to party",
         waiting: "Waiting for approval",
@@ -100,8 +100,8 @@ export function feedUi(lang: Lang) {
         title: "Questy",
         allActivities: "Wszystkie",
         allDates: "Wszystkie daty",
-        emptyTitle: "Brak questów w okolicy — bądź pierwszy i utwórz quest",
-        createQuest: "Utwórz quest",
+        emptyTitle: "Brak slotów w okolicy — bądź pierwszy",
+        createQuest: "Stwórz slot",
         signIn: "Zaloguj się, żeby zobaczyć feed.",
         errorPrefix: "Nie udało się wczytać feedu:",
       }
@@ -109,8 +109,8 @@ export function feedUi(lang: Lang) {
         title: "Quests",
         allActivities: "All",
         allDates: "All dates",
-        emptyTitle: "No quests nearby — be the first to create one",
-        createQuest: "Create Quest",
+        emptyTitle: "No slots nearby — be the first",
+        createQuest: "Create slot",
         signIn: "You need to sign in to see quests.",
         errorPrefix: "Could not load feed:",
       };
@@ -121,45 +121,47 @@ export function mapUi(lang: Lang) {
     ? {
         title: "Mapa",
         loading: "Ładowanie mapy…",
-        activity: "Aktywność",
+        placeCategory: "Aktywność",
         all: "Wszystkie",
-        hostGender: "Płeć hosta",
-        audience: "Kto może dołączyć",
         date: "Data",
+        onlyOpenSlots: "Wolne miejsca",
+        onlyOpenSlotsHint: "Tylko sloty z wolnymi miejscami",
         radius: "Zasięg od Ciebie",
-        useMyLocation: "Użyj mojej lokalizacji",
+        useMyLocation: "📍 W pobliżu",
         locationDenied: "Brak dostępu do lokalizacji",
         resultsFound: (n: number) =>
-          n === 1 ? "Znaleziono 1 quest" : `Znaleziono ${n} questów`,
+          n === 1 ? "Znaleziono 1 miejsce" : `Znaleziono ${n} miejsc`,
         within: "w promieniu",
         km: "km",
         youHere: "Tu jesteś",
-        popupParty: "Skład",
-        audienceAll: "Wszystkie wydarzenia",
-        audienceOpen: `${ICON_ANY} Bez ograniczeń`,
-        audienceWomen: `${ICON_FEMALE} Tylko kobiety`,
-        audienceMen: `${ICON_MALE} Tylko mężczyźni`,
+        popupUpcoming: "Nadchodzące sloty",
+        popupNoSlots: "Brak aktywnych slotów",
+        popupSpots: "miejsc",
+        popupSlotsBadge: "slotów",
+        popupCreateSlot: "+ Stwórz slot",
+        popupViewAll: "Zobacz wszystkie",
       }
     : {
         title: "Map",
         loading: "Loading map…",
-        activity: "Activity",
+        placeCategory: "Activity",
         all: "All",
-        hostGender: "Host",
-        audience: "Who can join",
         date: "Date",
+        onlyOpenSlots: "Open spots",
+        onlyOpenSlotsHint: "Only slots with free spots",
         radius: "Radius from you",
-        useMyLocation: "Use my location",
+        useMyLocation: "📍 Nearby",
         locationDenied: "Location access denied",
-        resultsFound: (n: number) => (n === 1 ? "1 quest found" : `${n} quests found`),
+        resultsFound: (n: number) => (n === 1 ? "1 place found" : `${n} places found`),
         within: "within",
         km: "km",
         youHere: "You are here",
-        popupParty: "Party",
-        audienceAll: "All events",
-        audienceOpen: `${ICON_ANY} Open to all`,
-        audienceWomen: `${ICON_FEMALE} Women only`,
-        audienceMen: `${ICON_MALE} Men only`,
+        popupUpcoming: "Upcoming slots",
+        popupNoSlots: "No active slots",
+        popupSpots: "spots",
+        popupSlotsBadge: "slots",
+        popupCreateSlot: "+ Create slot",
+        popupViewAll: "View all",
       };
 }
 
@@ -228,14 +230,16 @@ export function notificationsUi(lang: Lang) {
         markAll: "Oznacz wszystkie jako przeczytane",
         empty:
           "Brak powiadomień. Nowe aplikacje, akceptacje, wiadomości z czatu i przypomnienia o ocenach pojawią się tutaj.",
-        openSlot: "Otwórz quest",
+        openSlot: "Otwórz slot",
+        rateSlot: "Oceń uczestników",
         ok: "OK",
       }
     : {
         title: "Notifications",
         markAll: "Mark all as read",
         empty: "No notifications yet. Applications, approvals, chat, and rating reminders will appear here.",
-        openSlot: "Open quest",
+        openSlot: "Open slot",
+        rateSlot: "Rate participants",
         ok: "OK",
       };
 }
@@ -440,6 +444,52 @@ export function slotCompleteUi(lang: Lang) {
     : {
         title: "Complete quest",
         backManage: "Back to manage",
+      };
+}
+
+export function slotRateUi(lang: Lang) {
+  return lang === "pl"
+    ? {
+        title: "Oceń uczestników",
+        subtitle: "Oceń każdą osobę z party — to zajmie chwilę.",
+        scoreLabel: "Ocena 1–5",
+        showedUp: "Obecny na miejscu",
+        comment: "Komentarz (opcjonalnie)",
+        submit: "Wyślij oceny",
+        saving: "Zapisywanie…",
+        noPeers: "Brak osób do oceny.",
+        allDone: "Wszystkie oceny zapisane. Dzięki!",
+        backProfile: "Wróć do profilu",
+      }
+    : {
+        title: "Rate participants",
+        subtitle: "Rate everyone from your party — it only takes a moment.",
+        scoreLabel: "Score 1–5",
+        showedUp: "Showed up",
+        comment: "Comment (optional)",
+        submit: "Submit ratings",
+        saving: "Saving…",
+        noPeers: "No one to rate.",
+        allDone: "All ratings saved. Thanks!",
+        backProfile: "Back to profile",
+      };
+}
+
+export function pendingRatingsUi(lang: Lang) {
+  return lang === "pl"
+    ? {
+        title: "Masz nieoddane oceny",
+        oneSlot: (title: string, n: number) =>
+          `„${title}” — zostało ${n} ${n === 1 ? "osoba" : "osób"} do oceny.`,
+        manySlots: (n: number) => `Masz oceny do uzupełnienia w ${n} slotach.`,
+        cta: "Oceń teraz",
+      }
+    : {
+        title: "Ratings waiting",
+        oneSlot: (title: string, n: number) =>
+          `"${title}" — ${n} ${n === 1 ? "person" : "people"} left to rate.`,
+        manySlots: (n: number) => `You have ratings to complete in ${n} slots.`,
+        cta: "Rate now",
       };
 }
 

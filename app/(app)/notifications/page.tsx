@@ -53,8 +53,11 @@ export default async function NotificationsPage() {
                     {new Date(n.created_at).toLocaleString(locale)}
                   </p>
                   {n.slot_id ? (
-                    <Link href={`/slots/${n.slot_id}`} className="mt-2 inline-block text-sm text-[var(--gold-mid)]">
-                      {t.openSlot}
+                    <Link
+                      href={n.type === "rate_slot" ? `/slots/${n.slot_id}/rate` : `/slots/${n.slot_id}`}
+                      className="mt-2 inline-block text-sm text-[var(--gold-mid)]"
+                    >
+                      {n.type === "rate_slot" ? t.rateSlot : t.openSlot}
                     </Link>
                   ) : null}
                 </div>

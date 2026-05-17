@@ -38,6 +38,38 @@ alter table public.users drop column if exists age;
 
 alter table public.users add column if not exists banned boolean not null default false;
 
+create table if not exists public.places (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  description text,
+  category text not null check (
+    category in (
+      'running',
+      'cycling',
+      'gym',
+      'padel',
+      'tennis',
+      'basketball',
+      'hiking',
+      'board_games'
+    )
+  ),
+  lat double precision not null,
+  lng double precision not null,
+  city text not null default 'warsaw',
+  district text,
+  is_free boolean not null default true,
+  osm_id text,
+  created_at timestamptz not null default now()
+);
+
+create unique index if not exists places_osm_id_unique
+  on public.places (osm_id)
+  where osm_id is not null;
+
+create index if not exists idx_places_category on public.places (category);
+create index if not exists idx_places_city on public.places (city);
+
 create table if not exists public.slots (
   id uuid primary key default gen_random_uuid(),
   host_id uuid not null references public.users (id) on delete cascade,
@@ -63,6 +95,9 @@ create table if not exists public.slots (
   -- spots_taken = accepted guests only; total headcount = 1 (host) + spots_taken
   constraint slots_guests_fit check (spots_taken <= max_spots - 1)
 );
+
+alter table public.slots add column if not exists place_id uuid references public.places (id) on delete set null;
+create index if not exists idx_slots_place_id on public.slots (place_id);
 
 alter table public.slots add column if not exists gender_scope text;
 update public.slots
@@ -148,6 +183,7 @@ create index if not exists idx_users_banned on public.users (banned) where banne
 -- ---------------------------------------------------------------------------
 
 alter table public.users enable row level security;
+alter table public.places enable row level security;
 alter table public.slots enable row level security;
 alter table public.applications enable row level security;
 alter table public.ratings enable row level security;
@@ -164,7 +200,7 @@ begin
     select policyname, tablename
     from pg_policies
     where schemaname = 'public'
-      and tablename in ('users', 'slots', 'applications', 'ratings', 'messages', 'notifications', 'profile_reports')
+      and tablename in ('users', 'places', 'slots', 'applications', 'ratings', 'messages', 'notifications', 'profile_reports')
   loop
     execute format('drop policy if exists %I on public.%I', pol.policyname, pol.tablename);
   end loop;
@@ -186,6 +222,12 @@ create policy users_update_own
   to authenticated
   using (id = auth.uid())
   with check (id = auth.uid());
+
+-- places
+create policy places_select_authenticated
+  on public.places for select
+  to authenticated
+  using (true);
 
 -- slots
 create policy slots_select_authenticated
@@ -284,29 +326,6 @@ create policy ratings_select_participants
       where a.slot_id = ratings.slot_id
         and a.applicant_id = auth.uid()
         and a.status = 'accepted'
-    )
-  );
-
-create policy ratings_insert_participant
-  on public.ratings for insert
-  to authenticated
-  with check (
-    rater_id = auth.uid()
-    and rated_id <> rater_id
-    and exists (select 1 from public.slots s where s.id = slot_id)
-    and (
-      exists (select 1 from public.slots s where s.id = slot_id and s.host_id = auth.uid())
-      or exists (
-        select 1 from public.applications a
-        where a.slot_id = slot_id and a.applicant_id = auth.uid() and a.status = 'accepted'
-      )
-    )
-    and (
-      exists (select 1 from public.slots s where s.id = slot_id and s.host_id = rated_id)
-      or exists (
-        select 1 from public.applications a
-        where a.slot_id = slot_id and a.applicant_id = rated_id and a.status = 'accepted'
-      )
     )
   );
 
@@ -531,6 +550,100 @@ create trigger trg_applications_insert_notify
   after insert on public.applications
   for each row
   execute procedure public.notify_host_new_application();
+
+-- Slot lifecycle: auto-complete past slots + rating reminders
+create or replace function public.notify_slot_rate_reminder(p_slot_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  s record;
+  uid uuid;
+begin
+  select id, title, host_id into s from public.slots where id = p_slot_id;
+  if s.id is null then return;
+
+  for uid in
+    select s.host_id
+    union
+    select a.applicant_id from public.applications a
+    where a.slot_id = p_slot_id and a.status = 'accepted'
+  loop
+    insert into public.notifications (user_id, type, title, body, slot_id)
+    select uid, 'rate_slot', 'Rate your party',
+      'How was "' || coalesce(s.title, 'your slot') || '"? Share quick ratings.', p_slot_id
+    where not exists (
+      select 1 from public.notifications n
+      where n.user_id = uid and n.slot_id = p_slot_id and n.type = 'rate_slot'
+    );
+  end loop;
+end;
+$$;
+
+create or replace function public.auto_complete_past_slots()
+returns integer
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare r record; n integer := 0;
+begin
+  for r in select id from public.slots where status in ('open', 'full') and date_time < now() loop
+    update public.slots set status = 'completed' where id = r.id;
+    n := n + 1;
+  end loop;
+  return n;
+end;
+$$;
+
+grant execute on function public.auto_complete_past_slots() to authenticated;
+
+create or replace function public.on_slot_completed()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.status = 'completed' and old.status is distinct from 'completed' then
+    update public.users set total_hosted = coalesce(total_hosted, 0) + 1 where id = new.host_id;
+    perform public.notify_slot_rate_reminder(new.id);
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_slot_completed on public.slots;
+create trigger trg_slot_completed
+  after update of status on public.slots
+  for each row
+  execute procedure public.on_slot_completed();
+
+drop policy if exists ratings_insert_participant on public.ratings;
+create policy ratings_insert_participant
+  on public.ratings for insert
+  to authenticated
+  with check (
+    rater_id = auth.uid()
+    and rated_id <> rater_id
+    and exists (select 1 from public.slots s where s.id = slot_id and s.status = 'completed')
+    and (
+      exists (select 1 from public.slots s where s.id = slot_id and s.host_id = auth.uid())
+      or exists (
+        select 1 from public.applications a
+        where a.slot_id = slot_id and a.applicant_id = auth.uid() and a.status = 'accepted'
+      )
+    )
+    and (
+      exists (select 1 from public.slots s where s.id = slot_id and s.host_id = rated_id)
+      or exists (
+        select 1 from public.applications a
+        where a.slot_id = slot_id and a.applicant_id = rated_id and a.status = 'accepted'
+      )
+    )
+  );
 
 -- ---------------------------------------------------------------------------
 -- 5. STORAGE — avatars bucket + policies

@@ -285,6 +285,44 @@ a:hover {
     text-decoration: none;
   }
 
+  .lfparty-map-popup__section {
+    margin: 0.5rem 0 0.25rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold-mid);
+  }
+
+  .lfparty-map-popup__slot-line {
+    margin: 0.2rem 0;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+
+  .lfparty-map-popup__badge {
+    display: inline-block;
+    margin-left: 0.35rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 999px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    background: rgba(201, 150, 58, 0.25);
+    color: var(--gold-bright);
+    vertical-align: middle;
+  }
+
+  .lfparty-map-popup__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+    margin-top: 0.65rem;
+  }
+
+  .lfparty-map-popup__link--muted {
+    color: var(--text-muted);
+  }
+
   .lfparty-map-popup__link:hover {
     color: var(--gold-bright);
   }

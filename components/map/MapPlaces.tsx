@@ -4,21 +4,32 @@ import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { ACTIVITY_KEYS, type ActivityKey } from "@/lib/activities";
+import {
+  PLACE_CATEGORIES,
+  PLACE_CATEGORY_META,
+  placeCategoryLabel,
+  type PlaceCategory,
+} from "@/lib/places";
 import { useLanguage } from "@/components/i18n/LanguageProvider";
-import { activityLabel, ICON_ANY, ICON_FEMALE, ICON_MALE, mapUi } from "@/lib/i18n-ui";
+import { mapUi } from "@/lib/i18n-ui";
 
-export type MapPin = {
+export type PlaceSlotPreview = {
   id: string;
-  title: string;
-  lng: number;
-  lat: number;
-  activity_type: string;
   date_time: string;
   max_spots: number;
   spots_taken: number;
-  host_gender: "female" | "male" | null;
-  gender_scope: "any" | "female" | "male";
+};
+
+export type PlaceMapPin = {
+  id: string;
+  name: string;
+  category: PlaceCategory;
+  lat: number;
+  lng: number;
+  district: string | null;
+  is_free: boolean;
+  activeSlotCount: number;
+  upcomingSlots: PlaceSlotPreview[];
 };
 
 const controlFocus =
@@ -37,7 +48,7 @@ function MapFilterField({ label, children }: { label: string; children: ReactNod
   );
 }
 
-export function MapSlots({ pins }: { pins: MapPin[] }) {
+export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
   const { lang } = useLanguage();
   const m = mapUi(lang);
   const ref = useRef<HTMLDivElement>(null);
@@ -46,10 +57,9 @@ export function MapSlots({ pins }: { pins: MapPin[] }) {
     null,
   );
   const [radiusKm, setRadiusKm] = useState(10);
-  const [activity, setActivity] = useState<"all" | ActivityKey>("all");
-  const [hostGender, setHostGender] = useState<"all" | "female" | "male">("all");
-  const [audience, setAudience] = useState<"all" | "any" | "female" | "male">("all");
+  const [category, setCategory] = useState<"all" | PlaceCategory>("all");
   const [dateFilter, setDateFilter] = useState("");
+  const [onlyOpenSlots, setOnlyOpenSlots] = useState(false);
   const [locationEnabled, setLocationEnabled] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
@@ -74,40 +84,38 @@ export function MapSlots({ pins }: { pins: MapPin[] }) {
     );
   }
 
-  const filteredPins = useMemo(() => {
-    return pins.filter((pin) => {
-      if (activity !== "all" && pin.activity_type !== activity) {
-        return false;
-      }
-      if (hostGender !== "all" && pin.host_gender !== hostGender) {
-        return false;
-      }
-      if (audience !== "all") {
-        const scope = pin.gender_scope ?? "any";
-        if (audience === "any" && scope !== "any") return false;
-        if (audience === "female" && scope !== "female") return false;
-        if (audience === "male" && scope !== "male") return false;
+  const filteredPlaces = useMemo(() => {
+    return places.filter((place) => {
+      if (category !== "all" && place.category !== category) return false;
+      if (onlyOpenSlots) {
+        const hasOpen = place.upcomingSlots.some((s) => {
+          const cap = Math.max(1, s.max_spots - 1);
+          return s.spots_taken < cap;
+        });
+        if (!hasOpen) return false;
       }
       if (dateFilter) {
-        const eventDate = new Date(pin.date_time);
-        const ymd = eventDate.toISOString().slice(0, 10);
-        if (ymd !== dateFilter) return false;
+        const match = place.upcomingSlots.some((s) => {
+          const ymd = new Date(s.date_time).toISOString().slice(0, 10);
+          return ymd === dateFilter;
+        });
+        if (!match) return false;
       }
       if (locationEnabled && myPosition) {
-        const km = distanceKm(myPosition.lat, myPosition.lng, pin.lat, pin.lng);
+        const km = distanceKm(myPosition.lat, myPosition.lng, place.lat, place.lng);
         if (km > radiusKm) return false;
       }
       return true;
     });
-  }, [pins, activity, hostGender, audience, dateFilter, locationEnabled, myPosition, radiusKm]);
+  }, [places, category, dateFilter, onlyOpenSlots, locationEnabled, myPosition, radiusKm]);
 
   useEffect(() => {
     if (!token || !ref.current) return;
     mapboxgl.accessToken = token;
     const center = myPosition
       ? [myPosition.lng, myPosition.lat]
-      : filteredPins[0]
-        ? [filteredPins[0].lng, filteredPins[0].lat]
+      : filteredPlaces[0]
+        ? [filteredPlaces[0].lng, filteredPlaces[0].lat]
         : [21.0122, 52.2297];
     const map = new mapboxgl.Map({
       container: ref.current,
@@ -127,26 +135,44 @@ export function MapSlots({ pins }: { pins: MapPin[] }) {
     }
 
     const locale = lang === "pl" ? "pl-PL" : "en-US";
-    for (const p of filteredPins) {
-      const when = new Date(p.date_time).toLocaleString(locale, {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      const total = Math.max(2, p.max_spots);
-      const occupied = Math.min(total, 1 + p.spots_taken);
-      const actLabel = activityLabel(lang, p.activity_type as ActivityKey);
+    for (const p of filteredPlaces) {
+      const meta = PLACE_CATEGORY_META[p.category];
+      const catLabel = placeCategoryLabel(lang, p.category);
+      const districtLine = p.district ? ` · ${escapeHtml(p.district)}` : "";
+      const slotsHtml =
+        p.upcomingSlots.length === 0
+          ? `<p class="lfparty-map-popup__meta">${escapeHtml(m.popupNoSlots)}</p>`
+          : p.upcomingSlots
+              .slice(0, 4)
+              .map((s) => {
+                const when = new Date(s.date_time).toLocaleString(locale, {
+                  weekday: "short",
+                  day: "2-digit",
+                  month: "2-digit",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                });
+                const total = Math.max(2, s.max_spots);
+                const occupied = Math.min(total, 1 + s.spots_taken);
+                return `<p class="lfparty-map-popup__slot-line">${escapeHtml(when)} · ${occupied}/${total} ${escapeHtml(m.popupSpots)}</p>`;
+              })
+              .join("");
+      const badge =
+        p.activeSlotCount > 0
+          ? ` <span class="lfparty-map-popup__badge">${p.activeSlotCount} ${escapeHtml(m.popupSlotsBadge)}</span>`
+          : "";
       const html = `
         <div class="lfparty-map-popup">
-          <p class="lfparty-map-popup__title">${escapeHtml(p.title)}</p>
-          <p class="lfparty-map-popup__meta">${escapeHtml(actLabel)}</p>
-          <p class="lfparty-map-popup__meta">${escapeHtml(when)}</p>
-          <p class="lfparty-map-popup__party">${escapeHtml(m.popupParty)}: ${occupied}/${total}</p>
-          <a class="lfparty-map-popup__link" href="/slots/${p.id}">${lang === "pl" ? "Szczegóły →" : "View →"}</a>
+          <p class="lfparty-map-popup__title">${meta.icon} ${escapeHtml(p.name)}${badge}</p>
+          <p class="lfparty-map-popup__meta">${escapeHtml(catLabel)}${districtLine}</p>
+          <p class="lfparty-map-popup__section">${escapeHtml(m.popupUpcoming)}</p>
+          ${slotsHtml}
+          <div class="lfparty-map-popup__actions">
+            <a class="lfparty-map-popup__link" href="/slots/new?place_id=${p.id}">${escapeHtml(m.popupCreateSlot)}</a>
+            <a class="lfparty-map-popup__link lfparty-map-popup__link--muted" href="/places/${p.id}">${escapeHtml(m.popupViewAll)}</a>
+          </div>
         </div>`;
-      new mapboxgl.Marker({ color: "#c9963a" })
+      new mapboxgl.Marker({ color: meta.color })
         .setLngLat([p.lng, p.lat])
         .setPopup(new mapboxgl.Popup({ offset: 16, className: "lfparty-map-popup-wrap" }).setHTML(html))
         .addTo(map);
@@ -156,7 +182,7 @@ export function MapSlots({ pins }: { pins: MapPin[] }) {
       map.remove();
       mapRef.current = null;
     };
-  }, [token, filteredPins, myPosition, lang, m.popupParty]);
+  }, [token, filteredPlaces, myPosition, lang, m]);
 
   if (!token) {
     return (
@@ -164,7 +190,7 @@ export function MapSlots({ pins }: { pins: MapPin[] }) {
         Set <code className="text-[var(--gold-mid)]">NEXT_PUBLIC_MAPBOX_TOKEN</code> in{" "}
         <code>.env.local</code> (dev) or in{" "}
         <span className="text-[var(--gold-mid)]">Vercel → Project → Settings → Environment Variables</span>{" "}
-        (production), then redeploy. Pins in DB: {pins.length}.
+        (production), then redeploy. Places in DB: {places.length}.
       </div>
     );
   }
@@ -178,48 +204,21 @@ export function MapSlots({ pins }: { pins: MapPin[] }) {
         aria-label={lang === "pl" ? "Filtry mapy" : "Map filters"}
       >
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
-          <MapFilterField label={m.activity}>
+          <MapFilterField label={m.placeCategory}>
             <select
-              value={activity}
-              onChange={(e) => setActivity(e.target.value as "all" | ActivityKey)}
+              value={category}
+              onChange={(e) => setCategory(e.target.value as "all" | PlaceCategory)}
               className={`input-wow ${controlFocus}`}
             >
               <option value="all">{m.all}</option>
-              {ACTIVITY_KEYS.map((key) => (
+              {PLACE_CATEGORIES.map((key) => (
                 <option key={key} value={key}>
-                  {activityLabel(lang, key)}
+                  {placeCategoryLabel(lang, key)}
                 </option>
               ))}
             </select>
           </MapFilterField>
 
-          <MapFilterField label={m.hostGender}>
-            <select
-              value={hostGender}
-              onChange={(e) => setHostGender(e.target.value as "all" | "female" | "male")}
-              className={`input-wow font-mono text-base ${controlFocus}`}
-            >
-              <option value="all">{ICON_ANY}</option>
-              <option value="female">{ICON_FEMALE}</option>
-              <option value="male">{ICON_MALE}</option>
-            </select>
-          </MapFilterField>
-
-          <MapFilterField label={m.audience}>
-            <select
-              value={audience}
-              onChange={(e) => setAudience(e.target.value as "all" | "any" | "female" | "male")}
-              className={`input-wow text-sm ${controlFocus}`}
-            >
-              <option value="all">{m.audienceAll}</option>
-              <option value="any">{m.audienceOpen}</option>
-              <option value="female">{m.audienceWomen}</option>
-              <option value="male">{m.audienceMen}</option>
-            </select>
-          </MapFilterField>
-        </div>
-
-        <div className="mt-4 grid grid-cols-1 gap-4 border-t border-[var(--gold-dim)]/60 pt-4 sm:grid-cols-2 sm:gap-5 lg:mt-5 lg:pt-5">
           <MapFilterField label={m.date}>
             <input
               type="date"
@@ -228,6 +227,21 @@ export function MapSlots({ pins }: { pins: MapPin[] }) {
               className={`input-wow ${controlFocus}`}
             />
           </MapFilterField>
+
+          <MapFilterField label={m.onlyOpenSlots}>
+            <label className="flex min-h-[2.75rem] cursor-pointer items-center gap-2 text-sm text-[var(--text-secondary)]">
+              <input
+                type="checkbox"
+                checked={onlyOpenSlots}
+                onChange={(e) => setOnlyOpenSlots(e.target.checked)}
+                className="accent-[var(--gold-mid)]"
+              />
+              {m.onlyOpenSlotsHint}
+            </label>
+          </MapFilterField>
+        </div>
+
+        <div className="mt-4 grid grid-cols-1 gap-4 border-t border-[var(--gold-dim)]/60 pt-4 sm:grid-cols-2 sm:gap-5 lg:mt-5 lg:pt-5">
 
           <MapFilterField label={radiusCaption}>
             <div className="flex flex-col gap-2">
@@ -271,7 +285,7 @@ export function MapSlots({ pins }: { pins: MapPin[] }) {
         className="h-[min(70dvh,32rem)] w-full overflow-hidden rounded-lg border border-[var(--gold-dim)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold-mid)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-deep)] md:h-[min(68dvh,40rem)] xl:h-[min(65dvh,44rem)]"
       />
       <p className="mb-8 mt-2 font-display text-lg font-semibold text-[var(--text-bright)]">
-        {m.resultsFound(filteredPins.length)}
+        {m.resultsFound(filteredPlaces.length)}
         {locationEnabled && myPosition ? (
           <span className="mt-1 block text-sm font-normal text-[var(--text-muted)]">
             {m.within} {radiusKm} {m.km}

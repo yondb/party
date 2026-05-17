@@ -3,7 +3,6 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ApplicationCard, type ApplicantRow } from "@/components/slots/ApplicationCard";
-import { HostCompleteRatings } from "@/components/slots/HostCompleteRatings";
 import { HostManageToolbar } from "@/components/slots/HostManageToolbar";
 import { getServerLang } from "@/lib/i18n-server";
 import { applicationCardUi, pageHeaderUi, slotManageUi } from "@/lib/i18n-ui";
@@ -117,11 +116,18 @@ export default async function ManageSlotPage({ params }: { params: { id: string 
 
       {rows.length === 0 ? <p className="text-center text-sm text-[var(--text-muted)]">{m.noApplications}</p> : null}
 
-      {slot.status !== "completed" && slot.status !== "cancelled" ? (
-        <HostCompleteRatings slotId={slot.id} participants={acceptedParticipants} />
-      ) : (
+      {slot.status === "completed" && acceptedParticipants.length > 0 ? (
+        <Link
+          href={`/slots/${slot.id}/rate`}
+          className="mt-6 flex min-h-[2.75rem] items-center justify-center rounded-lg border-2 border-[var(--gold-bright)] bg-[linear-gradient(180deg,#c9963a,#8a6420)] px-4 font-display text-sm font-bold uppercase tracking-wide text-[var(--bg-void)]"
+        >
+          {lang === "pl" ? "Oceń uczestników" : "Rate participants"}
+        </Link>
+      ) : null}
+
+      {slot.status === "cancelled" ? (
         <p className="mt-4 text-center text-sm text-[var(--text-muted)]">{m.questDone}</p>
-      )}
+      ) : null}
 
       <Link href={`/slots/${slot.id}`} className="mt-6 block text-center text-sm text-[var(--gold-mid)]">
         {m.backDetails}

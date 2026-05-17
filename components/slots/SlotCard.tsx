@@ -6,6 +6,7 @@ import { ActivityIcon } from "./ActivityIcon";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { getActivity } from "@/lib/activities";
+import { isPlaceCategory, placeCategoryLabel } from "@/lib/places";
 import { applyToSlot } from "@/app/actions/applications";
 import { useLanguage } from "@/components/i18n/LanguageProvider";
 import { activityLabel, ICON_FEMALE, ICON_MALE, slotAudienceBadge, slotCardUi } from "@/lib/i18n-ui";
@@ -31,6 +32,9 @@ export type SlotCardData = {
   status: string;
   host: SlotCardHost | null;
   gender_scope?: string | null;
+  place_name?: string | null;
+  place_category?: string | null;
+  place_district?: string | null;
 };
 
 type SlotCardProps = {
@@ -43,13 +47,16 @@ type SlotCardProps = {
 
 function formatWhen(iso: string, locale: string) {
   const d = new Date(iso);
-  return d.toLocaleString(locale, {
+  const datePart = d.toLocaleDateString(locale, {
     weekday: "short",
-    month: "short",
     day: "numeric",
+    month: "long",
+  });
+  const timePart = d.toLocaleTimeString(locale, {
     hour: "2-digit",
     minute: "2-digit",
   });
+  return `${datePart} · ${timePart}`;
 }
 
 function hostGenderIcon(g?: "male" | "female") {
@@ -79,9 +86,17 @@ export function SlotCard({
   const audience = slotAudienceBadge(lang, slot.gender_scope);
   const gIcon = hostGenderIcon(slot.host?.gender);
 
-  const locationLine = distanceLabel
-    ? `${slot.location_name} · ${distanceLabel}`
-    : slot.location_name;
+  const headline = slot.place_name ?? slot.title;
+  const metaParts: string[] = [];
+  if (slot.place_category && isPlaceCategory(slot.place_category)) {
+    metaParts.push(placeCategoryLabel(lang, slot.place_category));
+  } else {
+    metaParts.push(activityLabel(lang, slot.activity_type));
+  }
+  if (slot.place_district) metaParts.push(slot.place_district);
+  else if (!slot.place_name) metaParts.push(slot.location_name);
+  if (distanceLabel) metaParts.push(distanceLabel);
+  const metaLine = metaParts.join(" · ");
 
   return (
     <motion.div
@@ -103,12 +118,12 @@ export function SlotCard({
             href={`/slots/${slot.id}`}
             className="font-display text-xl font-semibold leading-snug text-[var(--text-bright)] hover:text-[var(--gold-bright)] sm:text-2xl"
           >
-            {slot.title}
+            {headline}
           </Link>
-          <p className="mt-1 text-base text-[var(--text-secondary)]">
-            {activityLabel(lang, slot.activity_type)} · {formatWhen(slot.date_time, locale)}
+          <p className="mt-1 text-sm text-[var(--text-muted)]">{metaLine}</p>
+          <p className="mt-2 text-base font-medium text-[var(--text-secondary)]">
+            {formatWhen(slot.date_time, locale)}
           </p>
-          <p className="mt-1.5 text-base text-[var(--text-muted)]">📍 {locationLine}</p>
           {audience ? (
             <p className="mt-2 inline-block rounded-full border border-[var(--gold-dim)] bg-[var(--bg-input)] px-3 py-1 font-display text-xs uppercase tracking-[0.12em] text-[var(--gold-mid)]">
               {audience}

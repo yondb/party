@@ -4,8 +4,10 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getServerLang } from "@/lib/i18n-server";
 import { normalizeActivityKey } from "@/lib/activities";
+import { placeCategoryToActivityType } from "@/lib/places";
 
 export type CreateSlotInput = {
+  place_id?: string;
   activity_type: string;
   title: string;
   description?: string;
@@ -62,7 +64,7 @@ function parseSlotInput(input: CreateSlotInput): { error: string } | SlotRowValu
 
   const rawMax = Number(input.max_spots);
   const max_spots = Number.isFinite(rawMax)
-    ? Math.min(8, Math.max(2, Math.floor(rawMax)))
+    ? Math.min(10, Math.max(2, Math.floor(rawMax)))
     : 2;
   const rawLevel = Number(input.min_level);
   const min_level = Number.isFinite(rawLevel)
@@ -123,10 +125,27 @@ export async function createSlotAction(input: CreateSlotInput) {
   const parsed = parseSlotInput(input);
   if ("error" in parsed) return { error: parsed.error };
 
+  let place_id: string | null = null;
+  if (input.place_id?.trim()) {
+    const { data: place, error: placeErr } = await supabase
+      .from("places")
+      .select("id, name, category, lat, lng")
+      .eq("id", input.place_id.trim())
+      .maybeSingle();
+    if (placeErr || !place) return { error: "Place not found" };
+    place_id = place.id;
+    parsed.activity_type = placeCategoryToActivityType(place.category);
+    parsed.location_name = place.name;
+    parsed.location_lat = place.lat;
+    parsed.location_lng = place.lng;
+    if (!parsed.title) parsed.title = place.name;
+  }
+
   const { data, error } = await supabase
     .from("slots")
     .insert({
       host_id: user.id,
+      place_id,
       ...parsed,
       status: "open",
       spots_taken: 0,

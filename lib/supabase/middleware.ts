@@ -16,6 +16,7 @@ const PROTECTED_PREFIXES = [
   "/feed",
   "/map",
   "/slots",
+  "/places",
   "/profile",
   "/notifications",
   "/settings",

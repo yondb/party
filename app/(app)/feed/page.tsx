@@ -24,6 +24,7 @@ type SlotRow = {
   spots_taken: number;
   status: string;
   gender_scope?: string | null;
+  places?: { name: string; category: string; district: string | null } | null;
 };
 
 export default async function FeedPage({ searchParams }: { searchParams: Search }) {
@@ -43,7 +44,7 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
 
   const { data: slots, error: slotsErr } = await supabase
     .from("slots")
-    .select("*")
+    .select("*, places(name, category, district)")
     .in("status", ["open", "full"])
     .order("date_time", { ascending: true });
   if (slotsErr) return <ErrorBox lang={lang} message={slotsErr.message} />;
@@ -98,6 +99,9 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
     status: s.status,
     gender_scope: s.gender_scope ?? "any",
     host: hostMap.get(s.host_id) ?? null,
+    place_name: s.places?.name ?? null,
+    place_category: s.places?.category ?? null,
+    place_district: s.places?.district ?? null,
   }));
 
   const activityOptions = Array.from(new Set(allCards.map((c) => c.activity_type as ActivityKey)));
