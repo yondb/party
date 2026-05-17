@@ -6,8 +6,7 @@ export type PlaceCategory =
   | "padel"
   | "tennis"
   | "basketball"
-  | "hiking"
-  | "board_games";
+  | "hiking";
 
 export type PlaceRow = {
   id: string;
@@ -30,7 +29,6 @@ export const PLACE_CATEGORIES: PlaceCategory[] = [
   "tennis",
   "basketball",
   "hiking",
-  "board_games",
 ];
 
 export const PLACE_CATEGORY_META: Record<
@@ -44,12 +42,10 @@ export const PLACE_CATEGORY_META: Record<
   tennis: { icon: "🎾", color: "#6a8a4a", cssVar: "var(--class-default)" },
   basketball: { icon: "🏀", color: "#c07030", cssVar: "var(--class-running)" },
   hiking: { icon: "⛰️", color: "#6a7a3a", cssVar: "var(--class-default)" },
-  board_games: { icon: "♟️", color: "#7a3a8a", cssVar: "var(--class-boardgames)" },
 };
 
 /** Map place category → legacy slot `activity_type` for icons/filters. */
 export function placeCategoryToActivityType(category: string): string {
-  if (category === "board_games") return "boardgames";
   return category;
 }
 
@@ -62,7 +58,6 @@ export function placeCategoryLabel(lang: "en" | "pl", category: PlaceCategory): 
     tennis: "Tennis",
     basketball: "Basketball",
     hiking: "Hiking",
-    board_games: "Board games",
   };
   const pl: Record<PlaceCategory, string> = {
     running: "Bieganie",
@@ -72,7 +67,6 @@ export function placeCategoryLabel(lang: "en" | "pl", category: PlaceCategory): 
     tennis: "Tenis",
     basketball: "Koszykówka",
     hiking: "Wędrówki",
-    board_games: "Planszówki",
   };
   return (lang === "pl" ? pl : en)[category] ?? category;
 }

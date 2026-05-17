@@ -1,12 +1,44 @@
 /**
  * Import Warsaw venues from OpenStreetMap (Overpass API) into Supabase `places`.
  *
- * Requires in env: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+ * Requires in .env.local: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
  *
  * Run: npm run import:places
  */
 
 import { createClient } from "@supabase/supabase-js";
+import { existsSync, readFileSync } from "fs";
+import { resolve } from "path";
+
+function loadEnvFile(filename: string) {
+  const path = resolve(process.cwd(), filename);
+  if (!existsSync(path)) return;
+  const raw = readFileSync(path, "utf8");
+  for (const line of raw.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const eq = trimmed.indexOf("=");
+    if (eq === -1) continue;
+    const key = trimmed.slice(0, eq).trim();
+    let val = trimmed.slice(eq + 1).trim();
+    if (
+      (val.startsWith('"') && val.endsWith('"')) ||
+      (val.startsWith("'") && val.endsWith("'"))
+    ) {
+      val = val.slice(1, -1);
+    }
+    if (!(key in process.env)) process.env[key] = val;
+  }
+}
+
+loadEnvFile(".env.local");
+loadEnvFile(".env");
+
+/** Windows / corporate proxy TLS: run with IMPORT_PLACES_INSECURE_TLS=1 */
+if (process.env.IMPORT_PLACES_INSECURE_TLS === "1") {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+  console.warn("WARNING: TLS verification disabled (IMPORT_PLACES_INSECURE_TLS=1)");
+}
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -17,7 +49,11 @@ const CITY = "warsaw";
 /** south,west,north,east */
 const CITY_BBOX = "52.0978,20.8515,52.3682,21.2711";
 
-const queries: Record<string, string> = {
+/** Exactly 7 OSM categories — no board_games. */
+const queries: Record<
+  "running" | "cycling" | "gym" | "padel" | "tennis" | "basketball" | "hiking",
+  string
+> = {
   running: `
     [out:json][timeout:60];
     (
@@ -75,14 +111,6 @@ const queries: Record<string, string> = {
     );
     out center 20;
   `,
-  board_games: `
-    [out:json][timeout:60];
-    (
-      node["shop"="games"](${CITY_BBOX});
-      node["amenity"="library"](${CITY_BBOX});
-    );
-    out center 20;
-  `,
 };
 
 type OsmElement = {
@@ -93,25 +121,43 @@ type OsmElement = {
   tags?: Record<string, string>;
 };
 
+const OVERPASS_ENDPOINTS = [
+  "https://overpass-api.de/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
+];
+
 async function fetchFromOverpass(query: string) {
-  const response = await fetch("https://overpass-api.de/api/interpreter", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: `data=${encodeURIComponent(query)}`,
-  });
-  if (!response.ok) {
-    throw new Error(`Overpass HTTP ${response.status}`);
+  let lastError: unknown;
+  for (const url of OVERPASS_ENDPOINTS) {
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `data=${encodeURIComponent(query)}`,
+      });
+      if (!response.ok) {
+        throw new Error(`Overpass HTTP ${response.status} (${url})`);
+      }
+      return (await response.json()) as { elements?: OsmElement[] };
+    } catch (e) {
+      lastError = e;
+      console.warn(`  Overpass mirror failed: ${url}`);
+    }
   }
-  return response.json() as Promise<{ elements?: OsmElement[] }>;
+  throw lastError;
 }
 
 async function importPlaces() {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    console.error("Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY");
+    console.error("Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local");
     process.exit(1);
   }
 
-  for (const [category, query] of Object.entries(queries)) {
+  const categories = Object.keys(queries) as (keyof typeof queries)[];
+  console.log(`Importing ${categories.length} categories: ${categories.join(", ")}`);
+
+  for (const category of categories) {
+    const query = queries[category];
     console.log(`Importing ${category}...`);
 
     let data: { elements?: OsmElement[] };
@@ -134,7 +180,7 @@ async function importPlaces() {
       .map((el) => {
         const lat = el.lat ?? el.center!.lat;
         const lng = el.lon ?? el.center!.lon;
-        const osm_id = `${el.id}`;
+        const osm_id = String(el.id);
         return {
           name: el.tags?.name || el.tags?.["name:en"] || `${category} spot`,
           category,
@@ -162,6 +208,15 @@ async function importPlaces() {
     await new Promise((r) => setTimeout(r, 1200));
   }
 
+  const { data: summary } = await supabase.from("places").select("category");
+  const counts: Record<string, number> = {};
+  for (const row of summary ?? []) {
+    counts[row.category] = (counts[row.category] ?? 0) + 1;
+  }
+  console.log("\nSummary by category:");
+  for (const cat of categories) {
+    console.log(`  ${cat}: ${counts[cat] ?? 0}`);
+  }
   console.log("Import complete.");
 }
 

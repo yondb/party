@@ -17,8 +17,7 @@ create table if not exists public.places (
       'padel',
       'tennis',
       'basketball',
-      'hiking',
-      'board_games'
+      'hiking'
     )
   ),
   lat double precision not null,
@@ -65,6 +64,5 @@ insert into public.places (name, category, lat, lng, city, district, osm_id)
 values
   ('Łazienki Królewskie', 'running', 52.2152, 21.0354, 'warsaw', 'Mokotów', 'seed-lazienki'),
   ('Pole Mokotowskie', 'running', 52.2089, 21.0202, 'warsaw', 'Mokotów', 'seed-pole-mokotowskie'),
-  ('Bulwary Wiślane', 'cycling', 52.2401, 21.0285, 'warsaw', 'Śródmieście', 'seed-bulwary'),
-  ('Multikino Złote Tarasy', 'board_games', 52.2297, 21.0022, 'warsaw', 'Śródmieście', 'seed-zlote-tarasy')
+  ('Bulwary Wiślane', 'cycling', 52.2401, 21.0285, 'warsaw', 'Śródmieście', 'seed-bulwary')
 on conflict (osm_id) where osm_id is not null do nothing;

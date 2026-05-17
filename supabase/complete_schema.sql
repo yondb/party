@@ -50,8 +50,7 @@ create table if not exists public.places (
       'padel',
       'tennis',
       'basketball',
-      'hiking',
-      'board_games'
+      'hiking'
     )
   ),
   lat double precision not null,
