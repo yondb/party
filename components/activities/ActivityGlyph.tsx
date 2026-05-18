@@ -102,6 +102,21 @@ export function ActivityGlyph({ activityKey, size, className = "" }: Props) {
             <path d="M6 5h12v14H6zM6 5l6 4 6-4M9 12h6M9 15h4" {...c} />
           </>
         );
+      case "padel":
+      case "tennis":
+        return (
+          <>
+            <circle cx="12" cy="8" r="3" {...c} />
+            <path d="M8 20c2-4 4-6 4-9M16 20c-2-4-4-6-4-9M6 20h12" {...c} />
+          </>
+        );
+      case "basketball":
+        return (
+          <>
+            <circle cx="12" cy="12" r="7" {...c} />
+            <path d="M5 12c3-3 11-3 14 0M5 12c3 3 11 3 14 0M12 5v14" {...c} />
+          </>
+        );
       case "other":
         return (
           <>

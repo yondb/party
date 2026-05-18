@@ -1,38 +1,15 @@
 /**
- * Import Warsaw venues from OpenStreetMap (Overpass API) into Supabase `places`.
+ * Opcjonalny import z OpenStreetMap (Overpass) — często 429 z domu.
+ * Zalecane: npm run seed:places (data/places-warsaw.json, bez API).
  *
  * Requires in .env.local: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
- *
  * Run: npm run import:places
  */
 
 import { createClient } from "@supabase/supabase-js";
-import { existsSync, readFileSync } from "fs";
-import { resolve } from "path";
+import { loadEnvLocal } from "./load-env.ts";
 
-function loadEnvFile(filename: string) {
-  const path = resolve(process.cwd(), filename);
-  if (!existsSync(path)) return;
-  const raw = readFileSync(path, "utf8");
-  for (const line of raw.split(/\r?\n/)) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith("#")) continue;
-    const eq = trimmed.indexOf("=");
-    if (eq === -1) continue;
-    const key = trimmed.slice(0, eq).trim();
-    let val = trimmed.slice(eq + 1).trim();
-    if (
-      (val.startsWith('"') && val.endsWith('"')) ||
-      (val.startsWith("'") && val.endsWith("'"))
-    ) {
-      val = val.slice(1, -1);
-    }
-    if (!(key in process.env)) process.env[key] = val;
-  }
-}
-
-loadEnvFile(".env.local");
-loadEnvFile(".env");
+loadEnvLocal();
 
 /** Windows / corporate proxy TLS: run with IMPORT_PLACES_INSECURE_TLS=1 */
 if (process.env.IMPORT_PLACES_INSECURE_TLS === "1") {
@@ -122,11 +99,33 @@ type OsmElement = {
 };
 
 const OVERPASS_ENDPOINTS = [
-  "https://overpass-api.de/api/interpreter",
   "https://overpass.kumi.systems/api/interpreter",
+  "https://overpass-api.de/api/interpreter",
 ];
 
-async function fetchFromOverpass(query: string) {
+const OVERPASS_DELAY_MS = 12_000;
+const OVERPASS_429_WAIT_MS = 30_000;
+const OVERPASS_MAX_429_RETRIES = 2;
+const BATCH_SIZE = 40;
+
+function sleep(ms: number) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+/** Visible countdown so the terminal does not look frozen. */
+async function sleepWithCountdown(label: string, ms: number) {
+  const step = 5000;
+  let left = ms;
+  while (left > 0) {
+    const chunk = Math.min(step, left);
+    await sleep(chunk);
+    left -= chunk;
+    process.stdout.write(`\r  ${label} ${Math.ceil(left / 1000)}s…   `);
+  }
+  process.stdout.write("\n");
+}
+
+async function fetchFromOverpass(query: string, attempt = 1): Promise<{ elements?: OsmElement[] }> {
   let lastError: unknown;
   for (const url of OVERPASS_ENDPOINTS) {
     try {
@@ -135,16 +134,53 @@ async function fetchFromOverpass(query: string) {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: `data=${encodeURIComponent(query)}`,
       });
+      if (response.status === 429) {
+        if (attempt >= OVERPASS_MAX_429_RETRIES) {
+          throw new Error(`Overpass HTTP 429 — limit API, pomijam po ${attempt} próbach`);
+        }
+        console.warn(`  Limit Overpass (429), czekam ${OVERPASS_429_WAIT_MS / 1000}s (próba ${attempt}/${OVERPASS_MAX_429_RETRIES})…`);
+        await sleepWithCountdown("Pozostało", OVERPASS_429_WAIT_MS);
+        return fetchFromOverpass(query, attempt + 1);
+      }
       if (!response.ok) {
         throw new Error(`Overpass HTTP ${response.status} (${url})`);
       }
       return (await response.json()) as { elements?: OsmElement[] };
     } catch (e) {
       lastError = e;
-      console.warn(`  Overpass mirror failed: ${url}`);
+      console.warn(`  Overpass mirror failed: ${url} — ${e instanceof Error ? e.message : e}`);
     }
   }
   throw lastError;
+}
+
+async function savePlaces(
+  places: {
+    name: string;
+    category: string;
+    lat: number;
+    lng: number;
+    city: string;
+    is_free: boolean;
+    osm_id: string;
+  }[],
+) {
+  let saved = 0;
+  for (let i = 0; i < places.length; i += BATCH_SIZE) {
+    const batch = places.slice(i, i + BATCH_SIZE);
+    const { error } = await supabase.from("places").upsert(batch, { onConflict: "osm_id" });
+    if (error) {
+      console.error(`  DB error (batch ${i / BATCH_SIZE + 1}):`, error.message);
+      if (error.message.includes("ON CONFLICT") || error.message.includes("unique")) {
+        console.error(
+          "  → Uruchom w Supabase SQL: supabase/migrations/20250519_places_osm_id_constraint.sql",
+        );
+      }
+      return saved;
+    }
+    saved += batch.length;
+  }
+  return saved;
 }
 
 async function importPlaces() {
@@ -153,8 +189,20 @@ async function importPlaces() {
     process.exit(1);
   }
 
-  const categories = Object.keys(queries) as (keyof typeof queries)[];
+  const onlyArg = process.argv.find((a) => a.startsWith("--category="));
+  const onlyCategory =
+    process.env.IMPORT_ONLY?.trim() || onlyArg?.slice("--category=".length);
+  let categories = Object.keys(queries) as (keyof typeof queries)[];
+  if (onlyCategory) {
+    if (!(onlyCategory in queries)) {
+      console.error(`Unknown category: ${onlyCategory}. Use: ${categories.join(", ")}`);
+      process.exit(1);
+    }
+    categories = [onlyCategory as keyof typeof queries];
+  }
+
   console.log(`Importing ${categories.length} categories: ${categories.join(", ")}`);
+  console.log("(Ctrl+C = stop. Map already works if seed or running import succeeded.)\n");
 
   for (const category of categories) {
     const query = queries[category];
@@ -165,7 +213,7 @@ async function importPlaces() {
       data = await fetchFromOverpass(query);
     } catch (e) {
       console.error(`Overpass failed for ${category}:`, e);
-      await new Promise((r) => setTimeout(r, 2000));
+      await sleep(OVERPASS_DELAY_MS);
       continue;
     }
 
@@ -198,14 +246,13 @@ async function importPlaces() {
       });
 
     if (places.length > 0) {
-      const { error } = await supabase.from("places").upsert(places, { onConflict: "osm_id" });
-      if (error) console.error(`Error importing ${category}:`, error.message);
-      else console.log(`✓ Imported ${places.length} places for ${category}`);
+      const saved = await savePlaces(places);
+      if (saved > 0) console.log(`✓ Saved ${saved} places for ${category}`);
     } else {
       console.log(`— No places for ${category}`);
     }
 
-    await new Promise((r) => setTimeout(r, 1200));
+    await sleep(OVERPASS_DELAY_MS);
   }
 
   const { data: summary } = await supabase.from("places").select("category");

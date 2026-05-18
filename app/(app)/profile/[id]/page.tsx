@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ProfileCard } from "@/components/profile/ProfileCard";
 import { ReportProfileDialog } from "@/components/profile/ReportProfileDialog";
 import { PageHeader } from "@/components/layout/PageHeader";
-import type { ActivityKey } from "@/lib/activities";
+import { normalizeActivityKey, type ActivityKey } from "@/lib/activities";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +34,7 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
   const activityCounts: Partial<Record<ActivityKey, number>> = {};
   for (const s of slots ?? []) {
     if (s.status !== "completed") continue;
-    const k = s.activity_type as ActivityKey;
+    const k = normalizeActivityKey(s.activity_type);
     activityCounts[k] = (activityCounts[k] ?? 0) + 1;
   }
 

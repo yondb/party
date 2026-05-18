@@ -8,6 +8,12 @@ describe("normalizeActivityKey", () => {
     }
   });
 
+  it("maps place categories padel, tennis, basketball", () => {
+    expect(normalizeActivityKey("padel")).toBe("padel");
+    expect(normalizeActivityKey("tennis")).toBe("tennis");
+    expect(normalizeActivityKey("basketball")).toBe("basketball");
+  });
+
   it("maps unknown values to other", () => {
     expect(normalizeActivityKey("unknown-quest-type")).toBe("other");
     expect(normalizeActivityKey("")).toBe("other");

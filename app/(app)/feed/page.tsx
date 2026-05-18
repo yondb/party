@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { FeedList } from "@/components/feed/FeedList";
 import type { SlotCardData, SlotCardHost } from "@/components/slots/SlotCard";
 import { PageHeader } from "@/components/layout/PageHeader";
-import type { ActivityKey } from "@/lib/activities";
+import { normalizeActivityKey, type ActivityKey } from "@/lib/activities";
 import { getServerLang } from "@/lib/i18n-server";
 import { activityLabel, feedUi } from "@/lib/i18n-ui";
 import { formatFilterDate } from "@/lib/geo";
@@ -104,7 +104,9 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
     place_district: s.places?.district ?? null,
   }));
 
-  const activityOptions = Array.from(new Set(allCards.map((c) => c.activity_type as ActivityKey)));
+  const activityOptions = Array.from(
+    new Set(allCards.map((c) => normalizeActivityKey(c.activity_type))),
+  );
   const dateOptions = Array.from(new Set(allCards.map((c) => c.date_time.slice(0, 10)))).sort();
   const validActivity =
     searchParams.activity && activityOptions.includes(searchParams.activity as ActivityKey)
@@ -113,7 +115,7 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
   const validDate =
     searchParams.date && dateOptions.includes(searchParams.date) ? searchParams.date : undefined;
   const cards = allCards.filter((c) => {
-    if (validActivity && c.activity_type !== validActivity) return false;
+    if (validActivity && normalizeActivityKey(c.activity_type) !== validActivity) return false;
     if (validDate && c.date_time.slice(0, 10) !== validDate) return false;
     return true;
   });

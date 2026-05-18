@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { SlotCreateForm } from "@/components/slots/SlotCreateForm";
 import type { PlaceRow } from "@/lib/places";
@@ -14,9 +15,11 @@ export default async function NewSlotPage({ searchParams }: { searchParams: Sear
     .order("name");
 
   return (
-    <SlotCreateForm
-      places={(places ?? []) as PlaceRow[]}
-      initialPlaceId={searchParams.place_id}
-    />
+    <Suspense fallback={<div className="py-12 text-center text-[var(--text-muted)]">…</div>}>
+      <SlotCreateForm
+        places={(places ?? []) as PlaceRow[]}
+        initialPlaceId={searchParams.place_id}
+      />
+    </Suspense>
   );
 }

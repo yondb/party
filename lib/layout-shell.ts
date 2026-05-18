@@ -1,3 +1,3 @@
-/** Shared width for navbar, main, bottom nav — mobile-first, roomier on desktop. */
+/** Shared width for navbar, main, bottom nav — mobile-first, wider on laptop+. */
 export const shellMaxClass =
-  "mx-auto w-full max-w-lg md:max-w-2xl xl:max-w-4xl px-4 sm:px-6";
+  "mx-auto w-full max-w-lg sm:max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl px-4 sm:px-6 lg:px-8";

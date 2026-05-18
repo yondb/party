@@ -11,6 +11,9 @@ export type ActivityKey =
   | "movies"
   | "food"
   | "study"
+  | "padel"
+  | "tennis"
+  | "basketball"
   | "other";
 
 export type ActivityDef = {
@@ -105,6 +108,27 @@ export const ACTIVITIES: Record<ActivityKey, ActivityDef> = {
     color: "#4a6f8a",
     gradient: "linear-gradient(135deg, #4a6f8a, #2f4a5f)",
     cssVar: "var(--class-volleyball)",
+  },
+  padel: {
+    label: "Padel",
+    icon: "🎾",
+    color: "#3a7a9a",
+    gradient: "linear-gradient(135deg, #3a7a9a, #1a4a6a)",
+    cssVar: "var(--class-volleyball)",
+  },
+  tennis: {
+    label: "Tennis",
+    icon: "🎾",
+    color: "#6a8a4a",
+    gradient: "linear-gradient(135deg, #6a8a4a, #3a5a2a)",
+    cssVar: "var(--class-default)",
+  },
+  basketball: {
+    label: "Basketball",
+    icon: "🏀",
+    color: "#c07030",
+    gradient: "linear-gradient(135deg, #c07030, #8a4a10)",
+    cssVar: "var(--class-running)",
   },
   other: {
     label: "Other",

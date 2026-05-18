@@ -14,6 +14,7 @@
     "test": "npm run lint && npm run build && npm run test:unit",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
+    "seed:places": "node --experimental-strip-types scripts/seed-places.ts",
     "import:places": "node --experimental-strip-types scripts/import-places.ts"
   },
   "dependencies": {

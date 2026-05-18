@@ -295,9 +295,15 @@ a:hover {
   }
 
   .lfparty-map-popup__slot-line {
+    display: block;
     margin: 0.2rem 0;
     font-size: 0.8rem;
     color: var(--text-secondary);
+    text-decoration: none;
+  }
+
+  a.lfparty-map-popup__slot-line:hover {
+    color: var(--gold-bright);
   }
 
   .lfparty-map-popup__badge {

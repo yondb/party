@@ -18,6 +18,9 @@ const ACTIVITY_PL: Record<ActivityKey, string> = {
   movies: "Kino",
   food: "Jedzenie",
   study: "Nauka",
+  padel: "Padel",
+  tennis: "Tenis",
+  basketball: "Koszykówka",
   other: "Inne",
 };
 
@@ -39,6 +42,9 @@ export function activityLabel(lang: Lang, key: string): string {
     movies: "Movies",
     food: "Food",
     study: "Study",
+    padel: "Padel",
+    tennis: "Tennis",
+    basketball: "Basketball",
     other: "Other",
   };
   return map[key] ?? key;
@@ -533,6 +539,7 @@ export function profileUi(lang: Lang) {
         badges: "Odznaki",
         noBadges: "Brak odznak",
         signOut: "Wyloguj się",
+        settings: "Ustawienia",
         maxLevel: "Maks. poziom",
       }
     : {
@@ -547,6 +554,7 @@ export function profileUi(lang: Lang) {
         badges: "Badges",
         noBadges: "No badges unlocked yet",
         signOut: "Sign out",
+        settings: "Settings",
         maxLevel: "Max level",
       };
 }

@@ -154,7 +154,7 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
                 });
                 const total = Math.max(2, s.max_spots);
                 const occupied = Math.min(total, 1 + s.spots_taken);
-                return `<p class="lfparty-map-popup__slot-line">${escapeHtml(when)} · ${occupied}/${total} ${escapeHtml(m.popupSpots)}</p>`;
+                return `<a class="lfparty-map-popup__slot-line" href="/slots/${escapeHtml(s.id)}">${escapeHtml(when)} · ${occupied}/${total} ${escapeHtml(m.popupSpots)}</a>`;
               })
               .join("");
       const badge =

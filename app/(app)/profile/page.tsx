@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ProfileCard } from "@/components/profile/ProfileCard";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { signOut } from "@/app/actions/profile";
-import type { ActivityKey } from "@/lib/activities";
+import { normalizeActivityKey, type ActivityKey } from "@/lib/activities";
 import { getServerLang } from "@/lib/i18n-server";
 import { profileUi } from "@/lib/i18n-ui";
 
@@ -39,7 +39,7 @@ export default async function OwnProfilePage() {
   const activityCounts: Partial<Record<ActivityKey, number>> = {};
   for (const s of slots ?? []) {
     if (s.status !== "completed") continue;
-    const k = s.activity_type as ActivityKey;
+    const k = normalizeActivityKey(s.activity_type);
     activityCounts[k] = (activityCounts[k] ?? 0) + 1;
   }
 
@@ -85,12 +85,20 @@ export default async function OwnProfilePage() {
       <PageHeader
         title={p.title}
         right={
-          <Link
-            href="/profile/edit"
-            className="inline-flex min-h-[2.75rem] items-center justify-center rounded-md border-2 border-[var(--gold-dim)] bg-[linear-gradient(180deg,#2a2210,#14110c)] px-4 py-2 font-display text-sm font-bold uppercase tracking-[0.14em] text-[var(--gold-bright)] shadow-[var(--shadow-glow-gold)] transition hover:border-[var(--gold-bright)] hover:brightness-110"
-          >
-            {p.edit}
-          </Link>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <Link
+              href="/settings"
+              className="inline-flex min-h-[2.75rem] items-center justify-center rounded-md border border-[var(--gold-dim)] px-3 py-2 font-display text-xs font-bold uppercase tracking-[0.12em] text-[var(--text-secondary)] transition hover:border-[var(--gold-mid)] hover:text-[var(--gold-bright)]"
+            >
+              {p.settings}
+            </Link>
+            <Link
+              href="/profile/edit"
+              className="inline-flex min-h-[2.75rem] items-center justify-center rounded-md border-2 border-[var(--gold-dim)] bg-[linear-gradient(180deg,#2a2210,#14110c)] px-4 py-2 font-display text-sm font-bold uppercase tracking-[0.14em] text-[var(--gold-bright)] shadow-[var(--shadow-glow-gold)] transition hover:border-[var(--gold-bright)] hover:brightness-110"
+            >
+              {p.edit}
+            </Link>
+          </div>
         }
       />
       <ProfileCard

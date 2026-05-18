@@ -62,9 +62,8 @@ create table if not exists public.places (
   created_at timestamptz not null default now()
 );
 
-create unique index if not exists places_osm_id_unique
-  on public.places (osm_id)
-  where osm_id is not null;
+alter table public.places drop constraint if exists places_osm_id_key;
+alter table public.places add constraint places_osm_id_key unique (osm_id);
 
 create index if not exists idx_places_category on public.places (category);
 create index if not exists idx_places_city on public.places (city);

@@ -31,8 +31,11 @@ export function SlotRateForm({ slotId, peers }: { slotId: string; peers: Peer[] 
         comment: rows[p.id]?.comment || null,
       }));
       const res = await submitMyRatings(slotId, ratings);
-      if (res.error) setError(res.error);
-      else router.push("/profile");
+      if (res.error) {
+        setError(res.error);
+        return;
+      }
+      router.push("/profile");
       router.refresh();
     } finally {
       setLoading(false);

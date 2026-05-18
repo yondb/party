@@ -29,9 +29,9 @@ create table if not exists public.places (
   created_at timestamptz not null default now()
 );
 
-create unique index if not exists places_osm_id_unique
-  on public.places (osm_id)
-  where osm_id is not null;
+alter table public.places drop constraint if exists places_osm_id_key;
+alter table public.places
+  add constraint places_osm_id_key unique (osm_id);
 
 create index if not exists idx_places_category on public.places (category);
 create index if not exists idx_places_city on public.places (city);
@@ -65,4 +65,4 @@ values
   ('Łazienki Królewskie', 'running', 52.2152, 21.0354, 'warsaw', 'Mokotów', 'seed-lazienki'),
   ('Pole Mokotowskie', 'running', 52.2089, 21.0202, 'warsaw', 'Mokotów', 'seed-pole-mokotowskie'),
   ('Bulwary Wiślane', 'cycling', 52.2401, 21.0285, 'warsaw', 'Śródmieście', 'seed-bulwary')
-on conflict (osm_id) where osm_id is not null do nothing;
+on conflict (osm_id) do nothing;

@@ -22,16 +22,28 @@ export function PlacePicker({ places, value, onChange }: PlacePickerProps) {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return places.slice(0, 80);
-    return places
-      .filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          (p.district?.toLowerCase().includes(q) ?? false) ||
-          placeCategoryLabel(lang, p.category as PlaceCategory).toLowerCase().includes(q),
-      )
-      .slice(0, 80);
-  }, [places, query, lang]);
+    const list = q
+      ? places.filter(
+          (p) =>
+            p.name.toLowerCase().includes(q) ||
+            (p.district?.toLowerCase().includes(q) ?? false) ||
+            placeCategoryLabel(lang, p.category as PlaceCategory).toLowerCase().includes(q),
+        )
+      : places;
+    const seen = new Set<string>();
+    const deduped: PlaceRow[] = [];
+    for (const p of list) {
+      const key = `${p.category}:${p.name.trim().toLowerCase()}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      deduped.push(p);
+      if (deduped.length >= 80) break;
+    }
+    if (value && !deduped.some((p) => p.id === value.id)) {
+      return [value, ...deduped].slice(0, 80);
+    }
+    return deduped;
+  }, [places, query, lang, value]);
 
   return (
     <div className="space-y-3">
