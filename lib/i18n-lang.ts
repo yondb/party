@@ -10,6 +10,6 @@ export const LANG_COOKIE = "partyfinder_lang";
 export const LANG_STORAGE_KEY = "partyfinder_lang";
 
 export function parseLang(v: string | null | undefined): Lang {
-  if (v === "pl") return "pl";
-  return "en";
+  if (v === "en") return "en";
+  return "pl";
 }

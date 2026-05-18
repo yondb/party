@@ -1,3 +1,7 @@
-/** Shared width for navbar, main, bottom nav — mobile-first, wider on laptop+. */
+/** Shared width for navbar, main, bottom nav — full width on phone, up to ~1440px on desktop. */
 export const shellMaxClass =
-  "mx-auto w-full max-w-lg sm:max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl px-4 sm:px-6 lg:px-8";
+  "mx-auto w-full max-w-[min(100%,90rem)] px-4 sm:px-6 lg:px-10";
+
+/** Map / discovery — even wider on large screens. */
+export const shellMapClass =
+  "mx-auto w-full max-w-[min(100%,100rem)] px-3 sm:px-6 lg:px-10";

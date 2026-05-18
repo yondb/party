@@ -221,10 +221,15 @@ create policy users_update_own
   using (id = auth.uid())
   with check (id = auth.uid());
 
--- places
+-- places (guests can browse map)
 create policy places_select_authenticated
   on public.places for select
   to authenticated
+  using (true);
+
+create policy places_select_public
+  on public.places for select
+  to anon, authenticated
   using (true);
 
 -- slots
@@ -232,6 +237,11 @@ create policy slots_select_authenticated
   on public.slots for select
   to authenticated
   using (true);
+
+create policy slots_select_public_map
+  on public.slots for select
+  to anon
+  using (status in ('open', 'full') and place_id is not null);
 
 create policy slots_insert_as_host
   on public.slots for insert

@@ -19,7 +19,12 @@ const links = [
   { href: "/profile", key: "profile" as const, Icon: BottomIconProfile },
 ] as const;
 
-export function BottomNav() {
+function guestHref(key: (typeof links)[number]["key"]): string {
+  if (key === "map" || key === "feed") return "/map";
+  return "/auth";
+}
+
+export function BottomNav({ isGuest = false }: { isGuest?: boolean }) {
   const pathname = usePathname();
   const { lang } = useLanguage();
   const n = navUi(lang);
@@ -28,13 +33,17 @@ export function BottomNav() {
     <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-[var(--gold-dim)] bg-[var(--bg-void)]/95 pb-safe backdrop-blur-sm">
       <div className={`${shellMaxClass} flex items-stretch justify-around px-1 pt-2 sm:px-3`}>
         {links.map((l) => {
-          const active = pathname === l.href || pathname.startsWith(`${l.href}/`);
+          const href = isGuest ? guestHref(l.key) : l.href;
+          const active =
+            pathname === href ||
+            pathname.startsWith(`${href}/`) ||
+            (isGuest && l.key === "feed" && pathname === "/map");
           const label = n[l.key];
           const Icon = l.Icon;
           return (
             <Link
-              key={l.href}
-              href={l.href}
+              key={l.key}
+              href={href}
               className={`flex min-h-[3.25rem] min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-md py-2 text-[11px] font-display font-semibold uppercase leading-tight tracking-[0.12em] transition sm:min-h-[3.5rem] sm:text-xs sm:tracking-[0.14em] ${
                 active
                   ? "text-[var(--gold-bright)] drop-shadow-[0_0_8px_rgba(240,192,64,0.35)]"

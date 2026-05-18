@@ -146,6 +146,8 @@ export function mapUi(lang: Lang) {
         popupSlotsBadge: "slotów",
         popupCreateSlot: "+ Stwórz slot",
         popupViewAll: "Zobacz wszystkie",
+        guestHint:
+          "Przeglądasz mapę bez logowania. Zaloguj się, aby stworzyć slot lub dołączyć do party.",
       }
     : {
         title: "Map",
@@ -168,6 +170,7 @@ export function mapUi(lang: Lang) {
         popupSlotsBadge: "slots",
         popupCreateSlot: "+ Create slot",
         popupViewAll: "View all",
+        guestHint: "Browsing without an account. Sign in to host or join a slot.",
       };
 }
 

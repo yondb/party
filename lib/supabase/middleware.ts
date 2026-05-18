@@ -4,6 +4,8 @@ import { NextResponse, type NextRequest } from "next/server";
 const PUBLIC_PREFIXES = [
   "/",
   "/landing",
+  "/map",
+  "/places",
   "/onboarding",
   "/auth",
   "/dev",
@@ -14,9 +16,7 @@ const PUBLIC_PREFIXES = [
 ];
 const PROTECTED_PREFIXES = [
   "/feed",
-  "/map",
   "/slots",
-  "/places",
   "/profile",
   "/notifications",
   "/settings",

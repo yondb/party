@@ -21,6 +21,9 @@ export default async function MapPage() {
   const m = mapUi(lang);
   const back = pageHeaderUi(lang);
   const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const [{ data: places }, { data: slots }] = await Promise.all([
     supabase
@@ -38,7 +41,12 @@ export default async function MapPage() {
 
   return (
     <div className="pb-6">
-      <PageHeader title={m.title} backHref="/feed" backLabel={back.back} />
+      <PageHeader
+        title={m.title}
+        backHref={user ? "/feed" : undefined}
+        backLabel={back.back}
+        subtitle={!user ? m.guestHint : undefined}
+      />
       <MapPlaces places={placePins} />
     </div>
   );

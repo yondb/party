@@ -7,7 +7,7 @@ export default async function RootPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/landing");
+  if (!user) redirect("/map");
 
   const setupDone = user.user_metadata?.setup_done === true;
   if (!setupDone) redirect("/setup");

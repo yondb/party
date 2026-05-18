@@ -21,5 +21,9 @@ export default async function MainAppLayout({
     pendingRatings = await getPendingRatingSlots(supabase, user.id);
   }
 
-  return <AppShell pendingRatings={pendingRatings}>{children}</AppShell>;
+  return (
+    <AppShell pendingRatings={pendingRatings} isGuest={!user}>
+      {children}
+    </AppShell>
+  );
 }

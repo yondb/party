@@ -29,13 +29,13 @@ export async function Navbar() {
         className={`${shellMaxClass} flex min-h-[3.25rem] flex-col gap-2 py-2 sm:min-h-16 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:py-2`}
       >
         <Link
-          href="/"
+          href={user ? "/feed" : "/map"}
           className="animate-brand-soft shrink-0 whitespace-nowrap font-display text-lg font-bold tracking-wide text-[var(--gold-bright)] sm:text-xl md:text-2xl"
           style={{ textShadow: "0 0 12px rgba(240,192,64,0.25)" }}
         >
           {SITE_NAME}
         </Link>
-        <NavbarClient unread={unread} showAdmin={showAdmin} />
+        <NavbarClient unread={unread} showAdmin={showAdmin} isGuest={!user} />
       </div>
     </header>
   );

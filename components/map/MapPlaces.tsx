@@ -282,7 +282,7 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
         tabIndex={0}
         role="application"
         aria-label={m.title}
-        className="h-[min(70dvh,32rem)] w-full overflow-hidden rounded-lg border border-[var(--gold-dim)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold-mid)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-deep)] md:h-[min(68dvh,40rem)] xl:h-[min(65dvh,44rem)]"
+        className="h-[min(72dvh,36rem)] w-full overflow-hidden rounded-lg border border-[var(--gold-dim)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold-mid)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-deep)] md:h-[min(70dvh,520px)] lg:h-[min(75dvh,600px)] xl:h-[min(78dvh,680px)]"
       />
       <p className="mb-8 mt-2 font-display text-lg font-semibold text-[var(--text-bright)]">
         {m.resultsFound(filteredPlaces.length)}
