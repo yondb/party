@@ -74,7 +74,7 @@ export default async function SlotDetailPage({ params }: { params: { id: string 
   const audienceLine = slotAudienceBadge(lang, (slot as { gender_scope?: string | null }).gender_scope);
 
   return (
-    <div className="pb-6">
+    <div className="page-shell pb-6">
       <PageHeader title={d.quest} backHref="/feed" backLabel={back.back} />
       <div
         className="wow-card relative overflow-hidden rounded-lg p-0"

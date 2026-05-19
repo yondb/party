@@ -81,7 +81,7 @@ export default async function OwnProfilePage() {
   const hostAndPlayerMaster = (profile.total_hosted ?? 0) >= 10 && (profile.total_activities ?? 0) >= 10;
 
   return (
-    <div className="pb-10">
+    <div className="page-shell py-8 pb-10">
       <PageHeader
         title={p.title}
         right={

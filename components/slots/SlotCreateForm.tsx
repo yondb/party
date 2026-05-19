@@ -186,7 +186,7 @@ export function SlotCreateForm({ places, initialPlaceId }: SlotCreateFormProps) 
   }
 
   return (
-    <div className="lg:mx-auto lg:max-w-4xl xl:max-w-5xl">
+    <div>
       <PageHeader title={t.header} backHref="/map" backLabel={pageHeaderUi(lang).back} />
 
       <div className="mb-6 flex gap-2">

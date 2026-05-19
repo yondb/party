@@ -98,130 +98,143 @@ export function SlotCard({
   if (distanceLabel) metaParts.push(distanceLabel);
   const metaLine = metaParts.join(" · ");
 
+  const partyDots = (
+    <>
+      <div className="mb-1.5 flex justify-between text-xs font-medium tracking-wide text-[var(--text-muted)] sm:text-sm">
+        <span>{t.partyMembers}</span>
+        <span>
+          {occupiedSpots}/{totalPartySize}
+        </span>
+      </div>
+      <div className="flex items-center gap-1.5 rounded border border-[var(--gold-dim)] bg-[var(--bg-input)] px-2 py-2 sm:gap-2">
+        {Array.from({ length: totalPartySize }, (_, i) => {
+          const filled = i < occupiedSpots;
+          const isHostDot = i === 0;
+          return (
+            <span
+              key={`dot-${slot.id}-${i}`}
+              title={isHostDot ? t.hostDot : t.guestDot}
+              className={`h-2.5 w-2.5 rounded-full border transition ${
+                filled
+                  ? isHostDot
+                    ? "border-[var(--gold-bright)] bg-[var(--gold-bright)] shadow-[0_0_8px_rgba(240,192,64,0.35)]"
+                    : "border-[var(--gold-mid)] bg-[var(--gold-mid)]"
+                  : "border-[var(--gold-dim)] bg-[var(--bg-card)]"
+              }`}
+            />
+          );
+        })}
+      </div>
+    </>
+  );
+
+  const ctaButtons = isHost ? (
+    <Link
+      href={`/slots/${slot.id}`}
+      className="btn-secondary inline-flex min-h-[2.75rem] w-full items-center justify-center rounded-md px-4 py-3 text-center font-display text-sm font-semibold uppercase tracking-[0.08em] sm:text-base"
+    >
+      {t.viewDetails}
+    </Link>
+  ) : full ? (
+    <Button variant="secondary" fullWidth disabled>
+      {t.partyFull}
+    </Button>
+  ) : applicationStatus === "accepted" ? (
+    <Link
+      href={`/slots/${slot.id}`}
+      className="btn-secondary inline-flex min-h-[2.75rem] w-full items-center justify-center rounded-md border-[var(--status-open)] px-4 py-3 text-center font-display text-sm font-semibold uppercase tracking-[0.08em] sm:text-base"
+    >
+      {t.viewDetails}
+    </Link>
+  ) : applicationStatus === "pending" ? (
+    <Button variant="secondary" fullWidth disabled className="!border-[var(--status-pending)]">
+      {t.waiting}
+    </Button>
+  ) : applicationStatus === "rejected" ? (
+    <Button variant="secondary" fullWidth disabled className="!border-[var(--status-full)]">
+      {t.declined}
+    </Button>
+  ) : (
+    <form
+      action={async () => {
+        await applyToSlot(slot.id);
+      }}
+    >
+      <Button type="submit" variant="primary" fullWidth className={joinQuestBtnClass}>
+        {t.joinQuest}
+      </Button>
+    </form>
+  );
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: "easeOut", delay: index * 0.05 }}
+      transition={{ duration: 0.25, ease: "easeOut", delay: Math.min(index * 0.04, 0.3) }}
       whileHover={{
         y: -2,
         boxShadow: "0 8px 32px rgba(0,0,0,0.8), 0 0 16px rgba(240,192,64,0.08)",
       }}
+      style={{ willChange: "opacity, transform" }}
     >
-      <motion.div
-        className="wow-card wow-card-hover relative flex gap-4 overflow-hidden rounded-lg p-5 sm:p-6"
+      <div
+        className="wow-card wow-card-hover relative overflow-hidden rounded-lg p-5 sm:p-6"
         style={{ borderTop: `2px solid ${act.color}` }}
       >
-        <ActivityIcon activityType={slot.activity_type} />
-        <div className="min-w-0 flex-1">
-          <Link
-            href={`/slots/${slot.id}`}
-            className="font-display text-xl font-semibold leading-snug text-[var(--text-bright)] hover:text-[var(--gold-bright)] sm:text-2xl"
-          >
-            {headline}
-          </Link>
-          <p className="mt-1 text-sm text-[var(--text-muted)]">{metaLine}</p>
-          <p className="mt-2 text-base font-medium text-[var(--text-secondary)]">
-            {formatWhen(slot.date_time, locale)}
-          </p>
-          {audience ? (
-            <p className="mt-2 inline-block rounded-full border border-[var(--gold-dim)] bg-[var(--bg-input)] px-3 py-1 font-display text-xs uppercase tracking-[0.12em] text-[var(--gold-mid)]">
-              {audience}
-            </p>
-          ) : null}
+        <div className="flex gap-4 lg:gap-6">
+          <ActivityIcon activityType={slot.activity_type} />
 
-          <div className="mt-3 flex items-center gap-3">
-            <Avatar src={slot.host?.avatar_url} name={slot.host?.name ?? "Host"} size={36} />
-            <div className="min-w-0 flex-1 text-base">
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                <span className="text-[var(--text-muted)]">{t.host}</span>
-                <span className="text-[var(--text-primary)]">{slot.host?.name ?? "—"}</span>
-                {gIcon ? (
-                  <span
-                    className="inline-flex shrink-0 items-center justify-center text-2xl leading-none text-[var(--gold-bright)]"
-                    aria-hidden
-                  >
-                    {gIcon}
-                  </span>
-                ) : null}
-                {slot.host?.reliability_score != null ? (
-                  <span className="text-[var(--status-open)]">
-                    ✓{Math.round(slot.host.reliability_score * 100)}%
-                  </span>
-                ) : null}
+          <div className="min-w-0 flex-1">
+            <Link
+              href={`/slots/${slot.id}`}
+              className="font-display text-xl font-semibold leading-snug text-[var(--text-bright)] hover:text-[var(--gold-bright)] sm:text-2xl"
+            >
+              {headline}
+            </Link>
+            <p className="mt-1 text-sm text-[var(--text-muted)]">{metaLine}</p>
+            <p className="mt-2 text-base font-medium text-[var(--text-secondary)]">
+              {formatWhen(slot.date_time, locale)}
+            </p>
+            {audience ? (
+              <p className="mt-2 inline-block rounded-full border border-[var(--gold-dim)] bg-[var(--bg-input)] px-3 py-1 font-display text-xs uppercase tracking-[0.12em] text-[var(--gold-mid)]">
+                {audience}
+              </p>
+            ) : null}
+
+            <div className="mt-3 flex items-center gap-3">
+              <Avatar src={slot.host?.avatar_url} name={slot.host?.name ?? "Host"} size={36} />
+              <div className="min-w-0 flex-1 text-base">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <span className="text-[var(--text-muted)]">{t.host}</span>
+                  <span className="text-[var(--text-primary)]">{slot.host?.name ?? "—"}</span>
+                  {gIcon ? (
+                    <span
+                      className="inline-flex shrink-0 items-center justify-center text-2xl leading-none text-[var(--gold-bright)]"
+                      aria-hidden
+                    >
+                      {gIcon}
+                    </span>
+                  ) : null}
+                  {slot.host?.reliability_score != null ? (
+                    <span className="text-[var(--status-open)]">
+                      ✓{Math.round(slot.host.reliability_score * 100)}%
+                    </span>
+                  ) : null}
+                </div>
               </div>
             </div>
+
+            <div className="mt-3 lg:hidden">{partyDots}</div>
+
+            <div className="mt-4 lg:hidden">{ctaButtons}</div>
           </div>
 
-          <div className="mt-3">
-            <div className="mb-1.5 flex justify-between text-sm font-medium tracking-wide text-[var(--text-muted)]">
-              <span>{t.partyMembers}</span>
-              <span>
-                {occupiedSpots}/{totalPartySize}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 rounded border border-[var(--gold-dim)] bg-[var(--bg-input)] px-2 py-2">
-              {Array.from({ length: totalPartySize }, (_, i) => {
-                const filled = i < occupiedSpots;
-                const isHostDot = i === 0;
-                return (
-                  <span
-                    key={`dot-${slot.id}-${i}`}
-                    title={isHostDot ? t.hostDot : t.guestDot}
-                    className={`h-2.5 w-2.5 rounded-full border transition ${
-                      filled
-                        ? isHostDot
-                          ? "border-[var(--gold-bright)] bg-[var(--gold-bright)] shadow-[0_0_8px_rgba(240,192,64,0.35)]"
-                          : "border-[var(--gold-mid)] bg-[var(--gold-mid)]"
-                        : "border-[var(--gold-dim)] bg-[var(--bg-card)]"
-                    }`}
-                  />
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="mt-4">
-            {isHost ? (
-              <Link
-                href={`/slots/${slot.id}`}
-                className="btn-secondary inline-flex min-h-[2.75rem] w-full items-center justify-center rounded-md px-4 py-3 text-center font-display text-base font-semibold uppercase tracking-[0.08em]"
-              >
-                {t.viewDetails}
-              </Link>
-            ) : full ? (
-              <Button variant="secondary" fullWidth disabled>
-                {t.partyFull}
-              </Button>
-            ) : applicationStatus === "accepted" ? (
-              <Link
-                href={`/slots/${slot.id}`}
-                className="btn-secondary inline-flex min-h-[2.75rem] w-full items-center justify-center rounded-md border-[var(--status-open)] px-4 py-3 text-center font-display text-base font-semibold uppercase tracking-[0.08em]"
-              >
-                {t.viewDetails}
-              </Link>
-            ) : applicationStatus === "pending" ? (
-              <Button variant="secondary" fullWidth disabled className="!border-[var(--status-pending)]">
-                {t.waiting}
-              </Button>
-            ) : applicationStatus === "rejected" ? (
-              <Button variant="secondary" fullWidth disabled className="!border-[var(--status-full)]">
-                {t.declined}
-              </Button>
-            ) : (
-              <form
-                action={async () => {
-                  await applyToSlot(slot.id);
-                }}
-              >
-                <Button type="submit" variant="primary" fullWidth className={joinQuestBtnClass}>
-                  {t.joinQuest}
-                </Button>
-              </form>
-            )}
+          <div className="hidden lg:flex lg:w-48 lg:flex-shrink-0 lg:flex-col lg:items-stretch lg:justify-between lg:gap-3">
+            <div>{partyDots}</div>
+            <div>{ctaButtons}</div>
           </div>
         </div>
-      </motion.div>
+      </div>
     </motion.div>
   );
 }

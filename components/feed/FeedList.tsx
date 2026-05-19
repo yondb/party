@@ -50,7 +50,7 @@ export function FeedList({ cards, userId, appStatusBySlot }: FeedListProps) {
   }
 
   return (
-    <ul className="flex flex-col gap-4">
+    <ul className="flex flex-col gap-4" suppressHydrationWarning>
       {cardsWithDistance.map(({ slot, distanceLabel }, i) => (
         <li key={slot.id}>
           <SlotCard

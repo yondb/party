@@ -139,7 +139,7 @@ export function ProfileCard({
     <motion.article
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="wow-card relative overflow-hidden rounded-lg px-6 py-8 text-base text-[var(--text-secondary)] sm:px-8"
+      className="wow-card relative mx-auto w-full max-w-[600px] overflow-hidden rounded-lg px-6 py-8 text-base text-[var(--text-secondary)] sm:px-8"
     >
       <div className="relative flex flex-col items-center gap-8 pt-1">
         <div className="relative">

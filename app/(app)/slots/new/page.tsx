@@ -15,11 +15,13 @@ export default async function NewSlotPage({ searchParams }: { searchParams: Sear
     .order("name");
 
   return (
-    <Suspense fallback={<div className="py-12 text-center text-[var(--text-muted)]">…</div>}>
-      <SlotCreateForm
-        places={(places ?? []) as PlaceRow[]}
-        initialPlaceId={searchParams.place_id}
-      />
-    </Suspense>
+    <div className="page-shell">
+      <Suspense fallback={<div className="py-12 text-center text-[var(--text-muted)]">…</div>}>
+        <SlotCreateForm
+          places={(places ?? []) as PlaceRow[]}
+          initialPlaceId={searchParams.place_id}
+        />
+      </Suspense>
+    </div>
   );
 }

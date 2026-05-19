@@ -129,7 +129,7 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
   };
 
   return (
-    <div className="pb-6">
+    <div className="page-shell pb-6">
       <PageHeader title={ui.title} />
       <div className="relative mb-3">
           <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
