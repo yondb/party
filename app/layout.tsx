@@ -31,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pl">
+    <html lang="en">
       <body className="antialiased">
         <LanguageProvider>
           <DocumentLang />

@@ -1,5 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import {
+  attachLangToRedirect,
+  finalizeWithLang,
+  redirectIfLangParams,
+} from "@/lib/i18n-middleware";
 
 const PUBLIC_PREFIXES = [
   "/",
@@ -29,9 +34,19 @@ function startsWithAny(path: string, prefixes: string[]) {
 }
 
 export async function updateSession(request: NextRequest) {
+  const path = request.nextUrl.pathname;
+  if (path.startsWith("/_next") || path.startsWith("/api")) {
+    return NextResponse.next({ request });
+  }
+
+  const langRedirect = redirectIfLangParams(request);
+  if (langRedirect) return langRedirect;
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) return NextResponse.next({ request });
+  if (!url || !key) {
+    return finalizeWithLang(request, NextResponse.next({ request }));
+  }
 
   let response = NextResponse.next({ request });
 
@@ -54,22 +69,19 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const path = request.nextUrl.pathname;
-  if (path.startsWith("/_next") || path.startsWith("/api")) return response;
-
   const isPublic = startsWithAny(path, PUBLIC_PREFIXES);
   const needsAuth = startsWithAny(path, PROTECTED_PREFIXES);
 
   if (!user && needsAuth) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/auth";
-    return NextResponse.redirect(redirectUrl);
+    return attachLangToRedirect(request, NextResponse.redirect(redirectUrl));
   }
 
   if (!user && !isPublic && !needsAuth) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/landing";
-    return NextResponse.redirect(redirectUrl);
+    return attachLangToRedirect(request, NextResponse.redirect(redirectUrl));
   }
 
   if (user) {
@@ -77,27 +89,31 @@ export async function updateSession(request: NextRequest) {
     if (!setupDone && path !== "/setup" && path !== "/auth" && !path.startsWith("/dev")) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = "/setup";
-      return NextResponse.redirect(redirectUrl);
+      return attachLangToRedirect(request, NextResponse.redirect(redirectUrl));
     }
     if (setupDone && (path === "/auth" || path === "/landing")) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = "/feed";
-      return NextResponse.redirect(redirectUrl);
+      return attachLangToRedirect(request, NextResponse.redirect(redirectUrl));
     }
 
     if (setupDone) {
-      const { data: prof } = await supabase.from("users").select("banned").eq("id", user.id).maybeSingle();
+      const { data: prof } = await supabase
+        .from("users")
+        .select("banned")
+        .eq("id", user.id)
+        .maybeSingle();
       if (prof?.banned === true) {
         const allowedWhileBanned =
           path === "/banned" || path.startsWith("/auth") || path.startsWith("/api");
         if (!allowedWhileBanned) {
           const redirectUrl = request.nextUrl.clone();
           redirectUrl.pathname = "/banned";
-          return NextResponse.redirect(redirectUrl);
+          return attachLangToRedirect(request, NextResponse.redirect(redirectUrl));
         }
       }
     }
   }
 
-  return response;
+  return finalizeWithLang(request, response);
 }

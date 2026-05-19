@@ -8,7 +8,13 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { LANG_COOKIE, LANG_STORAGE_KEY, parseLang, type Lang } from "@/lib/i18n-lang";
+import {
+  DEFAULT_LANG,
+  LANG_COOKIE,
+  LANG_STORAGE_KEY,
+  parseLang,
+  type Lang,
+} from "@/lib/i18n-lang";
 
 export type { Lang };
 
@@ -31,14 +37,20 @@ function syncLangCookie(next: Lang) {
 }
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>("pl");
+  const [lang, setLangState] = useState<Lang>(DEFAULT_LANG);
 
   useEffect(() => {
     try {
-      const raw = window.localStorage.getItem(LANG_STORAGE_KEY);
-      const next = parseLang(raw);
+      const fromCookie = document.cookie
+        .split(";")
+        .map((s) => s.trim())
+        .find((s) => s.startsWith(`${LANG_COOKIE}=`))
+        ?.split("=")[1];
+      const fromStorage = window.localStorage.getItem(LANG_STORAGE_KEY);
+      const next = parseLang(fromCookie) ?? parseLang(fromStorage) ?? DEFAULT_LANG;
       setLangState(next);
       syncLangCookie(next);
+      window.localStorage.setItem(LANG_STORAGE_KEY, next);
     } catch {
       // noop
     }

@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import {
@@ -36,16 +36,59 @@ const controlFocus =
   "outline-none transition focus-visible:border-[var(--gold-mid)] focus-visible:ring-2 focus-visible:ring-[var(--gold-mid)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-card)]";
 
 const filterLabelClass =
-  "font-display text-[11px] font-semibold uppercase leading-tight tracking-[0.14em] text-[var(--text-muted)]";
+  "mb-1 font-display text-xs uppercase tracking-widest text-[var(--gold-mid)]";
 
-/** Same vertical rhythm for every filter — fixes misaligned selects vs range in multi-column grids. */
 function MapFilterField({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="flex min-h-0 min-w-0 flex-col gap-2">
+    <div className="flex min-h-0 min-w-0 flex-col">
       <span className={filterLabelClass}>{label}</span>
       <div className="flex min-h-[2.75rem] flex-col justify-center">{children}</div>
     </div>
   );
+}
+
+function buildPopupHtml(
+  p: PlaceMapPin,
+  lang: "en" | "pl",
+  m: ReturnType<typeof mapUi>,
+): string {
+  const meta = PLACE_CATEGORY_META[p.category];
+  const catLabel = placeCategoryLabel(lang, p.category);
+  const districtLine = p.district ? ` · ${escapeHtml(p.district)}` : "";
+  const locale = lang === "pl" ? "pl-PL" : "en-US";
+  const slotsHtml =
+    p.upcomingSlots.length === 0
+      ? `<p class="lfparty-map-popup__meta">${escapeHtml(m.popupNoSlots)}</p>`
+      : p.upcomingSlots
+          .slice(0, 4)
+          .map((s) => {
+            const when = new Date(s.date_time).toLocaleString(locale, {
+              weekday: "short",
+              day: "2-digit",
+              month: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+            const total = Math.max(2, s.max_spots);
+            const occupied = Math.min(total, 1 + s.spots_taken);
+            return `<a class="lfparty-map-popup__slot-line" href="/slots/${escapeHtml(s.id)}">${escapeHtml(when)} · ${occupied}/${total} ${escapeHtml(m.popupSpots)}</a>`;
+          })
+          .join("");
+  const badge =
+    p.activeSlotCount > 0
+      ? ` <span class="lfparty-map-popup__badge">${p.activeSlotCount} ${escapeHtml(m.popupSlotsBadge)}</span>`
+      : "";
+  return `
+    <div class="lfparty-map-popup">
+      <p class="lfparty-map-popup__title">${meta.icon} ${escapeHtml(p.name)}${badge}</p>
+      <p class="lfparty-map-popup__meta">${escapeHtml(catLabel)}${districtLine}</p>
+      <p class="lfparty-map-popup__section">${escapeHtml(m.popupUpcoming)}</p>
+      ${slotsHtml}
+      <div class="lfparty-map-popup__actions">
+        <a class="lfparty-map-popup__link" href="/slots/new?place_id=${p.id}">${escapeHtml(m.popupCreateSlot)}</a>
+        <a class="lfparty-map-popup__link lfparty-map-popup__link--muted" href="/places/${p.id}">${escapeHtml(m.popupViewAll)}</a>
+      </div>
+    </div>`;
 }
 
 export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
@@ -53,9 +96,8 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
   const m = mapUi(lang);
   const ref = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
-  const [myPosition, setMyPosition] = useState<{ lat: number; lng: number } | null>(
-    null,
-  );
+  const markersRef = useRef<Map<string, mapboxgl.Marker>>(new Map());
+  const [myPosition, setMyPosition] = useState<{ lat: number; lng: number } | null>(null);
   const [radiusKm, setRadiusKm] = useState(10);
   const [category, setCategory] = useState<"all" | PlaceCategory>("all");
   const [dateFilter, setDateFilter] = useState("");
@@ -109,6 +151,18 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
     });
   }, [places, category, dateFilter, onlyOpenSlots, locationEnabled, myPosition, radiusKm]);
 
+  const flyToPlace = useCallback((place: PlaceMapPin) => {
+    const map = mapRef.current;
+    const marker = markersRef.current.get(place.id);
+    if (!map || !marker) return;
+    markersRef.current.forEach((mk) => {
+      const popup = mk.getPopup();
+      if (popup?.isOpen()) popup.remove();
+    });
+    map.flyTo({ center: [place.lng, place.lat], zoom: 14, duration: 1200 });
+    marker.togglePopup();
+  }, []);
+
   useEffect(() => {
     if (!token || !ref.current) return;
     mapboxgl.accessToken = token;
@@ -134,51 +188,20 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
         .addTo(map);
     }
 
-    const locale = lang === "pl" ? "pl-PL" : "en-US";
+    const markers = new Map<string, mapboxgl.Marker>();
     for (const p of filteredPlaces) {
       const meta = PLACE_CATEGORY_META[p.category];
-      const catLabel = placeCategoryLabel(lang, p.category);
-      const districtLine = p.district ? ` · ${escapeHtml(p.district)}` : "";
-      const slotsHtml =
-        p.upcomingSlots.length === 0
-          ? `<p class="lfparty-map-popup__meta">${escapeHtml(m.popupNoSlots)}</p>`
-          : p.upcomingSlots
-              .slice(0, 4)
-              .map((s) => {
-                const when = new Date(s.date_time).toLocaleString(locale, {
-                  weekday: "short",
-                  day: "2-digit",
-                  month: "2-digit",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                });
-                const total = Math.max(2, s.max_spots);
-                const occupied = Math.min(total, 1 + s.spots_taken);
-                return `<a class="lfparty-map-popup__slot-line" href="/slots/${escapeHtml(s.id)}">${escapeHtml(when)} · ${occupied}/${total} ${escapeHtml(m.popupSpots)}</a>`;
-              })
-              .join("");
-      const badge =
-        p.activeSlotCount > 0
-          ? ` <span class="lfparty-map-popup__badge">${p.activeSlotCount} ${escapeHtml(m.popupSlotsBadge)}</span>`
-          : "";
-      const html = `
-        <div class="lfparty-map-popup">
-          <p class="lfparty-map-popup__title">${meta.icon} ${escapeHtml(p.name)}${badge}</p>
-          <p class="lfparty-map-popup__meta">${escapeHtml(catLabel)}${districtLine}</p>
-          <p class="lfparty-map-popup__section">${escapeHtml(m.popupUpcoming)}</p>
-          ${slotsHtml}
-          <div class="lfparty-map-popup__actions">
-            <a class="lfparty-map-popup__link" href="/slots/new?place_id=${p.id}">${escapeHtml(m.popupCreateSlot)}</a>
-            <a class="lfparty-map-popup__link lfparty-map-popup__link--muted" href="/places/${p.id}">${escapeHtml(m.popupViewAll)}</a>
-          </div>
-        </div>`;
-      new mapboxgl.Marker({ color: meta.color })
+      const html = buildPopupHtml(p, lang, m);
+      const marker = new mapboxgl.Marker({ color: meta.color })
         .setLngLat([p.lng, p.lat])
         .setPopup(new mapboxgl.Popup({ offset: 16, className: "lfparty-map-popup-wrap" }).setHTML(html))
         .addTo(map);
+      markers.set(p.id, marker);
     }
+    markersRef.current = markers;
 
     return () => {
+      markersRef.current.clear();
       map.remove();
       mapRef.current = null;
     };
@@ -197,101 +220,151 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
 
   const radiusCaption = `${m.radius} · ${radiusKm} ${m.km}`;
 
-  return (
-    <div className="space-y-3">
-      <section
-        className="rounded-lg border border-[var(--gold-dim)] bg-[var(--bg-card)] p-4 shadow-[inset_0_1px_0_rgba(240,192,64,0.04)] sm:p-5"
-        aria-label={lang === "pl" ? "Filtry mapy" : "Map filters"}
-      >
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
-          <MapFilterField label={m.placeCategory}>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value as "all" | PlaceCategory)}
-              className={`input-wow ${controlFocus}`}
-            >
-              <option value="all">{m.all}</option>
-              {PLACE_CATEGORIES.map((key) => (
-                <option key={key} value={key}>
-                  {placeCategoryLabel(lang, key)}
-                </option>
-              ))}
-            </select>
-          </MapFilterField>
+  const filters = (
+    <section
+      className="rounded-lg border border-[var(--gold-dim)] bg-[var(--bg-card)] p-4 shadow-[inset_0_1px_0_rgba(240,192,64,0.04)] lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none"
+      aria-label={lang === "pl" ? "Filtry mapy" : "Map filters"}
+    >
+      <div className="flex flex-col gap-4">
+        <MapFilterField label={m.placeCategory}>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value as "all" | PlaceCategory)}
+            className={`input-wow text-[0.95rem] ${controlFocus}`}
+          >
+            <option value="all">{m.all}</option>
+            {PLACE_CATEGORIES.map((key) => (
+              <option key={key} value={key}>
+                {placeCategoryLabel(lang, key)}
+              </option>
+            ))}
+          </select>
+        </MapFilterField>
 
-          <MapFilterField label={m.date}>
+        <MapFilterField label={m.date}>
+          <input
+            type="date"
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value)}
+            className={`input-wow text-[0.95rem] ${controlFocus}`}
+          />
+        </MapFilterField>
+
+        <MapFilterField label={m.onlyOpenSlots}>
+          <label className="flex min-h-[2.75rem] cursor-pointer items-center gap-2 text-sm text-[var(--text-secondary)]">
             <input
-              type="date"
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              className={`input-wow ${controlFocus}`}
+              type="checkbox"
+              checked={onlyOpenSlots}
+              onChange={(e) => setOnlyOpenSlots(e.target.checked)}
+              className="accent-[var(--gold-mid)]"
             />
-          </MapFilterField>
+            {m.onlyOpenSlotsHint}
+          </label>
+        </MapFilterField>
 
-          <MapFilterField label={m.onlyOpenSlots}>
-            <label className="flex min-h-[2.75rem] cursor-pointer items-center gap-2 text-sm text-[var(--text-secondary)]">
-              <input
-                type="checkbox"
-                checked={onlyOpenSlots}
-                onChange={(e) => setOnlyOpenSlots(e.target.checked)}
-                className="accent-[var(--gold-mid)]"
-              />
-              {m.onlyOpenSlotsHint}
-            </label>
-          </MapFilterField>
-        </div>
+        <MapFilterField label={radiusCaption}>
+          <div className="flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={requestMyLocation}
+              className={`btn-secondary min-h-[2.75rem] w-full rounded-lg px-3 text-sm font-semibold lg:w-auto ${controlFocus} ${
+                locationEnabled ? "border-[var(--gold-bright)] text-[var(--gold-bright)]" : ""
+              }`}
+            >
+              {m.useMyLocation}
+            </button>
+            {locationError ? (
+              <p className="text-xs text-[var(--status-full)]">{locationError}</p>
+            ) : null}
+            <input
+              type="range"
+              min={1}
+              max={10}
+              value={radiusKm}
+              disabled={!locationEnabled}
+              onChange={(e) => setRadiusKm(Number(e.target.value))}
+              aria-valuemin={1}
+              aria-valuemax={10}
+              aria-valuenow={radiusKm}
+              aria-label={radiusCaption}
+              className={`h-2.5 w-full cursor-pointer accent-[var(--gold-mid)] ${controlFocus} rounded-full bg-[var(--bg-input)] disabled:opacity-40`}
+            />
+          </div>
+        </MapFilterField>
+      </div>
+    </section>
+  );
 
-        <div className="mt-4 grid grid-cols-1 gap-4 border-t border-[var(--gold-dim)]/60 pt-4 sm:grid-cols-2 sm:gap-5 lg:mt-5 lg:pt-5">
+  const resultsLine = (
+    <p className="mt-4 text-xs uppercase tracking-widest text-[var(--text-muted)]">
+      {m.resultsFound(filteredPlaces.length)}
+      {locationEnabled && myPosition ? (
+        <span className="mt-1 block normal-case tracking-normal">
+          {m.within} {radiusKm} {m.km}
+        </span>
+      ) : null}
+    </p>
+  );
 
-          <MapFilterField label={radiusCaption}>
-            <div className="flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={requestMyLocation}
-                className={`min-h-[2.75rem] rounded-lg border px-3 text-sm font-semibold transition ${controlFocus} ${
-                  locationEnabled
-                    ? "border-[var(--gold-bright)] bg-[var(--bg-panel)] text-[var(--gold-bright)]"
-                    : "border-[var(--gold-dim)] bg-[var(--bg-input)] text-[var(--text-secondary)] hover:border-[var(--gold-dark)]"
-                }`}
-              >
-                {m.useMyLocation}
-              </button>
-              {locationError ? (
-                <p className="text-xs text-[var(--status-full)]">{locationError}</p>
+  const placeList = (
+    <div className="mt-3 hidden lg:block">
+      {filteredPlaces.length === 0 ? (
+        <p className="text-sm text-[var(--text-muted)]">
+          {lang === "pl" ? "Brak miejsc dla tych filtrów." : "No places match these filters."}
+        </p>
+      ) : (
+        filteredPlaces.map((place) => {
+          const meta = PLACE_CATEGORY_META[place.category];
+          const catLabel = placeCategoryLabel(lang, place.category);
+          return (
+            <button
+              key={place.id}
+              type="button"
+              onClick={() => flyToPlace(place)}
+              className="wow-card wow-card-hover mb-2 flex w-full items-center gap-3 px-3 py-2.5 text-left"
+            >
+              <span className="text-lg">{meta.icon}</span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate font-display text-sm font-semibold text-[var(--text-bright)]">
+                  {place.name}
+                </span>
+                <span className="block text-xs text-[var(--text-secondary)]">
+                  {catLabel}
+                  {place.district ? ` · ${place.district}` : ""}
+                </span>
+              </span>
+              {place.activeSlotCount > 0 ? (
+                <span className="rounded-full bg-[var(--gold-dim)] px-2 py-0.5 text-xs font-bold text-[var(--gold-bright)]">
+                  {place.activeSlotCount}
+                </span>
               ) : null}
-              <input
-                type="range"
-                min={1}
-                max={10}
-                value={radiusKm}
-                disabled={!locationEnabled}
-                onChange={(e) => setRadiusKm(Number(e.target.value))}
-                aria-valuemin={1}
-                aria-valuemax={10}
-                aria-valuenow={radiusKm}
-                aria-label={radiusCaption}
-                className={`h-2.5 w-full cursor-pointer accent-[var(--gold-mid)] ${controlFocus} rounded-full bg-[var(--bg-input)] disabled:opacity-40`}
-              />
-            </div>
-          </MapFilterField>
-        </div>
-      </section>
+            </button>
+          );
+        })
+      )}
+    </div>
+  );
 
-      <div
-        ref={ref}
-        tabIndex={0}
-        role="application"
-        aria-label={m.title}
-        className="h-[min(72dvh,36rem)] w-full overflow-hidden rounded-lg border border-[var(--gold-dim)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold-mid)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-deep)] md:h-[min(70dvh,520px)] lg:h-[min(75dvh,600px)] xl:h-[min(78dvh,680px)]"
-      />
-      <p className="mb-8 mt-2 font-display text-lg font-semibold text-[var(--text-bright)]">
-        {m.resultsFound(filteredPlaces.length)}
-        {locationEnabled && myPosition ? (
-          <span className="mt-1 block text-sm font-normal text-[var(--text-muted)]">
-            {m.within} {radiusKm} {m.km}
-          </span>
-        ) : null}
-      </p>
+  return (
+    <div className="map-layout">
+      <aside className="map-sidebar">
+        {filters}
+        {resultsLine}
+        {placeList}
+      </aside>
+
+      <div className="map-canvas">
+        <div
+          ref={ref}
+          tabIndex={0}
+          role="application"
+          aria-label={m.title}
+          className={`map-canvas-inner overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold-mid)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-deep)] lg:rounded-none lg:border-0 ${
+            /* mobile: card-style map below filters */
+            "rounded-lg border border-[var(--gold-dim)] lg:h-full"
+          }`}
+        />
+      </div>
     </div>
   );
 }
