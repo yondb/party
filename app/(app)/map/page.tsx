@@ -1,8 +1,5 @@
 import nextDynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/server";
-import { PageHeader } from "@/components/layout/PageHeader";
-import { getServerLang } from "@/lib/i18n-server";
-import { mapUi, pageHeaderUi } from "@/lib/i18n-ui";
 import { MapLoadingPlaceholder } from "@/components/map/MapLoadingPlaceholder";
 import { buildPlaceMapPins } from "@/lib/build-place-pins";
 
@@ -17,13 +14,7 @@ const MapPlaces = nextDynamic(
 export const dynamic = "force-dynamic";
 
 export default async function MapPage() {
-  const lang = getServerLang();
-  const m = mapUi(lang);
-  const back = pageHeaderUi(lang);
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
   const [{ data: places }, { data: slots }] = await Promise.all([
     supabase
@@ -40,13 +31,13 @@ export default async function MapPage() {
   const placePins = buildPlaceMapPins(places ?? [], slots ?? []);
 
   return (
-    <div className="map-page pb-bottom-main lg:pb-0">
-      <PageHeader
-        title={m.title}
-        backHref={user ? "/feed" : undefined}
-        backLabel={back.back}
-        subtitle={!user ? m.guestHint : undefined}
-      />
+    <div
+      className="relative -mx-5 w-[calc(100%+2.5rem)] sm:-mx-6 sm:w-[calc(100%+3rem)]"
+      style={{
+        height: "calc(100dvh - var(--nav-height) - var(--dock-height) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 1.5rem)",
+        minHeight: "420px",
+      }}
+    >
       <MapPlaces places={placePins} />
     </div>
   );

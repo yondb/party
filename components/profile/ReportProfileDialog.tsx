@@ -60,8 +60,8 @@ export function ReportProfileDialog({ reportedUserId }: { reportedUserId: string
           {t.button}
         </Button>
       ) : (
-        <div className="card rounded-lg border border-[var(--border-medium)] p-4">
-          <p className="font-display text-sm font-semibold uppercase tracking-[0.1em] text-[var(--accent)]">
+        <div className="floating-card rounded-lg border border-[var(--border-medium)] p-4">
+          <p className="text-sm font-medium text-[var(--accent)]">
             {t.title}
           </p>
           {done ? (

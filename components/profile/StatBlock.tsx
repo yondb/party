@@ -5,7 +5,7 @@ type StatBlockProps = {
 
 export function StatBlock({ label, value }: StatBlockProps) {
   return (
-    <div className="card flex flex-col items-center justify-center px-3 py-4 text-center">
+    <div className="flex flex-col items-center justify-center rounded-2xl bg-[var(--bg-surface-2)] px-3 py-4 text-center">
       <span
         className="text-2xl font-bold tabular-nums leading-none"
         style={{ color: "var(--text-primary)" }}
@@ -13,7 +13,7 @@ export function StatBlock({ label, value }: StatBlockProps) {
         {value}
       </span>
       <span
-        className="mt-2 text-[0.65rem] font-semibold uppercase tracking-widest"
+        className="mt-2 text-xs font-medium"
         style={{ color: "var(--text-muted)" }}
       >
         {label}

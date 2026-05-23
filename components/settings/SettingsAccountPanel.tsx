@@ -97,8 +97,8 @@ export function SettingsAccountPanel({
 
   return (
     <div className="mt-6 space-y-6">
-      <section className="card rounded-lg p-4">
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--text-secondary)]">{t.notifyHeading}</h2>
+      <section className="floating-card rounded-lg p-4">
+        <h2 className="text-xs font-medium text-[var(--text-secondary)]">{t.notifyHeading}</h2>
         <p className="mt-2 text-xs text-[var(--text-muted)]">{t.notifyEmailHint}</p>
         <label className="mt-3 flex items-center gap-3 text-sm text-[var(--text-secondary)]">
           <input type="checkbox" checked={emailOn} onChange={(e) => setEmailOn(e.target.checked)} className="h-4 w-4 accent-[var(--accent)]" />
@@ -113,8 +113,8 @@ export function SettingsAccountPanel({
         </Button>
       </section>
 
-      <section className="card rounded-lg p-4">
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--text-secondary)]">{t.dataHeading}</h2>
+      <section className="floating-card rounded-lg p-4">
+        <h2 className="text-xs font-medium text-[var(--text-secondary)]">{t.dataHeading}</h2>
         <div className="mt-3 flex flex-col gap-2">
           <Button type="button" variant="secondary" fullWidth disabled={busy !== null} onClick={() => void onExport()}>
             {busy === "export" ? "…" : t.exportButton}
@@ -126,8 +126,8 @@ export function SettingsAccountPanel({
         <p className="mt-2 text-xs text-[var(--text-muted)]">{t.deleteHint}</p>
       </section>
 
-      <section className="card rounded-lg p-4">
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--text-secondary)]">{t.supportHeading}</h2>
+      <section className="floating-card rounded-lg p-4">
+        <h2 className="text-xs font-medium text-[var(--text-secondary)]">{t.supportHeading}</h2>
         <p className="mt-2 text-sm text-[var(--text-muted)]">{t.supportBody}</p>
         <a
           href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? DEFAULT_SUPPORT_EMAIL}`}
@@ -137,8 +137,8 @@ export function SettingsAccountPanel({
         </a>
       </section>
 
-      <section className="card rounded-lg p-4">
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--text-secondary)]">{t.legalHeading}</h2>
+      <section className="floating-card rounded-lg p-4">
+        <h2 className="text-xs font-medium text-[var(--text-secondary)]">{t.legalHeading}</h2>
         <div className="mt-3 flex flex-col gap-2 text-sm">
           <Link href="/legal/privacy" className="text-[var(--accent)] hover:text-[var(--accent)]">
             {lang === "pl" ? "Polityka prywatności" : "Privacy policy"}

@@ -34,7 +34,7 @@ export function OnboardingWizard() {
   const step = steps[i] ?? steps[0];
 
   return (
-    <div className="card w-full max-w-md rounded-lg p-8">
+    <div className="floating-card w-full max-w-md rounded-lg p-8">
       <AnimatePresence mode="wait">
         <motion.div
           key={i}

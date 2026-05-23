@@ -77,7 +77,7 @@ export default async function SlotDetailPage({ params }: { params: { id: string 
     <div className="page-shell pb-6">
       <PageHeader title={d.quest} backHref="/feed" backLabel={back.back} />
       <div
-        className="card relative overflow-hidden rounded-lg p-0"
+        className="floating-card relative overflow-hidden rounded-lg p-0"
         style={{ borderTop: `3px solid ${act.color}` }}
       >
         <div
@@ -107,7 +107,7 @@ export default async function SlotDetailPage({ params }: { params: { id: string 
           ) : null}
           {host ? (
             <section>
-              <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
+              <h2 className="text-xs font-medium text-[var(--text-muted)]">
                 {d.host}
               </h2>
               <Link href={`/profile/${host.id}`} className="mt-2 flex items-center gap-3">
@@ -128,7 +128,7 @@ export default async function SlotDetailPage({ params }: { params: { id: string 
           ) : null}
 
           <section>
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
+            <h2 className="text-xs font-medium text-[var(--text-muted)]">
               {d.partyMembers}
             </h2>
             <div className="mt-3 flex flex-wrap gap-2">

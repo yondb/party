@@ -77,7 +77,7 @@ export default async function ManageSlotPage({ params }: { params: { id: string 
 
       {accepted.length ? (
         <section className="mb-6">
-          <h2 className="mb-2 font-display text-xs uppercase tracking-widest text-[var(--status-open)]">{m.inParty}</h2>
+          <h2 className="mb-2 text-xs font-medium text-[var(--status-open)]">{m.inParty}</h2>
           <ul className="flex flex-col gap-3">
             {accepted.map((r, i) => (
               <li key={r.applicationId}>
@@ -90,7 +90,7 @@ export default async function ManageSlotPage({ params }: { params: { id: string 
 
       {pending.length ? (
         <section className="mb-6">
-          <h2 className="mb-2 font-display text-xs uppercase tracking-widest text-[var(--status-pending)]">{m.pending}</h2>
+          <h2 className="mb-2 text-xs font-medium text-[var(--status-pending)]">{m.pending}</h2>
           <ul className="flex flex-col gap-3">
             {pending.map((r, i) => (
               <li key={r.applicationId}>
@@ -103,7 +103,7 @@ export default async function ManageSlotPage({ params }: { params: { id: string 
 
       {rejected.length ? (
         <section className="mb-6">
-          <h2 className="mb-2 font-display text-xs uppercase tracking-widest text-[var(--text-muted)]">{m.rejected}</h2>
+          <h2 className="mb-2 text-xs font-medium text-[var(--text-muted)]">{m.rejected}</h2>
           <ul className="flex flex-col gap-3">
             {rejected.map((r, i) => (
               <li key={r.applicationId}>

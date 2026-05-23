@@ -1,6 +1,7 @@
 ﻿import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { FeedList } from "@/components/feed/FeedList";
+import { SuggestedActivities } from "@/components/feed/SuggestedActivities";
 import type { SlotCardData, SlotCardHost } from "@/components/slots/SlotCard";
 import { normalizeActivityKey, type ActivityKey } from "@/lib/activities";
 import { getServerLang } from "@/lib/i18n-server";
@@ -128,14 +129,10 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
   };
 
   return (
-    <div className="page-shell pb-bottom-main pt-nav-safe">
-      <div style={{ paddingTop: "1.5rem", paddingBottom: "1rem" }}>
-        <h1 style={{ fontSize: "1.6rem", fontWeight: 800, marginBottom: 4 }}>{ui.title}</h1>
-        <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)" }}>{ui.subtitle}</p>
-      </div>
-
-      <div className="relative mb-3">
-        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+    <div className="page-shell pb-bottom-main">
+      {/* Filter chips */}
+      <div className="sticky top-[calc(var(--nav-height)+env(safe-area-inset-top)+0.5rem)] z-20 -mx-1 mb-2 bg-[var(--bg-page)]/90 py-2 backdrop-blur-md">
+        <div className="flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <FilterPill href={feedHref({ date: validDate })} label={ui.allActivities} active={!validActivity} />
           {activityOptions.map((k) => (
             <FilterPill
@@ -146,21 +143,29 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
             />
           ))}
         </div>
+        {dateOptions.length > 0 ? (
+          <div className="mt-2 flex gap-2 overflow-x-auto px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <FilterPill href={feedHref({ activity: validActivity })} label={ui.allDates} active={!validDate} />
+            {dateOptions.map((d) => (
+              <FilterPill
+                key={d}
+                href={feedHref({ activity: validActivity, date: d })}
+                label={formatFilterDate(d, lang)}
+                active={validDate === d}
+              />
+            ))}
+          </div>
+        ) : null}
       </div>
 
-      <div className="mb-4 flex flex-wrap gap-2">
-        <FilterPill href={feedHref({ activity: validActivity })} label={ui.allDates} active={!validDate} />
-        {dateOptions.map((d) => (
-          <FilterPill
-            key={d}
-            href={feedHref({ activity: validActivity, date: d })}
-            label={formatFilterDate(d, lang)}
-            active={validDate === d}
-          />
-        ))}
-      </div>
+      <SuggestedActivities activeActivity={validActivity} feedHref={(a) => feedHref({ activity: a, date: validDate })} />
 
-      <FeedList cards={cards} userId={user.id} appStatusBySlot={appStatusBySlot} />
+      <FeedList
+        cards={cards}
+        userId={user.id}
+        appStatusBySlot={appStatusBySlot}
+        totalCount={allCards.length}
+      />
     </div>
   );
 }
@@ -176,26 +181,7 @@ function ErrorBox({ lang, message }: { lang: import("@/lib/i18n-lang").Lang; mes
 
 function FilterPill({ href, label, active }: { href: string; label: string; active: boolean }) {
   return (
-    <Link
-      href={href}
-      className="inline-flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center px-3 py-2 text-sm font-semibold transition active:scale-[0.98]"
-      style={
-        active
-          ? {
-              borderRadius: "var(--radius-full)",
-              fontFamily: "var(--font-sans)",
-              background: "var(--accent-soft)",
-              border: "1.5px solid var(--accent)",
-              color: "var(--accent-text)",
-            }
-          : {
-              borderRadius: "var(--radius-full)",
-              fontFamily: "var(--font-sans)",
-              border: "1.5px solid var(--border-medium)",
-              color: "var(--text-secondary)",
-            }
-      }
-    >
+    <Link href={href} className={`chip shrink-0 ${active ? "chip-active" : ""}`}>
       {label}
     </Link>
   );

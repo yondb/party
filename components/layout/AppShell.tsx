@@ -14,12 +14,18 @@ export async function AppShell({
   isGuest?: boolean;
 }) {
   return (
-    <div className="min-h-dvh pb-bottom-main pt-nav-safe">
+    <div className="min-h-dvh bg-[var(--bg-page)] pb-bottom-main pt-nav-safe">
       <Navbar />
-      <main className="w-full px-4 sm:px-6 lg:px-10">
-        {!isGuest ? <PendingRatingsBanner items={pendingRatings} /> : null}
+      <main className="w-full">
+        {!isGuest ? (
+          <div className="page-shell">
+            <PendingRatingsBanner items={pendingRatings} />
+          </div>
+        ) : null}
         {children}
-        <AppFooter />
+        <div className="page-shell">
+          <AppFooter />
+        </div>
       </main>
       <BottomNav isGuest={isGuest} />
     </div>

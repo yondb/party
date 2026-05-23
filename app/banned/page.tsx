@@ -16,7 +16,7 @@ export default function BannedPage() {
       <form className="mt-8" action={signOut}>
         <button
           type="submit"
-          className="btn-secondary inline-flex min-h-[3rem] w-full items-center justify-center rounded-md px-4 py-3 font-display text-base font-semibold uppercase tracking-widest"
+          className="btn-secondary inline-flex min-h-[3rem] w-full items-center justify-center rounded-md px-4 py-3 text-sm font-medium"
         >
           Wyloguj
         </button>

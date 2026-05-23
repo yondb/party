@@ -47,11 +47,11 @@ export function SlotRateForm({ slotId, peers }: { slotId: string; peers: Peer[] 
   }
 
   return (
-    <div className="card space-y-4 rounded-lg p-4">
-      <p className="font-display text-sm text-[var(--text-primary)]">{t.title}</p>
+    <div className="floating-card space-y-4 rounded-lg p-4">
+      <p className="text-sm font-semibold text-[var(--text-primary)]">{t.title}</p>
       {peers.map((p) => (
         <div key={p.id} className="rounded border border-[var(--border-medium)] p-3">
-          <p className="font-display text-[var(--accent)]">{p.name}</p>
+          <p className="font-semibold text-[var(--accent)]">{p.name}</p>
           <div className="mt-2 grid gap-2 sm:grid-cols-2">
             <label className="text-xs text-[var(--text-muted)]">
               {t.scoreLabel}

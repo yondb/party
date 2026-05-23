@@ -35,13 +35,13 @@ export const PLACE_CATEGORY_META: Record<
   PlaceCategory,
   { icon: string; color: string; cssVar: string }
 > = {
-  running: { icon: "🏃", color: "#c07030", cssVar: "var(--class-running)" },
-  cycling: { icon: "🚴", color: "#4a8a4a", cssVar: "var(--class-cycling)" },
-  gym: { icon: "💪", color: "#9a3a3a", cssVar: "var(--class-gym)" },
-  padel: { icon: "🎾", color: "#3a7a9a", cssVar: "var(--class-volleyball)" },
-  tennis: { icon: "🎾", color: "#6a8a4a", cssVar: "var(--class-default)" },
-  basketball: { icon: "🏀", color: "#c07030", cssVar: "var(--class-running)" },
-  hiking: { icon: "⛰️", color: "#6a7a3a", cssVar: "var(--class-default)" },
+  running: { icon: "🏃", color: "#FF6B35", cssVar: "var(--accent)" },
+  cycling: { icon: "🚴", color: "#10B981", cssVar: "var(--accent)" },
+  gym: { icon: "💪", color: "#EF4444", cssVar: "var(--accent)" },
+  padel: { icon: "🎾", color: "#14B8A6", cssVar: "var(--accent)" },
+  tennis: { icon: "🎾", color: "#65A30D", cssVar: "var(--accent)" },
+  basketball: { icon: "🏀", color: "#F97316", cssVar: "var(--accent)" },
+  hiking: { icon: "⛰️", color: "#84CC16", cssVar: "var(--accent)" },
 };
 
 /** Map place category → legacy slot `activity_type` for icons/filters. */

@@ -23,8 +23,7 @@ const COPY = {
   },
 } as const;
 
-const navLinkClass =
-  "inline-flex min-h-[44px] items-center justify-center rounded-full px-3 py-1.5 text-sm font-semibold text-[var(--text-secondary)] transition-all hover:bg-[var(--bg-surface-2)] hover:text-[var(--text-primary)]";
+const navLinkClass = "btn-ghost text-sm";
 
 export function NavbarClient({
   unread,

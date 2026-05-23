@@ -40,14 +40,14 @@ export default async function NotificationsPage() {
       ) : null}
 
       {!rows?.length ? (
-        <div className="card rounded-lg p-8 text-center text-sm text-[var(--text-muted)]">{t.empty}</div>
+        <div className="floating-card rounded-lg p-8 text-center text-sm text-[var(--text-muted)]">{t.empty}</div>
       ) : (
         <ul className="flex flex-col gap-3">
           {rows.map((n) => (
-            <li key={n.id} className="card rounded-lg p-4">
+            <li key={n.id} className="floating-card rounded-lg p-4">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <p className="font-display text-[var(--text-primary)]">{n.title}</p>
+                  <p className="font-semibold text-[var(--text-primary)]">{n.title}</p>
                   {n.body ? <p className="mt-1 text-sm text-[var(--text-secondary)]">{n.body}</p> : null}
                   <p className="mt-2 text-xs text-[var(--text-muted)]">
                     {new Date(n.created_at).toLocaleString(locale)}

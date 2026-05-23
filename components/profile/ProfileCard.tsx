@@ -6,7 +6,6 @@ import { Avatar } from "@/components/ui/Avatar";
 import { ExpBar } from "@/components/ui/ExpBar";
 import { LevelBadge } from "@/components/ui/LevelBadge";
 import { ReliabilityScore } from "@/components/ui/ReliabilityScore";
-import { Divider } from "@/components/ui/Divider";
 import { StatBlock } from "./StatBlock";
 import { AchievementBadge } from "./AchievementBadge";
 import { getActivity, type ActivityKey } from "@/lib/activities";
@@ -149,6 +148,10 @@ export function ProfileCard({
       animate={{ opacity: 1, y: 0 }}
       className="mx-auto w-full max-w-[600px]"
     >
+      <div
+        className="floating-card mb-6 overflow-hidden p-6 sm:p-8"
+        style={{ boxShadow: "var(--shadow-float)" }}
+      >
       <div className="flex flex-col items-center gap-6 pt-2">
         <div className="relative">
           {user.avatar_url ? (
@@ -217,29 +220,19 @@ export function ProfileCard({
           </p>
         </div>
       </div>
+      </div>
 
-      <Divider className="!my-8" />
-
+      <div className="floating-card mb-6 p-5 sm:p-6">
       <div className="grid grid-cols-3 gap-3">
         <StatBlock label={p.events} value={user.total_activities} />
         <StatBlock label={p.host} value={user.total_hosted} />
         <StatBlock label={p.rating} value={avgRating != null ? avgRating.toFixed(1) : p.noRatings} />
       </div>
+      </div>
 
       {activityCounts && Object.keys(activityCounts).length > 0 ? (
-        <>
-          <Divider className="!my-8" />
-          <h3
-            style={{
-              fontSize: "0.7rem",
-              fontWeight: 600,
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              color: "var(--text-muted)",
-            }}
-          >
-            {p.activityClasses}
-          </h3>
+        <div className="floating-card mb-6 p-5 sm:p-6">
+          <h3 className="text-sm font-semibold text-[var(--text-primary)]">{p.activityClasses}</h3>
           <ul className="mt-4 space-y-3">
             {(Object.keys(activityCounts) as ActivityKey[]).map((key) => {
               const c = activityCounts[key] ?? 0;
@@ -270,21 +263,11 @@ export function ProfileCard({
               );
             })}
           </ul>
-        </>
+        </div>
       ) : null}
 
-      <Divider className="!my-8" />
-      <h3
-        style={{
-          fontSize: "0.7rem",
-          fontWeight: 600,
-          letterSpacing: "0.12em",
-          textTransform: "uppercase",
-          color: "var(--text-muted)",
-        }}
-      >
-        {p.badges}
-      </h3>
+      <div className="floating-card mb-6 p-5 sm:p-6">
+      <h3 className="text-sm font-semibold text-[var(--text-primary)]">{p.badges}</h3>
       <div className="mt-4 flex flex-wrap gap-3">
         {visibleAchievements.length ? (
           visibleAchievements.map((a) => <AchievementBadge key={a.title} {...a} />)
@@ -292,12 +275,12 @@ export function ProfileCard({
           <span className="text-sm text-[var(--text-muted)]">{p.noBadges}</span>
         )}
       </div>
+      </div>
 
       {bio ? (
-        <>
-          <Divider className="!my-8" />
+        <div className="floating-card p-5 sm:p-6">
           <p className="text-center text-base leading-relaxed text-[var(--text-secondary)]">{bio}</p>
-        </>
+        </div>
       ) : null}
     </motion.article>
   );

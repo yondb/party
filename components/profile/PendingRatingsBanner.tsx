@@ -11,7 +11,7 @@ export function PendingRatingsBanner({ items }: { items: PendingRatingSlot[] }) 
 
   return (
     <div
-      className="card mb-4 p-4"
+      className="floating-card mb-4 p-4"
       style={{ borderColor: "var(--accent)", background: "var(--accent-soft)" }}
     >
       <p className="text-sm font-semibold text-[var(--accent-text)]">{t.title}</p>

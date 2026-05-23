@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLanguage } from "@/components/i18n/LanguageProvider";
 import { navUi } from "@/lib/i18n-ui";
-import { shellMaxClass } from "@/lib/layout-shell";
 import {
   BottomIconFeed,
   BottomIconMap,
@@ -30,14 +29,12 @@ export function BottomNav({ isGuest = false }: { isGuest?: boolean }) {
   const n = navUi(lang);
 
   return (
-    <nav
-      className="fixed bottom-0 left-0 right-0 z-40 border-t pb-safe backdrop-blur-sm"
-      style={{
-        background: "var(--bg-surface)",
-        borderTopColor: "var(--border)",
-      }}
-    >
-      <div className={`${shellMaxClass} flex items-stretch justify-around px-2 pt-2 sm:px-3`}>
+    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center pb-[max(0.65rem,env(safe-area-inset-bottom))]">
+      <nav
+        className="glass-strong pointer-events-auto flex items-center gap-0.5 rounded-full px-2 py-1.5"
+        style={{ boxShadow: "var(--shadow-float)" }}
+        aria-label={lang === "pl" ? "Nawigacja" : "Navigation"}
+      >
         {links.map((l) => {
           const href = isGuest ? guestHref(l.key) : l.href;
           const active =
@@ -51,30 +48,26 @@ export function BottomNav({ isGuest = false }: { isGuest?: boolean }) {
             <Link
               key={l.key}
               href={href}
-              className="flex min-h-[3.25rem] min-w-0 flex-1 flex-col items-center justify-center gap-1 py-2 transition sm:min-h-[3.5rem]"
+              className={`relative flex flex-col items-center justify-center rounded-full px-3.5 py-2 transition-all duration-200 ${
+                active ? "text-[var(--accent)]" : "text-[var(--text-muted)]"
+              }`}
               style={
                 active
                   ? {
-                      color: "var(--accent)",
                       background: "var(--accent-soft)",
-                      borderRadius: "var(--radius-md)",
-                      padding: "6px 16px",
-                      fontSize: 11,
-                      fontWeight: 500,
+                      boxShadow: "0 0 20px var(--accent-glow)",
                     }
-                  : {
-                      color: "var(--text-muted)",
-                      fontSize: 11,
-                      fontWeight: 500,
-                    }
+                  : undefined
               }
             >
               <Icon active={active} />
-              <span className="max-w-[5.5rem] truncate sm:max-w-none">{label}</span>
+              <span className="mt-0.5 max-w-[4.5rem] truncate text-[10px] font-medium leading-none">
+                {label}
+              </span>
             </Link>
           );
         })}
-      </div>
-    </nav>
+      </nav>
+    </div>
   );
 }

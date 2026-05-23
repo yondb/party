@@ -57,7 +57,7 @@ export default async function RateSlotPage({ params }: { params: { id: string } 
     return (
       <div className="pb-6">
         <PageHeader title={t.title} backHref={`/slots/${params.id}`} backLabel={back.back} />
-        <p className="card rounded-lg p-6 text-center text-sm text-[var(--text-muted)]">{t.allDone}</p>
+        <p className="floating-card rounded-lg p-6 text-center text-sm text-[var(--text-muted)]">{t.allDone}</p>
         <Link href="/profile" className="mt-4 block text-center text-sm text-[var(--accent)]">
           {t.backProfile}
         </Link>

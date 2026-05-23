@@ -107,7 +107,7 @@ export function ProfileEditForm({
         placeholder={t.bioPlaceholder}
       />
       <div>
-        <span className="mb-2 block font-display text-xs uppercase tracking-widest text-[var(--text-secondary)]">
+        <span className="mb-2 block text-xs font-medium text-[var(--text-secondary)]">
           {t.gender}
         </span>
         <div className="flex gap-2">
@@ -141,7 +141,7 @@ export function ProfileEditForm({
       </div>
       <Input label={t.birthDate} type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} required />
       <div>
-        <label className="mb-1 block font-display text-xs uppercase tracking-widest text-[var(--text-secondary)]">
+        <label className="mb-1 block text-xs font-medium text-[var(--text-secondary)]">
           {t.avatarLabel}
         </label>
         <input

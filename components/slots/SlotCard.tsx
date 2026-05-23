@@ -1,6 +1,5 @@
 "use client";
 
-import type { CSSProperties } from "react";
 import Link from "next/link";
 import { m } from "framer-motion";
 import { ActivityIcon } from "./ActivityIcon";
@@ -47,36 +46,11 @@ type SlotCardProps = {
 
 function formatWhen(iso: string, locale: string) {
   const d = new Date(iso);
-  const datePart = d.toLocaleDateString(locale, {
-    weekday: "short",
-    day: "numeric",
-    month: "long",
-  });
-  const timePart = d.toLocaleTimeString(locale, {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-  return `${datePart} · ${timePart}`;
+  return {
+    day: d.toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short" }),
+    time: d.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" }),
+  };
 }
-
-const joinBtnStyle: CSSProperties = {
-  padding: "6px 14px",
-  borderRadius: "var(--radius-full)",
-  background: "var(--accent)",
-  border: "none",
-  color: "white",
-  fontSize: "0.82rem",
-  fontWeight: 700,
-  cursor: "pointer",
-  fontFamily: "var(--font-sans)",
-};
-
-const secondaryBtnStyle: CSSProperties = {
-  ...joinBtnStyle,
-  background: "transparent",
-  color: "var(--text-secondary)",
-  border: "1.5px solid var(--border-medium)",
-};
 
 export function SlotCard({
   slot,
@@ -94,36 +68,32 @@ export function SlotCard({
   const totalPartySize = Math.max(2, slot.max_spots);
   const occupiedSpots = Math.min(totalPartySize, 1 + slot.spots_taken);
   const audience = slotAudienceBadge(lang, slot.gender_scope);
+  const when = formatWhen(slot.date_time, locale);
 
   const headline = slot.place_name ?? slot.title;
-  const metaParts: string[] = [];
-  if (slot.place_category && isPlaceCategory(slot.place_category)) {
-    metaParts.push(placeCategoryLabel(lang, slot.place_category));
-  } else {
-    metaParts.push(activityLabel(lang, slot.activity_type));
-  }
-  if (slot.place_district) metaParts.push(slot.place_district);
-  else if (!slot.place_name) metaParts.push(slot.location_name);
-  const metaLine = metaParts.join(" · ");
+  const activityName =
+    slot.place_category && isPlaceCategory(slot.place_category)
+      ? placeCategoryLabel(lang, slot.place_category)
+      : activityLabel(lang, slot.activity_type);
 
-  const ctaButtons = isHost ? (
-    <Link href={`/slots/${slot.id}`} style={secondaryBtnStyle}>
+  const cta = isHost ? (
+    <Link href={`/slots/${slot.id}`} className="btn-secondary px-4 py-2 text-sm">
       {t.viewDetails}
     </Link>
   ) : full ? (
-    <button type="button" disabled style={{ ...secondaryBtnStyle, opacity: 0.45, cursor: "not-allowed" }}>
+    <button type="button" disabled className="btn-secondary px-4 py-2 text-sm opacity-50">
       {t.partyFull}
     </button>
   ) : applicationStatus === "accepted" ? (
-    <Link href={`/slots/${slot.id}`} style={{ ...secondaryBtnStyle, borderColor: "var(--status-open)", color: "var(--status-open)" }}>
+    <Link href={`/slots/${slot.id}`} className="btn-secondary px-4 py-2 text-sm">
       {t.viewDetails}
     </Link>
   ) : applicationStatus === "pending" ? (
-    <button type="button" disabled style={{ ...secondaryBtnStyle, opacity: 0.45, cursor: "not-allowed", borderColor: "var(--status-pending)", color: "var(--status-pending)" }}>
+    <button type="button" disabled className="btn-secondary px-4 py-2 text-sm opacity-60">
       {t.waiting}
     </button>
   ) : applicationStatus === "rejected" ? (
-    <button type="button" disabled style={{ ...secondaryBtnStyle, opacity: 0.45, cursor: "not-allowed", borderColor: "var(--status-full)", color: "var(--status-full)" }}>
+    <button type="button" disabled className="btn-secondary px-4 py-2 text-sm opacity-50">
       {t.declined}
     </button>
   ) : (
@@ -132,157 +102,94 @@ export function SlotCard({
         await applyToSlot(slot.id);
       }}
     >
-      <button type="submit" style={joinBtnStyle}>
+      <button type="submit" className="btn-primary px-5 py-2 text-sm">
         {t.joinQuest}
       </button>
     </form>
   );
 
   return (
-    <m.div
-      initial={{ opacity: 0, y: 6 }}
+    <m.article
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25, ease: "easeOut", delay: Math.min(index * 0.04, 0.3) }}
+      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1], delay: Math.min(index * 0.05, 0.25) }}
+      whileHover={{ y: -3 }}
+      className="floating-card-hover floating-card overflow-hidden"
     >
+      {/* Banner */}
       <div
-        className="card card-hover relative overflow-hidden"
-        style={{ borderTop: `3px solid ${act.color}` }}
+        className="relative flex items-center justify-between px-4 py-3"
+        style={{
+          background: `linear-gradient(135deg, color-mix(in srgb, ${act.color} 22%, white), color-mix(in srgb, ${act.color} 8%, white))`,
+        }}
       >
-        <div style={{ padding: "1rem 1.125rem" }}>
-          <div style={{ display: "flex", gap: 12 }}>
-            <div
-              style={{
-                width: 46,
-                height: 46,
-                borderRadius: "var(--radius-md)",
-                background: `${act.color}15`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-              }}
-            >
-              <ActivityIcon activityType={slot.activity_type} size="sm" />
-            </div>
-
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  justifyContent: "space-between",
-                  gap: 8,
-                  marginBottom: 3,
-                }}
-              >
-                <Link
-                  href={`/slots/${slot.id}`}
-                  style={{
-                    fontFamily: "var(--font-sans)",
-                    fontSize: "1.05rem",
-                    fontWeight: 700,
-                    color: "var(--text-primary)",
-                    textDecoration: "none",
-                    lineHeight: 1.3,
-                  }}
-                >
-                  {headline}
-                </Link>
-                {distanceLabel ? (
-                  <span
-                    style={{
-                      fontSize: "0.72rem",
-                      fontWeight: 600,
-                      color: "var(--text-muted)",
-                      background: "var(--bg-surface-2)",
-                      padding: "2px 8px",
-                      borderRadius: "var(--radius-full)",
-                      flexShrink: 0,
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {distanceLabel}
-                  </span>
-                ) : null}
-              </div>
-
-              <p style={{ fontSize: "0.8rem", color: "var(--text-secondary)", marginBottom: 6 }}>
-                {metaLine}
-              </p>
-
-              <p
-                style={{
-                  fontSize: "0.9rem",
-                  fontWeight: 600,
-                  color: "var(--text-primary)",
-                  marginBottom: 8,
-                }}
-              >
-                {formatWhen(slot.date_time, locale)}
-              </p>
-
-              {audience ? (
-                <span className="badge badge-purple" style={{ marginBottom: 8 }}>
-                  {audience}
-                </span>
-              ) : null}
-
-              <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 10 }}>
-                {Array.from({ length: totalPartySize }, (_, i) => (
-                  <span
-                    key={i}
-                    style={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: "50%",
-                      display: "inline-block",
-                      background:
-                        i < occupiedSpots
-                          ? i === 0
-                            ? act.color
-                            : `${act.color}88`
-                          : "var(--bg-surface-3)",
-                      border: `1.5px solid ${i < occupiedSpots ? act.color : "var(--border-medium)"}`,
-                    }}
-                  />
-                ))}
-                <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginLeft: 2 }}>
-                  {occupiedSpots}/{totalPartySize}
-                </span>
-              </div>
-
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  paddingTop: 10,
-                  borderTop: "1px solid var(--border)",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                  <Avatar src={slot.host?.avatar_url} name={slot.host?.name ?? "?"} size={26} />
-                  <span
-                    style={{
-                      fontSize: "0.8rem",
-                      color: "var(--text-secondary)",
-                      fontWeight: 500,
-                    }}
-                  >
-                    {slot.host?.name}
-                  </span>
-                  {slot.host?.reliability_score != null ? (
-                    <span className="badge badge-green">
-                      ✓ {Math.round(slot.host.reliability_score * 100)}%
-                    </span>
-                  ) : null}
-                </div>
-                {ctaButtons}
-              </div>
-            </div>
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/80 shadow-sm"
+            style={{ backdropFilter: "blur(8px)" }}
+          >
+            <ActivityIcon activityType={slot.activity_type} size="sm" />
+          </div>
+          <div>
+            <p className="text-xs font-medium text-[var(--text-secondary)]">{activityName}</p>
+            <p className="text-sm font-semibold text-[var(--text-primary)]">
+              {when.day} · {when.time}
+            </p>
           </div>
         </div>
+        {distanceLabel ? (
+          <span className="rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-[var(--text-secondary)] shadow-sm">
+            {distanceLabel}
+          </span>
+        ) : null}
       </div>
-    </m.div>
+
+      <div className="space-y-4 p-4 pt-3">
+        <div>
+          <Link href={`/slots/${slot.id}`} className="text-lg font-bold leading-snug text-[var(--text-primary)]">
+            {headline}
+          </Link>
+          {(slot.place_district || (!slot.place_name && slot.location_name)) && (
+            <p className="mt-0.5 text-sm text-[var(--text-secondary)]">
+              {slot.place_district ?? slot.location_name}
+            </p>
+          )}
+        </div>
+
+        {audience ? <span className="badge badge-purple">{audience}</span> : null}
+
+        {/* Party avatars row */}
+        <div className="flex items-center gap-3">
+          <div className="flex -space-x-2">
+            <div className="relative z-[2] ring-2 ring-white rounded-full">
+              <Avatar src={slot.host?.avatar_url} name={slot.host?.name ?? "?"} size={32} />
+            </div>
+            {Array.from({ length: Math.min(3, totalPartySize - 1) }, (_, i) => (
+              <div
+                key={i}
+                className="relative z-[1] flex h-8 w-8 items-center justify-center rounded-full bg-[var(--bg-surface-2)] text-[10px] font-semibold text-[var(--text-muted)] ring-2 ring-white"
+                style={{ marginLeft: i === 0 ? -8 : -10 }}
+              >
+                {i < slot.spots_taken ? "✓" : "+"}
+              </div>
+            ))}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-[var(--text-primary)]">{slot.host?.name}</p>
+            <p className="text-xs text-[var(--text-muted)]">
+              {occupiedSpots}/{totalPartySize}{" "}
+              {lang === "pl" ? "w ekipie" : "in party"}
+            </p>
+          </div>
+          {slot.host?.reliability_score != null ? (
+            <span className="badge badge-green shrink-0">
+              {Math.round(slot.host.reliability_score * 100)}%
+            </span>
+          ) : null}
+        </div>
+
+        <div className="flex items-center justify-between gap-3 pt-1">{cta}</div>
+      </div>
+    </m.article>
   );
 }

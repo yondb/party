@@ -22,14 +22,15 @@ export async function Navbar() {
   const showAdmin = user != null && isAdminUser(user);
 
   return (
-    <header
-      className="fixed left-0 right-0 top-0 z-40 border-b pt-safe backdrop-blur-sm"
-      style={{
-        background: "var(--bg-surface)",
-        borderBottomColor: "var(--border)",
-      }}
-    >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5">
+    <header className="pointer-events-none fixed left-0 right-0 top-0 z-40 pt-safe">
+      <div
+        className="glass-strong pointer-events-auto mx-auto flex h-14 max-w-lg items-center justify-between rounded-full px-4"
+        style={{
+          marginTop: "0.5rem",
+          marginInline: "1rem",
+          boxShadow: "var(--shadow-md)",
+        }}
+      >
         <Logo size="sm" href={user ? "/feed" : "/map"} />
         <NavbarClient unread={unread} showAdmin={showAdmin} isGuest={!user} />
       </div>

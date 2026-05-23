@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { LazyMotion, domAnimation } from "framer-motion";
+import { LazyMotion, domAnimation, m } from "framer-motion";
 import { SlotCard, type SlotCardData } from "@/components/slots/SlotCard";
 import { useLanguage } from "@/components/i18n/LanguageProvider";
 import { feedUi } from "@/lib/i18n-ui";
@@ -12,9 +12,10 @@ type FeedListProps = {
   cards: SlotCardData[];
   userId: string;
   appStatusBySlot: Record<string, "pending" | "accepted" | "rejected">;
+  totalCount: number;
 };
 
-export function FeedList({ cards, userId, appStatusBySlot }: FeedListProps) {
+export function FeedList({ cards, userId, appStatusBySlot, totalCount }: FeedListProps) {
   const { lang } = useLanguage();
   const ui = feedUi(lang);
   const [position, setPosition] = useState<{ lat: number; lng: number } | null>(null);
@@ -45,42 +46,92 @@ export function FeedList({ cards, userId, appStatusBySlot }: FeedListProps) {
     });
   }, [cards, position, lang]);
 
-  if (cards.length === 0) {
-    return <FeedEmpty ui={ui} />;
-  }
-
   return (
     <LazyMotion features={domAnimation}>
-      <ul className="flex flex-col gap-4" suppressHydrationWarning>
-        {cardsWithDistance.map(({ slot, distanceLabel }, i) => (
-          <li key={slot.id}>
-            <SlotCard
-              slot={slot}
-              index={i}
-              distanceLabel={distanceLabel}
-              applicationStatus={appStatusBySlot[slot.id] ?? "none"}
-              isHost={userId === slot.host?.id}
-            />
-          </li>
-        ))}
-      </ul>
+      {/* Hero */}
+      <m.section
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative mb-8 overflow-hidden rounded-[var(--radius-2xl)] p-6"
+        style={{
+          background:
+            "linear-gradient(145deg, rgba(255,122,0,0.12) 0%, rgba(255,255,255,0.95) 45%, rgba(246,247,251,1) 100%)",
+          boxShadow: "var(--shadow-md)",
+        }}
+      >
+        <div className="relative z-[1]">
+          <p className="text-sm font-medium text-[var(--accent)]">
+            {lang === "pl" ? "Gotowy na ruch?" : "Ready to move?"}
+          </p>
+          <h1 className="mt-1 text-3xl font-bold tracking-tight text-[var(--text-primary)]">{ui.title}</h1>
+          <p className="mt-2 max-w-[28ch] text-base leading-relaxed text-[var(--text-secondary)]">
+            {ui.subtitle}
+          </p>
+          <div className="mt-5 flex flex-wrap items-center gap-3">
+            <Link href="/map" className="btn-primary">
+              {ui.heroCta}
+            </Link>
+            <span className="rounded-full bg-white/80 px-3 py-1.5 text-sm font-medium text-[var(--text-secondary)] shadow-sm">
+              {totalCount} {lang === "pl" ? "aktywnych questów" : "active quests"}
+            </span>
+          </div>
+        </div>
+        <div
+          className="pointer-events-none absolute -right-6 -top-6 h-32 w-32 rounded-full opacity-40"
+          style={{ background: "radial-gradient(circle, var(--accent-glow), transparent 70%)" }}
+          aria-hidden
+        />
+      </m.section>
+
+      {cards.length === 0 ? (
+        <FeedEmpty ui={ui} />
+      ) : (
+        <>
+          <div className="mb-4 flex items-end justify-between">
+            <h2 className="text-lg font-bold text-[var(--text-primary)]">{ui.nearbySection}</h2>
+            <span className="text-sm text-[var(--text-muted)]">
+              {cards.length} {lang === "pl" ? "wyników" : "results"}
+            </span>
+          </div>
+          <ul className="flex flex-col gap-5" suppressHydrationWarning>
+            {cardsWithDistance.map(({ slot, distanceLabel }, i) => (
+              <li key={slot.id}>
+                <SlotCard
+                  slot={slot}
+                  index={i}
+                  distanceLabel={distanceLabel}
+                  applicationStatus={appStatusBySlot[slot.id] ?? "none"}
+                  isHost={userId === slot.host?.id}
+                />
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </LazyMotion>
   );
 }
 
 function FeedEmpty({ ui }: { ui: ReturnType<typeof feedUi> }) {
   return (
-    <div style={{ textAlign: "center", padding: "4rem 1rem" }}>
-      <p style={{ fontSize: 40, marginBottom: 16 }}>🗺️</p>
-      <p style={{ fontSize: "1.1rem", fontWeight: 700, marginBottom: 8 }}>{ui.emptyTitle}</p>
-      <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)", marginBottom: 24 }}>
-        {ui.emptySubtitle}
-      </p>
-      <Link href="/map">
-        <button type="button" className="btn-primary">
-          {ui.goToMap}
-        </button>
+    <m.div
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="floating-card flex flex-col items-center px-6 py-14 text-center"
+    >
+      <m.div
+        animate={{ y: [0, -6, 0] }}
+        transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+        className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl text-4xl"
+        style={{ background: "var(--accent-soft)" }}
+      >
+        🧭
+      </m.div>
+      <p className="text-xl font-bold text-[var(--text-primary)]">{ui.emptyTitle}</p>
+      <p className="mt-2 max-w-xs text-sm leading-relaxed text-[var(--text-secondary)]">{ui.emptySubtitle}</p>
+      <Link href="/map" className="btn-primary mt-8">
+        {ui.goToMap}
       </Link>
-    </div>
+    </m.div>
   );
 }

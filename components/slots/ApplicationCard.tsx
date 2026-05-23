@@ -137,7 +137,7 @@ export function ApplicationCard({ row, index = 0, copy, hostControls = false }: 
           </form>
         </div>
       ) : (
-        <p className="text-center font-display text-sm uppercase tracking-[0.12em] text-[var(--text-muted)]">
+        <p className="text-center text-sm font-medium text-[var(--text-muted)]">
           {row.status === "accepted" ? copy.inParty : copy.rejected}
         </p>
       )}

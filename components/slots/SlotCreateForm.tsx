@@ -176,7 +176,7 @@ export function SlotCreateForm({ places, initialPlaceId }: SlotCreateFormProps) 
           <button
             type="button"
             onClick={() => setStep(1)}
-            className="mt-2 text-xs font-semibold uppercase tracking-wide text-[var(--accent)] hover:text-[var(--accent)]"
+            className="mt-2 text-xs font-semibold text-[var(--accent)] hover:text-[var(--accent)]"
           >
             {t.changePlace}
           </button>
@@ -216,7 +216,7 @@ export function SlotCreateForm({ places, initialPlaceId }: SlotCreateFormProps) 
         <div className={`min-w-0 space-y-6 ${hasSidebar ? "lg:col-start-2 lg:row-start-1" : ""}`}>
           {step === 1 ? (
             <section>
-              <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
+              <h2 className="mb-3 text-xs font-medium text-[var(--text-muted)]">
                 {t.stepPlace}
               </h2>
               <PlacePicker places={places} value={place} onChange={setPlace} />
@@ -228,7 +228,7 @@ export function SlotCreateForm({ places, initialPlaceId }: SlotCreateFormProps) 
 
           {step === 2 ? (
             <section className="space-y-4">
-              <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
+              <h2 className="text-xs font-medium text-[var(--text-muted)]">
                 {t.stepDetails}
               </h2>
               <div className="lg:hidden">{placeSummaryCard(true)}</div>
@@ -252,7 +252,7 @@ export function SlotCreateForm({ places, initialPlaceId }: SlotCreateFormProps) 
                   >
                     −
                   </Button>
-                  <span className="font-display w-8 text-center text-[var(--accent)]">{maxSpots}</span>
+                  <span className="w-8 text-center font-semibold text-[var(--accent)]">{maxSpots}</span>
                   <Button
                     type="button"
                     variant="secondary"
@@ -264,7 +264,7 @@ export function SlotCreateForm({ places, initialPlaceId }: SlotCreateFormProps) 
                 </div>
               </div>
               <div>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
+                <p className="mb-2 text-xs font-medium text-[var(--text-muted)]">
                   {t.audience}
                 </p>
                 <div className="flex gap-2 md:max-w-xl">
@@ -303,8 +303,8 @@ export function SlotCreateForm({ places, initialPlaceId }: SlotCreateFormProps) 
           ) : null}
 
           {step === 3 ? (
-            <section className="card space-y-3 rounded-lg p-4 md:max-w-xl">
-              <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
+            <section className="floating-card space-y-3 rounded-lg p-4 md:max-w-xl">
+              <h2 className="text-xs font-medium text-[var(--text-muted)]">
                 {t.stepConfirm}
               </h2>
               <p>

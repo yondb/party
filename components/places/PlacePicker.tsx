@@ -75,7 +75,7 @@ export function PlacePicker({ places, value, onChange }: PlacePickerProps) {
                 >
                   <span className="text-xl leading-none">{meta.icon}</span>
                   <span className="min-w-0 flex-1">
-                    <span className="block font-display text-sm font-semibold text-[var(--text-primary)]">
+                    <span className="block text-sm font-semibold text-[var(--text-primary)]">
                       {p.name}
                     </span>
                     <span className="block text-xs text-[var(--text-muted)]">

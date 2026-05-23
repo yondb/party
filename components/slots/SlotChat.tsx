@@ -163,7 +163,7 @@ export function SlotChat({
         right={
           <Link
             href={`/profile/${hostId}`}
-            className={`${focusRing} shrink-0 rounded border border-[var(--border-medium)] bg-[var(--bg-input)] px-2 py-2 font-display text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--accent)] hover:border-[var(--accent)] hover:text-[var(--accent)] sm:px-3 sm:text-xs`}
+            className={`${focusRing} shrink-0 rounded border border-[var(--border-medium)] bg-[var(--bg-input)] px-2 py-2 text-xs font-medium text-[var(--accent)] hover:border-[var(--accent)] hover:text-[var(--accent)] sm:px-3 sm:text-xs`}
           >
             {ui.hostProfile}
           </Link>
@@ -186,7 +186,7 @@ export function SlotChat({
                 <Fragment key={m.id}>
                   {showDay ? (
                     <div className="flex justify-center py-1">
-                      <span className="rounded-full border border-[var(--border-medium)] bg-[var(--bg-input)] px-3 py-1 font-display text-[10px] uppercase tracking-[0.14em] text-[var(--text-muted)]">
+                      <span className="rounded-full border border-[var(--border-medium)] bg-[var(--bg-input)] px-3 py-1 text-xs font-medium text-[var(--text-muted)]">
                         {dayDividerLabel(m.created_at, lang)}
                       </span>
                     </div>

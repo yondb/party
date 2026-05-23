@@ -23,8 +23,8 @@ export default async function SettingsPage() {
   return (
     <div className="pb-6">
       <PageHeader title={t.title} backHref="/profile" backLabel={back.back} />
-      <div className="card rounded-lg p-4">
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--text-secondary)]">
+      <div className="floating-card rounded-lg p-4">
+        <h2 className="text-xs font-medium text-[var(--text-secondary)]">
           {t.accountHeading}
         </h2>
         <p className="mt-2 text-sm text-[var(--text-muted)]">{t.accountBody}</p>

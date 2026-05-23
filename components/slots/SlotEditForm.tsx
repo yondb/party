@@ -113,8 +113,8 @@ export function SlotEditForm({ initial }: { initial: SlotEditInitial }) {
       />
       <form onSubmit={onSubmit} className="space-y-5 pb-8">
         {initial.place && placeMeta ? (
-          <section className="card rounded-lg border border-[var(--border-medium)] p-3">
-            <p className="text-xs uppercase tracking-widest text-[var(--text-muted)]">{t.placeLocked}</p>
+          <section className="floating-card rounded-lg border border-[var(--border-medium)] p-3">
+            <p className="text-xs font-medium text-[var(--text-muted)]">{t.placeLocked}</p>
             <p className="mt-1 text-lg font-semibold text-[var(--text-primary)]">
               {placeMeta.icon} {initial.place.name}
             </p>
@@ -140,7 +140,7 @@ export function SlotEditForm({ initial }: { initial: SlotEditInitial }) {
             <Button type="button" variant="secondary" className="!px-3 !py-1" onClick={() => setMaxSpots((n) => Math.max(2, n - 1))}>
               −
             </Button>
-            <span className="font-display w-8 text-center text-[var(--accent)]">{maxSpots}</span>
+            <span className="w-8 text-center font-semibold text-[var(--accent)]">{maxSpots}</span>
             <Button type="button" variant="secondary" className="!px-3 !py-1" onClick={() => setMaxSpots((n) => Math.min(10, n + 1))}>
               +
             </Button>
@@ -148,7 +148,7 @@ export function SlotEditForm({ initial }: { initial: SlotEditInitial }) {
         </div>
 
         <div>
-          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
+          <p className="mb-2 text-xs font-medium text-[var(--text-muted)]">
             {t.audience}
           </p>
           <div className="flex gap-2">

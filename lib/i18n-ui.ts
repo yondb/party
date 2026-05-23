@@ -103,8 +103,11 @@ export function genderApplyBlocked(lang: Lang, scope: "female" | "male"): string
 export function feedUi(lang: Lang) {
   return lang === "pl"
     ? {
-        title: "Questy w pobliżu",
-        subtitle: "Znajdź ekipę i ruszaj",
+        title: "Odkrywaj",
+        subtitle: "Questy i ekipy w Twojej okolicy",
+        heroCta: "Otwórz mapę",
+        nearbySection: "W pobliżu",
+        allQuests: "Wszystkie questy",
         allActivities: "Wszystkie",
         allDates: "Wszystkie daty",
         emptyTitle: "Brak questów w okolicy",
@@ -115,8 +118,11 @@ export function feedUi(lang: Lang) {
         errorPrefix: "Nie udało się wczytać feedu:",
       }
     : {
-        title: "Quests nearby",
-        subtitle: "Find your crew and go",
+        title: "Discover",
+        subtitle: "Quests and crews near you",
+        heroCta: "Open map",
+        nearbySection: "Nearby",
+        allQuests: "All quests",
         allActivities: "All",
         allDates: "All dates",
         emptyTitle: "No quests nearby",
@@ -139,7 +145,10 @@ export function mapUi(lang: Lang) {
         onlyOpenSlots: "Wolne miejsca",
         onlyOpenSlotsHint: "Tylko sloty z wolnymi miejscami",
         radius: "Zasięg od Ciebie",
-        useMyLocation: "📍 W pobliżu",
+        useMyLocation: "W pobliżu",
+        searchPlaceholder: "Szukaj miejsca…",
+        filters: "Filtry",
+        listTitle: "Miejsca",
         locationDenied: "Brak dostępu do lokalizacji",
         resultsFound: (n: number) =>
           n === 1 ? "Znaleziono 1 miejsce" : `Znaleziono ${n} miejsc`,
@@ -164,7 +173,10 @@ export function mapUi(lang: Lang) {
         onlyOpenSlots: "Open spots",
         onlyOpenSlotsHint: "Only slots with free spots",
         radius: "Radius from you",
-        useMyLocation: "📍 Nearby",
+        useMyLocation: "Near me",
+        searchPlaceholder: "Search places…",
+        filters: "Filters",
+        listTitle: "Places",
         locationDenied: "Location access denied",
         resultsFound: (n: number) => (n === 1 ? "1 place found" : `${n} places found`),
         within: "within",

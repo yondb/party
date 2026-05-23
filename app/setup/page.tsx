@@ -166,7 +166,7 @@ export default function SetupPage() {
       <form className="mt-6 space-y-4" onSubmit={onSubmit}>
         <Input label={copy.name} value={name} onChange={(e) => setName(e.target.value)} required />
         <div>
-          <span className="mb-2 block font-display text-xs uppercase tracking-widest text-[var(--text-secondary)]">
+          <span className="mb-2 block text-xs font-medium text-[var(--text-secondary)]">
             {copy.gender}
           </span>
           <div className="flex gap-2">
@@ -200,7 +200,7 @@ export default function SetupPage() {
         </div>
         <Input label={copy.birth} type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} required />
         <div>
-          <label className="mb-1 block font-display text-xs uppercase tracking-widest text-[var(--text-secondary)]">
+          <label className="mb-1 block text-xs font-medium text-[var(--text-secondary)]">
             {copy.avatar}
           </label>
           <input
@@ -221,7 +221,7 @@ export default function SetupPage() {
           placeholder={copy.cityPh}
         />
         <div>
-          <label className="mb-1 block font-display text-xs uppercase tracking-widest text-[var(--text-secondary)]">
+          <label className="mb-1 block text-xs font-medium text-[var(--text-secondary)]">
             {copy.goalsLabel}
           </label>
           <textarea
@@ -233,7 +233,7 @@ export default function SetupPage() {
         </div>
 
         <div>
-          <p className="mb-2 font-display text-xs uppercase tracking-widest text-[var(--text-secondary)]">{copy.activities}</p>
+          <p className="mb-2 text-xs font-medium text-[var(--text-secondary)]">{copy.activities}</p>
           <div className="grid grid-cols-2 gap-2">
             {ACTIVITY_KEYS.map((k) => {
               const on = selected.includes(k);

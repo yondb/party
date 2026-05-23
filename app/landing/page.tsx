@@ -61,7 +61,7 @@ export default async function LandingPage() {
                 <Link
                   key={s.id}
                   href="/auth"
-                  className="block rounded-lg border border-[var(--border-medium)] bg-[var(--bg-card)] p-4 sm:p-5"
+                  className="floating-card-hover block rounded-2xl p-4 sm:p-5"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
@@ -74,14 +74,14 @@ export default async function LandingPage() {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}{" "}
-                        � {s.location_name}
+                        ? {s.location_name}
                       </p>
                     </div>
                     <div className="shrink-0" title={act.label}>
                       <ActivityIcon activityType={s.activity_type} size="md" />
                     </div>
                   </div>
-                  <p className="mt-3 font-display text-xs font-semibold uppercase tracking-[0.14em] text-[var(--accent)] sm:text-sm">
+                  <p className="mt-3 text-xs font-medium text-[var(--accent)] sm:text-sm">
                     {t.signInToApply}
                   </p>
                 </Link>
@@ -97,16 +97,16 @@ export default async function LandingPage() {
           <h2 className="text-xl font-bold text-[var(--text-primary)] sm:text-2xl">{t.howTitle}</h2>
           <hr className="divider-gold my-4" />
           <div className="grid gap-4">
-            <div className="card rounded-lg p-4 sm:p-5">
-              <p className="font-display text-base font-bold text-[var(--accent)] sm:text-lg">{t.step1Title}</p>
+            <div className="floating-card rounded-lg p-4 sm:p-5">
+              <p className="text-base font-semibold text-[var(--accent)] sm:text-lg">{t.step1Title}</p>
               <p className="mt-2 text-base leading-relaxed text-[var(--text-secondary)] sm:text-lg">{t.step1Body}</p>
             </div>
-            <div className="card rounded-lg p-4 sm:p-5">
-              <p className="font-display text-base font-bold text-[var(--accent)] sm:text-lg">{t.step2Title}</p>
+            <div className="floating-card rounded-lg p-4 sm:p-5">
+              <p className="text-base font-semibold text-[var(--accent)] sm:text-lg">{t.step2Title}</p>
               <p className="mt-2 text-base leading-relaxed text-[var(--text-secondary)] sm:text-lg">{t.step2Body}</p>
             </div>
-            <div className="card rounded-lg p-4 sm:p-5">
-              <p className="font-display text-base font-bold text-[var(--accent)] sm:text-lg">{t.step3Title}</p>
+            <div className="floating-card rounded-lg p-4 sm:p-5">
+              <p className="text-base font-semibold text-[var(--accent)] sm:text-lg">{t.step3Title}</p>
               <p className="mt-2 text-base leading-relaxed text-[var(--text-secondary)] sm:text-lg">{t.step3Body}</p>
             </div>
           </div>
