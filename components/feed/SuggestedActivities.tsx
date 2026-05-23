@@ -18,10 +18,17 @@ const FEATURED: ActivityKey[] = [
 
 type Props = {
   activeActivity?: string;
-  feedHref: (activity?: ActivityKey) => string;
+  validDate?: string;
 };
 
-export function SuggestedActivities({ activeActivity, feedHref }: Props) {
+function buildFeedHref(activity: ActivityKey, date?: string) {
+  const params = new URLSearchParams();
+  params.set("activity", activity);
+  if (date) params.set("date", date);
+  return `/feed?${params.toString()}`;
+}
+
+export function SuggestedActivities({ activeActivity, validDate }: Props) {
   const { lang } = useLanguage();
   const title = lang === "pl" ? "Popularne aktywności" : "Popular activities";
 
@@ -35,7 +42,7 @@ export function SuggestedActivities({ activeActivity, feedHref }: Props) {
           return (
             <Link
               key={key}
-              href={feedHref(key)}
+              href={buildFeedHref(key, validDate)}
               className={`chip shrink-0 ${active ? "chip-active" : ""}`}
               style={
                 !active

@@ -158,7 +158,7 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
         ) : null}
       </div>
 
-      <SuggestedActivities activeActivity={validActivity} feedHref={(a) => feedHref({ activity: a, date: validDate })} />
+      <SuggestedActivities activeActivity={validActivity} validDate={validDate} />
 
       <FeedList
         cards={cards}
