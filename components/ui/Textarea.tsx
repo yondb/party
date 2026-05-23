@@ -10,7 +10,7 @@ export function Textarea({ label, error, className = "", id, ...rest }: Textarea
   return (
     <label className="flex flex-col gap-1.5 text-base" htmlFor={tid}>
       {label ? (
-        <span className="font-display text-sm font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">
+        <span className="text-xs font-semibold uppercase tracking-widest text-[var(--text-secondary)]">
           {label}
         </span>
       ) : null}

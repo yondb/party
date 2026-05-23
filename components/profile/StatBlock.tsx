@@ -5,11 +5,17 @@ type StatBlockProps = {
 
 export function StatBlock({ label, value }: StatBlockProps) {
   return (
-    <div className="flex min-h-[5.75rem] flex-col items-center justify-center rounded border border-[var(--gold-dim)] bg-[var(--bg-input)] px-3 py-4 sm:min-h-[6.25rem] sm:px-4 lg:py-6">
-      <span className="font-display text-3xl font-bold leading-none tabular-nums text-[var(--gold-bright)] sm:text-[2rem]">
+    <div className="card flex flex-col items-center justify-center px-3 py-4 text-center">
+      <span
+        className="text-2xl font-bold tabular-nums leading-none"
+        style={{ color: "var(--text-primary)" }}
+      >
         {value}
       </span>
-      <span className="mt-3 text-center font-display text-base uppercase tracking-[0.14em] text-[var(--text-secondary)]">
+      <span
+        className="mt-2 text-[0.65rem] font-semibold uppercase tracking-widest"
+        style={{ color: "var(--text-muted)" }}
+      >
         {label}
       </span>
     </div>

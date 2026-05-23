@@ -15,7 +15,7 @@ export function Button({
   ...rest
 }: ButtonProps) {
   const base =
-    "inline-flex min-h-[2.75rem] items-center justify-center gap-2 rounded-md px-4 py-3 text-base transition active:scale-[0.98] disabled:opacity-45 disabled:pointer-events-none";
+    "inline-flex min-h-[2.75rem] items-center justify-center gap-2 px-4 py-3 text-base transition active:scale-[0.98] disabled:pointer-events-none disabled:opacity-45";
   const v =
     variant === "primary"
       ? "btn-primary"

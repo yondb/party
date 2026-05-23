@@ -1,7 +1,7 @@
-/** Small stroke icons for bottom nav — clearer than single letters on large phones. */
+/** Small stroke icons for bottom nav */
 
 function stroke(active: boolean) {
-  return active ? "var(--gold-bright)" : "var(--gold-mid)";
+  return active ? "var(--accent)" : "var(--text-muted)";
 }
 
 export function BottomIconFeed({ active }: { active: boolean }) {

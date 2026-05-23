@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { LazyMotion, domAnimation } from "framer-motion";
 import { SlotCard, type SlotCardData } from "@/components/slots/SlotCard";
-import { Button } from "@/components/ui/Button";
 import { useLanguage } from "@/components/i18n/LanguageProvider";
 import { feedUi } from "@/lib/i18n-ui";
 import { distanceKm, formatDistanceKm } from "@/lib/geo";
@@ -50,30 +50,36 @@ export function FeedList({ cards, userId, appStatusBySlot }: FeedListProps) {
   }
 
   return (
-    <ul className="flex flex-col gap-4" suppressHydrationWarning>
-      {cardsWithDistance.map(({ slot, distanceLabel }, i) => (
-        <li key={slot.id}>
-          <SlotCard
-            slot={slot}
-            index={i}
-            distanceLabel={distanceLabel}
-            applicationStatus={appStatusBySlot[slot.id] ?? "none"}
-            isHost={userId === slot.host?.id}
-          />
-        </li>
-      ))}
-    </ul>
+    <LazyMotion features={domAnimation}>
+      <ul className="flex flex-col gap-4" suppressHydrationWarning>
+        {cardsWithDistance.map(({ slot, distanceLabel }, i) => (
+          <li key={slot.id}>
+            <SlotCard
+              slot={slot}
+              index={i}
+              distanceLabel={distanceLabel}
+              applicationStatus={appStatusBySlot[slot.id] ?? "none"}
+              isHost={userId === slot.host?.id}
+            />
+          </li>
+        ))}
+      </ul>
+    </LazyMotion>
   );
 }
 
 function FeedEmpty({ ui }: { ui: ReturnType<typeof feedUi> }) {
   return (
-    <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
-      <p className="max-w-sm font-display text-lg leading-snug text-[var(--text-bright)]">{ui.emptyTitle}</p>
-      <Link href="/slots/new" className="mt-6 w-full max-w-xs">
-        <Button type="button" variant="primary" fullWidth>
-          {ui.createQuest}
-        </Button>
+    <div style={{ textAlign: "center", padding: "4rem 1rem" }}>
+      <p style={{ fontSize: 40, marginBottom: 16 }}>🗺️</p>
+      <p style={{ fontSize: "1.1rem", fontWeight: 700, marginBottom: 8 }}>{ui.emptyTitle}</p>
+      <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)", marginBottom: 24 }}>
+        {ui.emptySubtitle}
+      </p>
+      <Link href="/map">
+        <button type="button" className="btn-primary">
+          {ui.goToMap}
+        </button>
       </Link>
     </div>
   );

@@ -12,9 +12,9 @@ export default async function PremiumPage() {
   return (
     <div className="pb-6">
       <PageHeader title={t.title} backHref="/settings" backLabel={back.back} />
-      <div className="wow-card mt-4 rounded-lg p-5">
+      <div className="card mt-4 rounded-lg p-5">
         <p className="text-base leading-relaxed text-[var(--text-secondary)]">{t.body}</p>
-        <Link href="/settings" className="mt-6 inline-block text-sm text-[var(--gold-mid)] hover:text-[var(--gold-bright)]">
+        <Link href="/settings" className="mt-6 inline-block text-sm text-[var(--accent)] hover:text-[var(--accent)]">
           {t.back}
         </Link>
       </div>

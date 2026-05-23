@@ -151,7 +151,7 @@ export function SlotChat({
   }
 
   const focusRing =
-    "outline-none transition focus-visible:ring-2 focus-visible:ring-[var(--gold-mid)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-void)]";
+    "outline-none transition focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-page)]";
 
   return (
     <div className="flex min-h-0 flex-col">
@@ -163,16 +163,16 @@ export function SlotChat({
         right={
           <Link
             href={`/profile/${hostId}`}
-            className={`${focusRing} shrink-0 rounded border border-[var(--gold-dim)] bg-[var(--bg-input)] px-2 py-2 font-display text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--gold-mid)] hover:border-[var(--gold-mid)] hover:text-[var(--gold-bright)] sm:px-3 sm:text-xs`}
+            className={`${focusRing} shrink-0 rounded border border-[var(--border-medium)] bg-[var(--bg-input)] px-2 py-2 font-display text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--accent)] hover:border-[var(--accent)] hover:text-[var(--accent)] sm:px-3 sm:text-xs`}
           >
             {ui.hostProfile}
           </Link>
         }
       />
-      <div className="flex min-h-[min(520px,calc(100dvh-14rem))] flex-col rounded-lg border border-[var(--gold-dim)] bg-[var(--bg-panel)]/40">
+      <div className="flex min-h-[min(520px,calc(100dvh-14rem))] flex-col rounded-lg border border-[var(--border-medium)] bg-[var(--bg-panel)]/40">
         <div className="flex-1 space-y-3 overflow-y-auto px-2 py-3 sm:px-3">
           {otherTyping ? (
-            <p className="text-center text-xs italic text-[var(--gold-mid)]">{ui.typing}</p>
+            <p className="text-center text-xs italic text-[var(--accent)]">{ui.typing}</p>
           ) : null}
           {items.length === 0 ? (
             <p className="text-center text-sm text-[var(--text-muted)]">{ui.empty}</p>
@@ -186,7 +186,7 @@ export function SlotChat({
                 <Fragment key={m.id}>
                   {showDay ? (
                     <div className="flex justify-center py-1">
-                      <span className="rounded-full border border-[var(--gold-dim)] bg-[var(--bg-input)] px-3 py-1 font-display text-[10px] uppercase tracking-[0.14em] text-[var(--text-muted)]">
+                      <span className="rounded-full border border-[var(--border-medium)] bg-[var(--bg-input)] px-3 py-1 font-display text-[10px] uppercase tracking-[0.14em] text-[var(--text-muted)]">
                         {dayDividerLabel(m.created_at, lang)}
                       </span>
                     </div>
@@ -206,8 +206,8 @@ export function SlotChat({
                       <div
                         className={`rounded-lg px-3 py-2 text-sm ${
                           own
-                            ? "border border-[var(--gold-dark)] bg-[linear-gradient(180deg,#2a2210,#1a1510)] text-[var(--text-bright)]"
-                            : "border border-[var(--gold-dim)] bg-[var(--bg-input)] text-[var(--text-primary)]"
+                            ? "border border-[var(--border-strong)] bg-[var(--accent-soft)] text-[var(--text-primary)]"
+                            : "border border-[var(--border-medium)] bg-[var(--bg-input)] text-[var(--text-primary)]"
                         }`}
                       >
                         {m.content}
@@ -229,7 +229,7 @@ export function SlotChat({
         </div>
         <form
           onSubmit={onSend}
-          className={`flex gap-2 border-t border-[var(--gold-dim)] bg-[var(--bg-void)]/90 px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] sm:px-3`}
+          className={`flex gap-2 border-t border-[var(--border-medium)] bg-[var(--bg-page)]/90 px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] sm:px-3`}
         >
           <input
             className={`input-wow flex-1 ${focusRing}`}

@@ -119,7 +119,7 @@ export default async function ManageSlotPage({ params }: { params: { id: string 
       {slot.status === "completed" && acceptedParticipants.length > 0 ? (
         <Link
           href={`/slots/${slot.id}/rate`}
-          className="mt-6 flex min-h-[2.75rem] items-center justify-center rounded-lg border-2 border-[var(--gold-bright)] bg-[linear-gradient(180deg,#c9963a,#8a6420)] px-4 font-display text-sm font-bold uppercase tracking-wide text-[var(--bg-void)]"
+          className="btn-primary mt-6 flex min-h-[2.75rem] px-4 text-sm"
         >
           {lang === "pl" ? "Oceń uczestników" : "Rate participants"}
         </Link>
@@ -129,7 +129,7 @@ export default async function ManageSlotPage({ params }: { params: { id: string 
         <p className="mt-4 text-center text-sm text-[var(--text-muted)]">{m.questDone}</p>
       ) : null}
 
-      <Link href={`/slots/${slot.id}`} className="mt-6 block text-center text-sm text-[var(--gold-mid)]">
+      <Link href={`/slots/${slot.id}`} className="mt-6 block text-center text-sm text-[var(--accent)]">
         {m.backDetails}
       </Link>
     </div>

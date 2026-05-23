@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { SlotCreateForm } from "@/components/slots/SlotCreateForm";
 import type { PlaceRow } from "@/lib/places";
@@ -8,6 +9,10 @@ export const dynamic = "force-dynamic";
 type Search = { place_id?: string };
 
 export default async function NewSlotPage({ searchParams }: { searchParams: Search }) {
+  if (!searchParams.place_id?.trim()) {
+    redirect("/map");
+  }
+
   const supabase = createClient();
   const { data: places } = await supabase
     .from("places")
@@ -15,7 +20,7 @@ export default async function NewSlotPage({ searchParams }: { searchParams: Sear
     .order("name");
 
   return (
-    <div className="page-shell">
+    <div className="page-shell py-8">
       <Suspense fallback={<div className="py-12 text-center text-[var(--text-muted)]">…</div>}>
         <SlotCreateForm
           places={(places ?? []) as PlaceRow[]}

@@ -9,12 +9,12 @@ export default function TermsPage() {
   return (
     <article className="space-y-8 text-base leading-relaxed text-[var(--text-secondary)]">
       <header>
-        <h1 className="font-display text-3xl text-[var(--gold-bright)]">Terms of use</h1>
+        <h1 className="text-3xl font-bold text-[var(--accent)]">Terms of use</h1>
         <p className="mt-2 text-sm text-[var(--text-muted)]">Last updated: 2026-05-10 · Draft for review</p>
       </header>
 
       <section className="space-y-3">
-        <h2 className="font-display text-lg text-[var(--text-bright)]">1. The Service</h2>
+        <h2 className="text-lg font-semibold text-[var(--text-primary)]">1. The Service</h2>
         <p>
           lfparty connects people for real-world activities. We do not guarantee participant behaviour, safety of
           locations, or outcomes of meetups. You participate at your own risk.
@@ -22,7 +22,7 @@ export default function TermsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-display text-lg text-[var(--text-bright)]">2. Accounts and conduct</h2>
+        <h2 className="text-lg font-semibold text-[var(--text-primary)]">2. Accounts and conduct</h2>
         <p>
           You must provide accurate information and keep credentials secure. Harassment, hate, illegal activity, or
           abuse of reporting tools may result in suspension or termination. Moderators may restrict accounts where
@@ -31,7 +31,7 @@ export default function TermsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-display text-lg text-[var(--text-bright)]">3. Content</h2>
+        <h2 className="text-lg font-semibold text-[var(--text-primary)]">3. Content</h2>
         <p>
           You retain rights to content you post. You grant the Service a licence to host, display, and distribute that
           content as needed to operate lfparty.
@@ -39,7 +39,7 @@ export default function TermsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-display text-lg text-[var(--text-bright)]">4. Disclaimer</h2>
+        <h2 className="text-lg font-semibold text-[var(--text-primary)]">4. Disclaimer</h2>
         <p>
           The Service is provided &quot;as is&quot; without warranties of any kind. To the maximum extent permitted by
           law, we are not liable for indirect damages or losses arising from meetups between users.
@@ -49,12 +49,12 @@ export default function TermsPage() {
       <hr className="divider-gold my-8" />
 
       <header>
-        <h2 className="font-display text-2xl text-[var(--gold-bright)]">Regulamin (PL)</h2>
+        <h2 className="text-2xl font-bold text-[var(--accent)]">Regulamin (PL)</h2>
         <p className="mt-2 text-sm text-[var(--text-muted)]">Szkic do akceptacji prawnika · 2026-05-10</p>
       </header>
 
       <section className="space-y-3">
-        <h3 className="font-display text-lg text-[var(--text-bright)]">1. Usługa</h3>
+        <h3 className="text-lg font-semibold text-[var(--text-primary)]">1. Usługa</h3>
         <p>
           Aplikacja umożliwia organizowanie i dołączanie do aktywności offline. Operator nie odpowiada za przebieg
           spotkań ani zachowanie uczestników — bierzesz w nich udział na własną odpowiedzialność.
@@ -62,7 +62,7 @@ export default function TermsPage() {
       </section>
 
       <section className="space-y-3">
-        <h3 className="font-display text-lg text-[var(--text-bright)]">2. Zasady</h3>
+        <h3 className="text-lg font-semibold text-[var(--text-primary)]">2. Zasady</h3>
         <p>
           Zakazane jest m.in. nękanie, treści bezprawne, spam oraz nadużywanie zgłoszeń. Konto może zostać zablokowane
           po decyzji moderatora.

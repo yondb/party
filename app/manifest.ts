@@ -8,8 +8,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: SITE_TAGLINE,
     start_url: "/",
     display: "standalone",
-    background_color: "#0a0806",
-    theme_color: "#c9963a",
+    background_color: "#f5f3ef",
+    theme_color: "#e8821a",
     orientation: "portrait",
     icons: [
       {

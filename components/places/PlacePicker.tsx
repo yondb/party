@@ -53,7 +53,7 @@ export function PlacePicker({ places, value, onChange }: PlacePickerProps) {
         onChange={(e) => setQuery(e.target.value)}
         placeholder={lang === "pl" ? "np. Łazienki…" : "e.g. Royal Baths…"}
       />
-      <ul className="max-h-64 space-y-2 overflow-y-auto rounded-lg border border-[var(--gold-dim)] p-2">
+      <ul className="max-h-64 space-y-2 overflow-y-auto rounded-lg border border-[var(--border-medium)] p-2">
         {filtered.length === 0 ? (
           <li className="px-2 py-4 text-center text-sm text-[var(--text-muted)]">
             {lang === "pl" ? "Brak miejsc — uruchom import OSM." : "No places — run OSM import."}
@@ -69,13 +69,13 @@ export function PlacePicker({ places, value, onChange }: PlacePickerProps) {
                   onClick={() => onChange(p)}
                   className={`flex w-full items-start gap-3 rounded-lg border px-3 py-2.5 text-left transition ${
                     selected
-                      ? "border-[var(--gold-bright)] bg-[linear-gradient(180deg,#e8c56a22,#c9963a18)]"
-                      : "border-transparent hover:border-[var(--gold-dim)] hover:bg-[var(--bg-card)]"
+                      ? "border-[var(--accent)] bg-[var(--accent-soft)]"
+                      : "border-transparent hover:border-[var(--border-medium)] hover:bg-[var(--bg-card)]"
                   }`}
                 >
                   <span className="text-xl leading-none">{meta.icon}</span>
                   <span className="min-w-0 flex-1">
-                    <span className="block font-display text-sm font-semibold text-[var(--text-bright)]">
+                    <span className="block font-display text-sm font-semibold text-[var(--text-primary)]">
                       {p.name}
                     </span>
                     <span className="block text-xs text-[var(--text-muted)]">

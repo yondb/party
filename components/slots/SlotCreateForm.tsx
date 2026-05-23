@@ -163,9 +163,9 @@ export function SlotCreateForm({ places, initialPlaceId }: SlotCreateFormProps) 
     if (!place || !placeMeta) return null;
     return (
       <div
-        className={`wow-card rounded-lg border border-[var(--gold-dim)] p-3 ${compact ? "" : "lg:p-4"}`}
+        className={`card rounded-lg border border-[var(--border-medium)] p-3 ${compact ? "" : "lg:p-4"}`}
       >
-        <p className="font-display text-lg text-[var(--text-bright)] lg:text-xl">
+        <p className="text-lg font-semibold text-[var(--text-primary)] lg:text-xl">
           {placeMeta.icon} {place.name}
         </p>
         <p className="text-sm text-[var(--text-muted)]">
@@ -176,7 +176,7 @@ export function SlotCreateForm({ places, initialPlaceId }: SlotCreateFormProps) 
           <button
             type="button"
             onClick={() => setStep(1)}
-            className="mt-2 text-xs font-semibold uppercase tracking-wide text-[var(--gold-mid)] hover:text-[var(--gold-bright)]"
+            className="mt-2 text-xs font-semibold uppercase tracking-wide text-[var(--accent)] hover:text-[var(--accent)]"
           >
             {t.changePlace}
           </button>
@@ -184,6 +184,8 @@ export function SlotCreateForm({ places, initialPlaceId }: SlotCreateFormProps) 
       </div>
     );
   }
+
+  const hasSidebar = step >= 2 && place;
 
   return (
     <div>
@@ -193,7 +195,7 @@ export function SlotCreateForm({ places, initialPlaceId }: SlotCreateFormProps) 
         {Array.from({ length: progressSteps }, (_, i) => i + 1).map((n) => (
           <div
             key={n}
-            className={`h-1 flex-1 rounded-full ${progressActive >= n ? "bg-[var(--gold-mid)]" : "bg-[var(--gold-dim)]/40"}`}
+            className={`h-1 flex-1 rounded-full ${progressActive >= n ? "bg-[var(--accent)]" : "bg-[var(--bg-surface-3)]"}`}
           />
         ))}
       </div>
@@ -201,16 +203,20 @@ export function SlotCreateForm({ places, initialPlaceId }: SlotCreateFormProps) 
       <form
         id="slot-create-form"
         onSubmit={onSubmit}
-        className="space-y-6 pb-28 md:pb-6 lg:grid lg:grid-cols-[minmax(0,16rem)_minmax(0,1fr)] lg:items-start lg:gap-8 xl:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] xl:gap-10"
+        className={`space-y-6 pb-28 md:pb-6 ${
+          hasSidebar
+            ? "lg:grid lg:grid-cols-[minmax(0,16rem)_minmax(0,1fr)] lg:items-start lg:gap-8 xl:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] xl:gap-10"
+            : "lg:mx-auto lg:max-w-lg"
+        }`}
       >
-        {step >= 2 && place ? (
+        {hasSidebar ? (
           <aside className="hidden lg:block lg:sticky lg:top-24">{placeSummaryCard()}</aside>
         ) : null}
 
-        <div className="min-w-0 space-y-6 lg:col-start-2 lg:row-start-1">
+        <div className={`min-w-0 space-y-6 ${hasSidebar ? "lg:col-start-2 lg:row-start-1" : ""}`}>
           {step === 1 ? (
             <section>
-              <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">
+              <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
                 {t.stepPlace}
               </h2>
               <PlacePicker places={places} value={place} onChange={setPlace} />
@@ -222,7 +228,7 @@ export function SlotCreateForm({ places, initialPlaceId }: SlotCreateFormProps) 
 
           {step === 2 ? (
             <section className="space-y-4">
-              <h2 className="font-display text-sm font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
                 {t.stepDetails}
               </h2>
               <div className="lg:hidden">{placeSummaryCard(true)}</div>
@@ -235,7 +241,7 @@ export function SlotCreateForm({ places, initialPlaceId }: SlotCreateFormProps) 
                 error={fieldErrors.dateTime}
                 required
               />
-              <div className="flex items-center justify-between rounded border border-[var(--gold-dim)] bg-[var(--bg-input)] px-3 py-2">
+              <div className="flex items-center justify-between rounded border border-[var(--border-medium)] bg-[var(--bg-input)] px-3 py-2">
                 <span className="text-sm text-[var(--text-secondary)]">{t.spots}</span>
                 <div className="flex items-center gap-2">
                   <Button
@@ -246,7 +252,7 @@ export function SlotCreateForm({ places, initialPlaceId }: SlotCreateFormProps) 
                   >
                     −
                   </Button>
-                  <span className="font-display w-8 text-center text-[var(--gold-bright)]">{maxSpots}</span>
+                  <span className="font-display w-8 text-center text-[var(--accent)]">{maxSpots}</span>
                   <Button
                     type="button"
                     variant="secondary"
@@ -258,7 +264,7 @@ export function SlotCreateForm({ places, initialPlaceId }: SlotCreateFormProps) 
                 </div>
               </div>
               <div>
-                <p className="mb-2 font-display text-sm font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
                   {t.audience}
                 </p>
                 <div className="flex gap-2 md:max-w-xl">
@@ -277,8 +283,8 @@ export function SlotCreateForm({ places, initialPlaceId }: SlotCreateFormProps) 
                         onClick={() => setGenderScope(key)}
                         className={`flex min-h-[4rem] flex-1 flex-col items-center justify-center gap-1 rounded-lg border px-1 py-2 text-center text-[10px] font-semibold uppercase sm:text-xs ${
                           sel
-                            ? "border-[var(--gold-bright)] bg-[linear-gradient(180deg,#e8c56a,#c9963a)] text-[var(--bg-void)]"
-                            : "border-[var(--gold-dim)] text-[var(--text-muted)]"
+                            ? "border-[var(--accent)] bg-[var(--accent)] text-white"
+                            : "border-[var(--border-medium)] text-[var(--text-muted)]"
                         }`}
                       >
                         <span className="font-mono text-2xl">{icon}</span>
@@ -297,21 +303,21 @@ export function SlotCreateForm({ places, initialPlaceId }: SlotCreateFormProps) 
           ) : null}
 
           {step === 3 ? (
-            <section className="wow-card space-y-3 rounded-lg p-4 md:max-w-xl">
-              <h2 className="font-display text-sm font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">
+            <section className="card space-y-3 rounded-lg p-4 md:max-w-xl">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
                 {t.stepConfirm}
               </h2>
               <p>
                 <span className="text-[var(--text-muted)]">{t.summaryPlace}: </span>
-                <span className="text-[var(--text-bright)]">{place?.name}</span>
+                <span className="text-[var(--text-primary)]">{place?.name}</span>
               </p>
               <p>
                 <span className="text-[var(--text-muted)]">{t.summaryWhen}: </span>
-                <span className="text-[var(--text-bright)]">{whenLabel}</span>
+                <span className="text-[var(--text-primary)]">{whenLabel}</span>
               </p>
               <p>
                 <span className="text-[var(--text-muted)]">{t.summarySpots}: </span>
-                <span className="text-[var(--text-bright)]">{maxSpots}</span>
+                <span className="text-[var(--text-primary)]">{maxSpots}</span>
               </p>
             </section>
           ) : null}
@@ -344,7 +350,7 @@ export function SlotCreateForm({ places, initialPlaceId }: SlotCreateFormProps) 
         </div>
       </form>
 
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-[var(--gold-dim)] bg-[var(--bg-void)]/95 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-sm md:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-[var(--border-medium)] bg-[var(--bg-page)]/95 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-sm md:hidden">
         <div className="mx-auto flex max-w-lg gap-2">
           {step > (skipPlaceStep ? 2 : 1) ? (
             <Button type="button" variant="secondary" onClick={() => setStep((s) => s - 1)}>

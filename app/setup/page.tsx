@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -42,24 +42,24 @@ export default function SetupPage() {
   const copy =
     lang === "pl"
       ? {
-          title: "Stwórz postać",
-          subtitle: "Imię, awatar i ulubione aktywności.",
-          name: "Imię",
-          gender: "Płeć",
+          title: "Stw�rz posta�",
+          subtitle: "Imi�, awatar i ulubione aktywno�ci.",
+          name: "Imi�",
+          gender: "P�e�",
           birth: "Data urodzenia",
           avatar: "Awatar (z dysku)",
-          uploadBusy: "Przesyłanie awatara…",
-          avatarOk: "Awatar przesłany.",
+          uploadBusy: "Przesy�anie awatara�",
+          avatarOk: "Awatar przes�any.",
           avatarHint: "Opcjonalnie (max 5 MB).",
-          activities: "Wybierz aktywności",
+          activities: "Wybierz aktywno�ci",
           cityLabel: "Miasto / okolica (opcjonalnie)",
           goalsLabel: "Cele (opcjonalnie)",
-          cityPh: "Np. Kraków",
+          cityPh: "Np. Krak�w",
           goalsPh: "Np. regularne bieganie",
-          submit: "Wejdź do gry",
-          saving: "Zapisywanie…",
-          imgErr: "Awatar musi być obrazem.",
-          bigErr: "Plik za duży (max 5 MB).",
+          submit: "Wejd� do gry",
+          saving: "Zapisywanie�",
+          imgErr: "Awatar musi by� obrazem.",
+          bigErr: "Plik za du�y (max 5 MB).",
           unauth: "Brak autoryzacji",
         }
       : {
@@ -69,7 +69,7 @@ export default function SetupPage() {
           gender: "Gender",
           birth: "Date of birth",
           avatar: "Avatar (upload from disk)",
-          uploadBusy: "Uploading avatar…",
+          uploadBusy: "Uploading avatar�",
           avatarOk: "Avatar uploaded.",
           avatarHint: "Optional (max 5MB).",
           activities: "Choose activities",
@@ -78,7 +78,7 @@ export default function SetupPage() {
           cityPh: "E.g. Berlin",
           goalsPh: "E.g. weekly volleyball",
           submit: "Enter the game",
-          saving: "Saving…",
+          saving: "Saving�",
           imgErr: "Avatar must be an image file.",
           bigErr: "Avatar file is too large (max 5MB).",
           unauth: "Unauthorized",
@@ -160,7 +160,7 @@ export default function SetupPage() {
 
   return (
     <div className="mx-auto max-w-lg px-4 py-8">
-      <h1 className="font-display text-2xl text-[var(--text-bright)]">{copy.title}</h1>
+      <h1 className="text-2xl font-bold text-[var(--text-primary)]">{copy.title}</h1>
       <p className="mt-1 text-sm text-[var(--text-muted)]">{copy.subtitle}</p>
 
       <form className="mt-6 space-y-4" onSubmit={onSubmit}>
@@ -177,8 +177,8 @@ export default function SetupPage() {
               onClick={() => setGender("female")}
               className={`flex min-h-[3rem] flex-1 items-center justify-center rounded-lg border font-mono text-2xl transition ${
                 gender === "female"
-                  ? "border-[var(--gold-bright)] shadow-[var(--shadow-glow-gold)]"
-                  : "border-[var(--gold-dim)] bg-[var(--bg-card)] hover:border-[var(--gold-dark)]"
+                  ? "border-[var(--accent)] shadow-[var(--shadow-sm)]"
+                  : "border-[var(--border-medium)] bg-[var(--bg-card)] hover:border-[var(--border-strong)]"
               }`}
             >
               {ICON_FEMALE}
@@ -190,8 +190,8 @@ export default function SetupPage() {
               onClick={() => setGender("male")}
               className={`flex min-h-[3rem] flex-1 items-center justify-center rounded-lg border font-mono text-2xl transition ${
                 gender === "male"
-                  ? "border-[var(--gold-bright)] shadow-[var(--shadow-glow-gold)]"
-                  : "border-[var(--gold-dim)] bg-[var(--bg-card)] hover:border-[var(--gold-dark)]"
+                  ? "border-[var(--accent)] shadow-[var(--shadow-sm)]"
+                  : "border-[var(--border-medium)] bg-[var(--bg-card)] hover:border-[var(--border-strong)]"
               }`}
             >
               {ICON_MALE}
@@ -207,7 +207,7 @@ export default function SetupPage() {
             type="file"
             accept="image/*"
             onChange={(e) => onAvatarSelected(e.target.files?.[0] ?? null)}
-            className="input-wow w-full file:mr-3 file:rounded file:border file:border-[var(--gold-dark)] file:bg-[var(--bg-card)] file:px-3 file:py-1 file:text-xs file:text-[var(--text-secondary)]"
+            className="input-wow w-full file:mr-3 file:rounded file:border file:border-[var(--border-strong)] file:bg-[var(--bg-card)] file:px-3 file:py-1 file:text-xs file:text-[var(--text-secondary)]"
           />
           <p className="mt-1 text-xs text-[var(--text-muted)]">
             {uploadingAvatar ? copy.uploadBusy : avatarUrl ? copy.avatarOk : copy.avatarHint}
@@ -225,7 +225,7 @@ export default function SetupPage() {
             {copy.goalsLabel}
           </label>
           <textarea
-            className="input-wow min-h-[4rem] w-full resize-y rounded-md border border-[var(--gold-dim)] bg-[var(--bg-input)] p-3 text-sm text-[var(--text-primary)]"
+            className="input-wow min-h-[4rem] w-full resize-y rounded-md border border-[var(--border-medium)] bg-[var(--bg-input)] p-3 text-sm text-[var(--text-primary)]"
             placeholder={copy.goalsPh}
             value={questGoals}
             onChange={(e) => setQuestGoals(e.target.value)}
@@ -243,7 +243,7 @@ export default function SetupPage() {
                   type="button"
                   onClick={() => toggle(k)}
                   className={`flex items-center gap-2 rounded-lg border px-2.5 py-2 text-left text-sm transition ${
-                    on ? "border-[var(--gold-bright)] bg-[var(--bg-card-hover)]" : "border-[var(--gold-dim)] bg-[var(--bg-card)] hover:border-[var(--gold-dark)]"
+                    on ? "border-[var(--accent)] bg-[var(--bg-card-hover)]" : "border-[var(--border-medium)] bg-[var(--bg-card)] hover:border-[var(--border-strong)]"
                   }`}
                 >
                   <ActivityIcon activityType={k} size="sm" />

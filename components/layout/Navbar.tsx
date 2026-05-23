@@ -1,8 +1,7 @@
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { NavbarClient } from "@/components/layout/NavbarClient";
+import { Logo } from "@/components/ui/Logo";
 import { isAdminUser } from "@/lib/admin";
-import { SITE_NAME } from "@/lib/site";
 
 export async function Navbar() {
   const supabase = createClient();
@@ -23,15 +22,15 @@ export async function Navbar() {
   const showAdmin = user != null && isAdminUser(user);
 
   return (
-    <header className="fixed left-0 right-0 top-0 z-40 border-b border-[var(--gold-dim)] bg-[var(--bg-void)]/95 pt-safe backdrop-blur-sm">
-      <div className="mx-auto flex h-full w-full max-w-7xl flex-col gap-2 px-4 py-2 sm:min-h-16 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6 sm:py-2">
-        <Link
-          href={user ? "/feed" : "/map"}
-          className="animate-brand-soft shrink-0 whitespace-nowrap font-display text-lg font-bold tracking-wide text-[var(--gold-bright)] sm:text-xl md:text-2xl"
-          style={{ textShadow: "0 0 12px rgba(240,192,64,0.25)" }}
-        >
-          {SITE_NAME}
-        </Link>
+    <header
+      className="fixed left-0 right-0 top-0 z-40 border-b pt-safe backdrop-blur-sm"
+      style={{
+        background: "var(--bg-surface)",
+        borderBottomColor: "var(--border)",
+      }}
+    >
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5">
+        <Logo size="sm" href={user ? "/feed" : "/map"} />
         <NavbarClient unread={unread} showAdmin={showAdmin} isGuest={!user} />
       </div>
     </header>

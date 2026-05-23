@@ -20,7 +20,7 @@ export function Avatar({ src, name, size = 40, className = "" }: AvatarProps) {
         alt=""
         width={size}
         height={size}
-        className={`rounded-full border-2 border-[var(--gold-dark)] object-cover ${className}`}
+        className={`rounded-full border-2 border-[var(--border-strong)] object-cover ${className}`}
         unoptimized={src.includes("supabase.co")}
         onError={() => setBroken(true)}
       />
@@ -28,7 +28,7 @@ export function Avatar({ src, name, size = 40, className = "" }: AvatarProps) {
   }
   return (
     <div
-      className={`flex items-center justify-center rounded-full border-2 border-[var(--gold-dark)] bg-[var(--bg-panel)] font-display text-[var(--gold-bright)] ${className}`}
+      className={`flex items-center justify-center rounded-full border-2 border-[var(--border-medium)] bg-[var(--bg-surface-2)] font-semibold text-[var(--accent)] ${className}`}
       style={{ width: size, height: size, fontSize: size * 0.4 }}
       aria-hidden
     >

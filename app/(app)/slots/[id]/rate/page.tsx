@@ -57,8 +57,8 @@ export default async function RateSlotPage({ params }: { params: { id: string } 
     return (
       <div className="pb-6">
         <PageHeader title={t.title} backHref={`/slots/${params.id}`} backLabel={back.back} />
-        <p className="wow-card rounded-lg p-6 text-center text-sm text-[var(--text-muted)]">{t.allDone}</p>
-        <Link href="/profile" className="mt-4 block text-center text-sm text-[var(--gold-mid)]">
+        <p className="card rounded-lg p-6 text-center text-sm text-[var(--text-muted)]">{t.allDone}</p>
+        <Link href="/profile" className="mt-4 block text-center text-sm text-[var(--accent)]">
           {t.backProfile}
         </Link>
       </div>
@@ -74,7 +74,7 @@ export default async function RateSlotPage({ params }: { params: { id: string } 
   return (
     <div className="pb-6">
       <PageHeader title={t.title} backHref={`/slots/${params.id}`} backLabel={back.back} />
-      <p className="mb-1 font-display text-lg text-[var(--text-bright)]">{placeName ?? slot.title}</p>
+      <p className="mb-1 text-lg font-semibold text-[var(--text-primary)]">{placeName ?? slot.title}</p>
       <p className="mb-4 text-sm text-[var(--text-muted)]">{t.subtitle}</p>
       <SlotRateForm slotId={params.id} peers={peers} />
     </div>

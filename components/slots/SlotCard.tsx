@@ -1,15 +1,15 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { ActivityIcon } from "./ActivityIcon";
 import { Avatar } from "@/components/ui/Avatar";
-import { Button } from "@/components/ui/Button";
 import { getActivity } from "@/lib/activities";
 import { isPlaceCategory, placeCategoryLabel } from "@/lib/places";
 import { applyToSlot } from "@/app/actions/applications";
 import { useLanguage } from "@/components/i18n/LanguageProvider";
-import { activityLabel, ICON_FEMALE, ICON_MALE, slotAudienceBadge, slotCardUi } from "@/lib/i18n-ui";
+import { activityLabel, slotAudienceBadge, slotCardUi } from "@/lib/i18n-ui";
 
 export type SlotCardHost = {
   id: string;
@@ -59,14 +59,24 @@ function formatWhen(iso: string, locale: string) {
   return `${datePart} · ${timePart}`;
 }
 
-function hostGenderIcon(g?: "male" | "female") {
-  if (g === "female") return ICON_FEMALE;
-  if (g === "male") return ICON_MALE;
-  return null;
-}
+const joinBtnStyle: CSSProperties = {
+  padding: "6px 14px",
+  borderRadius: "var(--radius-full)",
+  background: "var(--accent)",
+  border: "none",
+  color: "white",
+  fontSize: "0.82rem",
+  fontWeight: 700,
+  cursor: "pointer",
+  fontFamily: "var(--font-sans)",
+};
 
-const joinQuestBtnClass =
-  "w-full border-2 border-[var(--gold-bright)] bg-[linear-gradient(180deg,#c9963a,#8a6420)] font-display font-bold uppercase tracking-[0.1em] text-[var(--bg-void)] shadow-[var(--shadow-glow-gold)] transition hover:brightness-110 hover:shadow-[0_0_20px_rgba(240,192,64,0.35)]";
+const secondaryBtnStyle: CSSProperties = {
+  ...joinBtnStyle,
+  background: "transparent",
+  color: "var(--text-secondary)",
+  border: "1.5px solid var(--border-medium)",
+};
 
 export function SlotCard({
   slot,
@@ -84,7 +94,6 @@ export function SlotCard({
   const totalPartySize = Math.max(2, slot.max_spots);
   const occupiedSpots = Math.min(totalPartySize, 1 + slot.spots_taken);
   const audience = slotAudienceBadge(lang, slot.gender_scope);
-  const gIcon = hostGenderIcon(slot.host?.gender);
 
   const headline = slot.place_name ?? slot.title;
   const metaParts: string[] = [];
@@ -95,146 +104,185 @@ export function SlotCard({
   }
   if (slot.place_district) metaParts.push(slot.place_district);
   else if (!slot.place_name) metaParts.push(slot.location_name);
-  if (distanceLabel) metaParts.push(distanceLabel);
   const metaLine = metaParts.join(" · ");
 
-  const partyDots = (
-    <>
-      <div className="mb-1.5 flex justify-between text-xs font-medium tracking-wide text-[var(--text-muted)] sm:text-sm">
-        <span>{t.partyMembers}</span>
-        <span>
-          {occupiedSpots}/{totalPartySize}
-        </span>
-      </div>
-      <div className="flex items-center gap-1.5 rounded border border-[var(--gold-dim)] bg-[var(--bg-input)] px-2 py-2 sm:gap-2">
-        {Array.from({ length: totalPartySize }, (_, i) => {
-          const filled = i < occupiedSpots;
-          const isHostDot = i === 0;
-          return (
-            <span
-              key={`dot-${slot.id}-${i}`}
-              title={isHostDot ? t.hostDot : t.guestDot}
-              className={`h-2.5 w-2.5 rounded-full border transition ${
-                filled
-                  ? isHostDot
-                    ? "border-[var(--gold-bright)] bg-[var(--gold-bright)] shadow-[0_0_8px_rgba(240,192,64,0.35)]"
-                    : "border-[var(--gold-mid)] bg-[var(--gold-mid)]"
-                  : "border-[var(--gold-dim)] bg-[var(--bg-card)]"
-              }`}
-            />
-          );
-        })}
-      </div>
-    </>
-  );
-
   const ctaButtons = isHost ? (
-    <Link
-      href={`/slots/${slot.id}`}
-      className="btn-secondary inline-flex min-h-[2.75rem] w-full items-center justify-center rounded-md px-4 py-3 text-center font-display text-sm font-semibold uppercase tracking-[0.08em] sm:text-base"
-    >
+    <Link href={`/slots/${slot.id}`} style={secondaryBtnStyle}>
       {t.viewDetails}
     </Link>
   ) : full ? (
-    <Button variant="secondary" fullWidth disabled>
+    <button type="button" disabled style={{ ...secondaryBtnStyle, opacity: 0.45, cursor: "not-allowed" }}>
       {t.partyFull}
-    </Button>
+    </button>
   ) : applicationStatus === "accepted" ? (
-    <Link
-      href={`/slots/${slot.id}`}
-      className="btn-secondary inline-flex min-h-[2.75rem] w-full items-center justify-center rounded-md border-[var(--status-open)] px-4 py-3 text-center font-display text-sm font-semibold uppercase tracking-[0.08em] sm:text-base"
-    >
+    <Link href={`/slots/${slot.id}`} style={{ ...secondaryBtnStyle, borderColor: "var(--status-open)", color: "var(--status-open)" }}>
       {t.viewDetails}
     </Link>
   ) : applicationStatus === "pending" ? (
-    <Button variant="secondary" fullWidth disabled className="!border-[var(--status-pending)]">
+    <button type="button" disabled style={{ ...secondaryBtnStyle, opacity: 0.45, cursor: "not-allowed", borderColor: "var(--status-pending)", color: "var(--status-pending)" }}>
       {t.waiting}
-    </Button>
+    </button>
   ) : applicationStatus === "rejected" ? (
-    <Button variant="secondary" fullWidth disabled className="!border-[var(--status-full)]">
+    <button type="button" disabled style={{ ...secondaryBtnStyle, opacity: 0.45, cursor: "not-allowed", borderColor: "var(--status-full)", color: "var(--status-full)" }}>
       {t.declined}
-    </Button>
+    </button>
   ) : (
     <form
       action={async () => {
         await applyToSlot(slot.id);
       }}
     >
-      <Button type="submit" variant="primary" fullWidth className={joinQuestBtnClass}>
+      <button type="submit" style={joinBtnStyle}>
         {t.joinQuest}
-      </Button>
+      </button>
     </form>
   );
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, ease: "easeOut", delay: Math.min(index * 0.04, 0.3) }}
-      whileHover={{
-        y: -2,
-        boxShadow: "0 8px 32px rgba(0,0,0,0.8), 0 0 16px rgba(240,192,64,0.08)",
-      }}
-      style={{ willChange: "opacity, transform" }}
     >
       <div
-        className="wow-card wow-card-hover relative overflow-hidden rounded-lg p-5 sm:p-6"
-        style={{ borderTop: `2px solid ${act.color}` }}
+        className="card card-hover relative overflow-hidden"
+        style={{ borderTop: `3px solid ${act.color}` }}
       >
-        <div className="flex gap-4 lg:gap-6">
-          <ActivityIcon activityType={slot.activity_type} />
-
-          <div className="min-w-0 flex-1">
-            <Link
-              href={`/slots/${slot.id}`}
-              className="font-display text-xl font-semibold leading-snug text-[var(--text-bright)] hover:text-[var(--gold-bright)] sm:text-2xl"
+        <div style={{ padding: "1rem 1.125rem" }}>
+          <div style={{ display: "flex", gap: 12 }}>
+            <div
+              style={{
+                width: 46,
+                height: 46,
+                borderRadius: "var(--radius-md)",
+                background: `${act.color}15`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
             >
-              {headline}
-            </Link>
-            <p className="mt-1 text-sm text-[var(--text-muted)]">{metaLine}</p>
-            <p className="mt-2 text-base font-medium text-[var(--text-secondary)]">
-              {formatWhen(slot.date_time, locale)}
-            </p>
-            {audience ? (
-              <p className="mt-2 inline-block rounded-full border border-[var(--gold-dim)] bg-[var(--bg-input)] px-3 py-1 font-display text-xs uppercase tracking-[0.12em] text-[var(--gold-mid)]">
-                {audience}
-              </p>
-            ) : null}
+              <ActivityIcon activityType={slot.activity_type} size="sm" />
+            </div>
 
-            <div className="mt-3 flex items-center gap-3">
-              <Avatar src={slot.host?.avatar_url} name={slot.host?.name ?? "Host"} size={36} />
-              <div className="min-w-0 flex-1 text-base">
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <span className="text-[var(--text-muted)]">{t.host}</span>
-                  <span className="text-[var(--text-primary)]">{slot.host?.name ?? "—"}</span>
-                  {gIcon ? (
-                    <span
-                      className="inline-flex shrink-0 items-center justify-center text-2xl leading-none text-[var(--gold-bright)]"
-                      aria-hidden
-                    >
-                      {gIcon}
-                    </span>
-                  ) : null}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  justifyContent: "space-between",
+                  gap: 8,
+                  marginBottom: 3,
+                }}
+              >
+                <Link
+                  href={`/slots/${slot.id}`}
+                  style={{
+                    fontFamily: "var(--font-sans)",
+                    fontSize: "1.05rem",
+                    fontWeight: 700,
+                    color: "var(--text-primary)",
+                    textDecoration: "none",
+                    lineHeight: 1.3,
+                  }}
+                >
+                  {headline}
+                </Link>
+                {distanceLabel ? (
+                  <span
+                    style={{
+                      fontSize: "0.72rem",
+                      fontWeight: 600,
+                      color: "var(--text-muted)",
+                      background: "var(--bg-surface-2)",
+                      padding: "2px 8px",
+                      borderRadius: "var(--radius-full)",
+                      flexShrink: 0,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {distanceLabel}
+                  </span>
+                ) : null}
+              </div>
+
+              <p style={{ fontSize: "0.8rem", color: "var(--text-secondary)", marginBottom: 6 }}>
+                {metaLine}
+              </p>
+
+              <p
+                style={{
+                  fontSize: "0.9rem",
+                  fontWeight: 600,
+                  color: "var(--text-primary)",
+                  marginBottom: 8,
+                }}
+              >
+                {formatWhen(slot.date_time, locale)}
+              </p>
+
+              {audience ? (
+                <span className="badge badge-purple" style={{ marginBottom: 8 }}>
+                  {audience}
+                </span>
+              ) : null}
+
+              <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 10 }}>
+                {Array.from({ length: totalPartySize }, (_, i) => (
+                  <span
+                    key={i}
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: "50%",
+                      display: "inline-block",
+                      background:
+                        i < occupiedSpots
+                          ? i === 0
+                            ? act.color
+                            : `${act.color}88`
+                          : "var(--bg-surface-3)",
+                      border: `1.5px solid ${i < occupiedSpots ? act.color : "var(--border-medium)"}`,
+                    }}
+                  />
+                ))}
+                <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginLeft: 2 }}>
+                  {occupiedSpots}/{totalPartySize}
+                </span>
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  paddingTop: 10,
+                  borderTop: "1px solid var(--border)",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                  <Avatar src={slot.host?.avatar_url} name={slot.host?.name ?? "?"} size={26} />
+                  <span
+                    style={{
+                      fontSize: "0.8rem",
+                      color: "var(--text-secondary)",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {slot.host?.name}
+                  </span>
                   {slot.host?.reliability_score != null ? (
-                    <span className="text-[var(--status-open)]">
-                      ✓{Math.round(slot.host.reliability_score * 100)}%
+                    <span className="badge badge-green">
+                      ✓ {Math.round(slot.host.reliability_score * 100)}%
                     </span>
                   ) : null}
                 </div>
+                {ctaButtons}
               </div>
             </div>
-
-            <div className="mt-3 lg:hidden">{partyDots}</div>
-
-            <div className="mt-4 lg:hidden">{ctaButtons}</div>
-          </div>
-
-          <div className="hidden lg:flex lg:w-48 lg:flex-shrink-0 lg:flex-col lg:items-stretch lg:justify-between lg:gap-3">
-            <div>{partyDots}</div>
-            <div>{ctaButtons}</div>
           </div>
         </div>
       </div>
-    </motion.div>
+    </m.div>
   );
 }

@@ -3,10 +3,8 @@ import type { ReactNode } from "react";
 
 type PageHeaderProps = {
   title: string;
-  /** Muted line under the title (e.g. context for chat screens). */
   subtitle?: string;
   backHref?: string;
-  /** Defaults to English "← Back" if omitted */
   backLabel?: string;
   right?: ReactNode;
 };
@@ -23,13 +21,13 @@ export function PageHeader({
       {backHref ? (
         <Link
           href={backHref}
-          className="shrink-0 self-center font-display text-sm font-semibold uppercase tracking-[0.1em] text-[var(--gold-mid)] hover:text-[var(--gold-bright)] sm:text-base"
+          className="shrink-0 self-center rounded-full px-3 py-1.5 text-sm font-semibold text-[var(--text-secondary)] transition hover:bg-[var(--bg-surface-2)] hover:text-[var(--text-primary)]"
         >
           {backLabel}
         </Link>
       ) : null}
       <div className="min-w-0 flex-1 basis-[min(100%,12rem)]">
-        <h1 className="break-words font-display text-2xl font-bold leading-tight text-[var(--text-bright)] sm:text-3xl">
+        <h1 className="break-words text-2xl font-bold leading-tight text-[var(--text-primary)] sm:text-3xl">
           {title}
         </h1>
         {subtitle ? (

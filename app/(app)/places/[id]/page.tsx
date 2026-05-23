@@ -80,7 +80,7 @@ export default async function PlacePage({ params }: { params: { id: string } }) 
       </p>
       <Link
         href={`/slots/new?place_id=${place.id}`}
-        className="mb-6 inline-flex min-h-[44px] items-center justify-center rounded-lg border-2 border-[var(--gold-bright)] bg-[linear-gradient(180deg,#c9963a,#8a6420)] px-4 font-display text-sm font-bold uppercase tracking-wide text-[var(--bg-void)]"
+        className="btn-primary mb-6 inline-flex min-h-[44px] px-4 text-sm"
       >
         {lang === "pl" ? "+ Stwórz slot" : "+ Create slot"}
       </Link>

@@ -15,12 +15,12 @@ import {
 const links = [
   { href: "/feed", key: "feed" as const, Icon: BottomIconFeed },
   { href: "/map", key: "map" as const, Icon: BottomIconMap },
-  { href: "/slots/new", key: "quest" as const, Icon: BottomIconQuest },
+  { href: "/map", key: "quest" as const, Icon: BottomIconQuest },
   { href: "/profile", key: "profile" as const, Icon: BottomIconProfile },
 ] as const;
 
 function guestHref(key: (typeof links)[number]["key"]): string {
-  if (key === "map" || key === "feed") return "/map";
+  if (key === "map" || key === "feed" || key === "quest") return "/map";
   return "/auth";
 }
 
@@ -30,25 +30,44 @@ export function BottomNav({ isGuest = false }: { isGuest?: boolean }) {
   const n = navUi(lang);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-[var(--gold-dim)] bg-[var(--bg-void)]/95 pb-safe backdrop-blur-sm">
-      <div className={`${shellMaxClass} flex items-stretch justify-around px-1 pt-2 sm:px-3`}>
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-40 border-t pb-safe backdrop-blur-sm"
+      style={{
+        background: "var(--bg-surface)",
+        borderTopColor: "var(--border)",
+      }}
+    >
+      <div className={`${shellMaxClass} flex items-stretch justify-around px-2 pt-2 sm:px-3`}>
         {links.map((l) => {
           const href = isGuest ? guestHref(l.key) : l.href;
           const active =
             pathname === href ||
             pathname.startsWith(`${href}/`) ||
-            (isGuest && l.key === "feed" && pathname === "/map");
+            (isGuest && l.key === "feed" && pathname === "/map") ||
+            (l.key === "quest" && pathname === "/map");
           const label = n[l.key];
           const Icon = l.Icon;
           return (
             <Link
               key={l.key}
               href={href}
-              className={`flex min-h-[3.25rem] min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-md py-2 text-[11px] font-display font-semibold uppercase leading-tight tracking-[0.12em] transition sm:min-h-[3.5rem] sm:text-xs sm:tracking-[0.14em] ${
+              className="flex min-h-[3.25rem] min-w-0 flex-1 flex-col items-center justify-center gap-1 py-2 transition sm:min-h-[3.5rem]"
+              style={
                 active
-                  ? "text-[var(--gold-bright)] drop-shadow-[0_0_8px_rgba(240,192,64,0.35)]"
-                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-              }`}
+                  ? {
+                      color: "var(--accent)",
+                      background: "var(--accent-soft)",
+                      borderRadius: "var(--radius-md)",
+                      padding: "6px 16px",
+                      fontSize: 11,
+                      fontWeight: 500,
+                    }
+                  : {
+                      color: "var(--text-muted)",
+                      fontSize: 11,
+                      fontWeight: 500,
+                    }
+              }
             >
               <Icon active={active} />
               <span className="max-w-[5.5rem] truncate sm:max-w-none">{label}</span>

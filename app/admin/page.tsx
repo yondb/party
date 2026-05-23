@@ -128,11 +128,11 @@ export default async function AdminDashboardPage() {
 
   if (error) {
     return (
-      <div className="wow-card rounded-lg p-6 text-[var(--status-full)]">
-        <p className="font-display text-sm uppercase tracking-widest">Admin data error</p>
+      <div className="card rounded-lg p-6 text-[var(--status-full)]">
+        <p className="text-xs font-semibold uppercase tracking-widest">Admin data error</p>
         <p className="mt-2 text-sm">{error}</p>
         <p className="mt-3 text-xs text-[var(--text-muted)]">
-          Check that <code className="text-[var(--gold-mid)]">SUPABASE_SERVICE_ROLE_KEY</code> is set on the server
+          Check that <code className="text-[var(--accent)]">SUPABASE_SERVICE_ROLE_KEY</code> is set on the server
           (Vercel env).
         </p>
       </div>
@@ -168,8 +168,8 @@ export default async function AdminDashboardPage() {
             <li className="text-[var(--text-muted)]">No pending reports.</li>
           ) : (
             pendingReports.map((r) => (
-              <li key={r.id} className="wow-card rounded-md px-3 py-3">
-                <p className="text-[var(--text-bright)]">
+              <li key={r.id} className="card rounded-md px-3 py-3">
+                <p className="text-[var(--text-primary)]">
                   <span className="text-[var(--text-muted)]">Reported:</span>{" "}
                   {userNames.get(r.reported_user_id) ?? r.reported_user_id}
                 </p>
@@ -184,7 +184,7 @@ export default async function AdminDashboardPage() {
                     <input type="hidden" name="reportId" value={r.id} />
                     <button
                       type="submit"
-                      className="btn-secondary inline-flex min-h-[2.5rem] items-center justify-center rounded-md px-3 py-2 font-display text-xs font-semibold uppercase tracking-widest"
+                      className="btn-secondary inline-flex min-h-[2.5rem] items-center justify-center rounded-md px-3 py-2 text-xs font-semibold uppercase tracking-widest"
                     >
                       Dismiss
                     </button>
@@ -194,7 +194,7 @@ export default async function AdminDashboardPage() {
                     <input type="hidden" name="reportedUserId" value={r.reported_user_id} />
                     <button
                       type="submit"
-                      className="inline-flex min-h-[2.5rem] items-center justify-center rounded-md border border-[var(--status-full)] bg-transparent px-3 py-2 font-display text-xs font-semibold uppercase tracking-widest text-[var(--status-full)] hover:bg-[var(--status-full)]/10"
+                      className="inline-flex min-h-[2.5rem] items-center justify-center rounded-md border border-[var(--status-full)] bg-transparent px-3 py-2 text-xs font-semibold uppercase tracking-widest text-[var(--status-full)] hover:bg-[var(--status-full)]/10"
                     >
                       Ban user
                     </button>
@@ -215,11 +215,11 @@ export default async function AdminDashboardPage() {
           <input
             name="userId"
             placeholder="User UUID"
-            className="min-h-[2.75rem] flex-1 rounded-md border border-[var(--gold-dim)] bg-[var(--bg-input)] px-3 font-mono text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
+            className="min-h-[2.75rem] flex-1 rounded-md border border-[var(--border-medium)] bg-[var(--bg-input)] px-3 font-mono text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
           />
           <button
             type="submit"
-            className="btn-secondary inline-flex min-h-[2.75rem] shrink-0 items-center justify-center rounded-md px-4 py-2 font-display text-xs font-semibold uppercase tracking-widest"
+            className="btn-secondary inline-flex min-h-[2.75rem] shrink-0 items-center justify-center rounded-md px-4 py-2 text-xs font-semibold uppercase tracking-widest"
           >
             Unban
           </button>
@@ -235,8 +235,8 @@ export default async function AdminDashboardPage() {
             <li className="text-[var(--text-muted)]">No slots yet.</li>
           ) : (
             recentSlots.map((s) => (
-              <li key={s.id} className="wow-card rounded-md px-3 py-2">
-                <span className="font-display text-[var(--text-bright)]">{s.title}</span>
+              <li key={s.id} className="card rounded-md px-3 py-2">
+                <span className="font-display text-[var(--text-primary)]">{s.title}</span>
                 <span className="mx-2 text-[var(--text-muted)]">·</span>
                 <span className="text-[var(--text-secondary)]">{s.activity_type}</span>
                 <span className="mx-2 text-[var(--text-muted)]">·</span>
@@ -260,7 +260,7 @@ export default async function AdminDashboardPage() {
             <li className="text-[var(--text-muted)]">No applications yet.</li>
           ) : (
             recentApps.map((a) => (
-              <li key={a.id} className="wow-card rounded-md px-3 py-2">
+              <li key={a.id} className="card rounded-md px-3 py-2">
                 <span className="text-[var(--text-secondary)]">{userNames.get(a.applicant_id) ?? a.applicant_id}</span>
                 <span className="mx-2 text-[var(--text-muted)]">→</span>
                 <span className="font-mono text-xs text-[var(--text-muted)]">{a.slot_id.slice(0, 8)}…</span>
@@ -288,9 +288,9 @@ export default async function AdminDashboardPage() {
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="wow-card rounded-md px-3 py-2">
-      <p className="font-display text-[10px] uppercase tracking-widest text-[var(--text-muted)]">{label}</p>
-      <p className="mt-1 font-display text-xl text-[var(--gold-bright)]">{value}</p>
+    <div className="card rounded-md px-3 py-2">
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--text-muted)]">{label}</p>
+      <p className="mt-1 text-xl font-bold text-[var(--accent)]">{value}</p>
     </div>
   );
 }

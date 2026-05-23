@@ -77,16 +77,17 @@ export default async function SlotDetailPage({ params }: { params: { id: string 
     <div className="page-shell pb-6">
       <PageHeader title={d.quest} backHref="/feed" backLabel={back.back} />
       <div
-        className="wow-card relative overflow-hidden rounded-lg p-0"
+        className="card relative overflow-hidden rounded-lg p-0"
         style={{ borderTop: `3px solid ${act.color}` }}
       >
-        <div className="flex items-start gap-4 p-4" style={{ background: act.gradient }}>
+        <div
+          className="flex items-start gap-4 p-4"
+          style={{ background: `color-mix(in srgb, ${act.color} 12%, var(--bg-surface))` }}
+        >
           <ActivityIcon activityType={slot.activity_type} size="lg" />
           <div>
-            <h1 className="font-display text-2xl font-bold text-white drop-shadow-md">
-              {slot.title}
-            </h1>
-            <p className="mt-1 text-sm text-white/90">
+            <h1 className="text-2xl font-bold text-[var(--text-primary)]">{slot.title}</h1>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">
               {new Date(slot.date_time).toLocaleString(locale, {
                 weekday: "short",
                 month: "short",
@@ -95,24 +96,24 @@ export default async function SlotDetailPage({ params }: { params: { id: string 
                 minute: "2-digit",
               })}
             </p>
-            <p className="mt-2 text-sm text-white/85">📍 {slot.location_name}</p>
+            <p className="mt-2 text-sm text-[var(--text-secondary)]">📍 {slot.location_name}</p>
           </div>
         </div>
         <div className="space-y-5 p-5 sm:p-6">
           {audienceLine ? (
-            <p className="rounded border border-[var(--gold-dim)] bg-[var(--bg-input)] px-3 py-2.5 text-center text-sm font-medium text-[var(--gold-mid)]">
+            <p className="rounded border border-[var(--border-medium)] bg-[var(--bg-input)] px-3 py-2.5 text-center text-sm font-medium text-[var(--accent)]">
               {audienceLine}
             </p>
           ) : null}
           {host ? (
             <section>
-              <h2 className="font-display text-sm font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
                 {d.host}
               </h2>
               <Link href={`/profile/${host.id}`} className="mt-2 flex items-center gap-3">
                 <Avatar src={host.avatar_url} name={host.name} size={48} />
                 <div>
-                  <p className="font-display text-lg text-[var(--text-bright)]">{host.name}</p>
+                  <p className="text-lg font-semibold text-[var(--text-primary)]">{host.name}</p>
                   <div className="flex items-center gap-2">
                     <LevelBadge level={host.level} />
                     <ReliabilityScore score={host.reliability_score ?? 1} />
@@ -127,12 +128,12 @@ export default async function SlotDetailPage({ params }: { params: { id: string 
           ) : null}
 
           <section>
-            <h2 className="font-display text-sm font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
               {d.partyMembers}
             </h2>
             <div className="mt-3 flex flex-wrap gap-2">
               {host ? (
-                <span className="flex items-center gap-1 rounded-full border border-[var(--gold-dim)] px-2.5 py-1.5 text-sm">
+                <span className="flex items-center gap-1 rounded-full border border-[var(--border-medium)] px-2.5 py-1.5 text-sm">
                   <Avatar src={host.avatar_url} name={host.name} size={24} />
                   {host.name} ({d.hostTag})
                 </span>
@@ -140,7 +141,7 @@ export default async function SlotDetailPage({ params }: { params: { id: string 
               {cleanMembers.map((m) => (
                 <span
                   key={m.id}
-                  className="flex items-center gap-1 rounded-full border border-[var(--gold-dim)] px-2.5 py-1.5 text-sm"
+                  className="flex items-center gap-1 rounded-full border border-[var(--border-medium)] px-2.5 py-1.5 text-sm"
                 >
                   <Avatar src={m.avatar_url} name={m.name} size={24} />
                   {m.name}
@@ -156,7 +157,7 @@ export default async function SlotDetailPage({ params }: { params: { id: string 
             {isHost ? (
               <Link
                 href={`/slots/${slot.id}/manage`}
-                className="btn-primary inline-flex min-h-[3rem] flex-1 min-w-[10rem] items-center justify-center rounded-md px-4 py-3 text-center font-display text-base font-bold uppercase tracking-[0.08em]"
+                className="btn-primary inline-flex min-h-[3rem] flex-1 min-w-[10rem] items-center justify-center px-4 py-3 text-center text-base font-bold"
               >
                 {d.manage}
               </Link>
@@ -164,7 +165,7 @@ export default async function SlotDetailPage({ params }: { params: { id: string 
             {canHostEdit ? (
               <Link
                 href={`/slots/${slot.id}/edit`}
-                className="btn-secondary inline-flex min-h-[3rem] flex-1 min-w-[10rem] items-center justify-center rounded-md px-4 py-3 text-center font-display text-base font-semibold uppercase tracking-[0.08em]"
+                className="btn-secondary inline-flex min-h-[3rem] flex-1 min-w-[10rem] items-center justify-center px-4 py-3 text-center text-base font-semibold"
               >
                 {d.editQuest}
               </Link>
@@ -172,7 +173,7 @@ export default async function SlotDetailPage({ params }: { params: { id: string 
             {inParty ? (
               <Link
                 href={`/slots/${slot.id}/chat`}
-                className="btn-secondary inline-flex min-h-[3rem] flex-1 min-w-[10rem] items-center justify-center rounded-md px-4 py-3 text-center font-display text-base font-semibold uppercase tracking-[0.08em]"
+                className="btn-secondary inline-flex min-h-[3rem] flex-1 min-w-[10rem] items-center justify-center px-4 py-3 text-center text-base font-semibold"
               >
                 {d.chat}
               </Link>

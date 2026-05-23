@@ -9,7 +9,7 @@ export function AchievementBadge({ icon, title, description }: AchievementBadgeP
   return (
     <span
       title={tip}
-      className="group relative inline-flex h-12 w-12 cursor-help items-center justify-center rounded border border-[var(--gold-dark)] bg-[var(--bg-panel)] text-xl shadow-[var(--shadow-card)] transition hover:border-[var(--gold-bright)] hover:shadow-[var(--shadow-glow-gold)]"
+      className="group relative inline-flex h-12 w-12 cursor-help items-center justify-center rounded-[var(--radius-md)] border border-[var(--border-medium)] bg-[var(--bg-surface)] text-xl shadow-[var(--shadow-sm)] transition hover:border-[var(--accent)]"
       role="img"
       aria-label={tip}
     >

@@ -47,12 +47,12 @@ export function HostManageToolbar({ slotId, canMutate }: HostManageToolbarProps)
   }
 
   return (
-    <section className="mb-6 rounded-xl border border-[var(--gold-dim)] bg-[var(--bg-card)] p-4">
+    <section className="mb-6 rounded-xl border border-[var(--border-medium)] bg-[var(--bg-card)] p-4">
       <p className="mb-3 text-xs leading-snug text-[var(--text-muted)]">{m.toolbarHint}</p>
       <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
         <Link
           href={`/slots/${slotId}/edit`}
-          className="inline-flex min-h-[2.75rem] flex-1 items-center justify-center rounded-lg border border-[var(--gold-bright)] bg-[var(--bg-panel)] px-4 text-center text-sm font-semibold text-[var(--gold-bright)] transition hover:opacity-95 sm:min-w-[9rem]"
+          className="inline-flex min-h-[2.75rem] flex-1 items-center justify-center rounded-lg border border-[var(--accent)] bg-[var(--bg-panel)] px-4 text-center text-sm font-semibold text-[var(--accent)] transition hover:opacity-95 sm:min-w-[9rem]"
         >
           {m.editQuest}
         </Link>

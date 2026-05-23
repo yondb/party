@@ -103,19 +103,25 @@ export function genderApplyBlocked(lang: Lang, scope: "female" | "male"): string
 export function feedUi(lang: Lang) {
   return lang === "pl"
     ? {
-        title: "Questy",
+        title: "Questy w pobliżu",
+        subtitle: "Znajdź ekipę i ruszaj",
         allActivities: "Wszystkie",
         allDates: "Wszystkie daty",
-        emptyTitle: "Brak slotów w okolicy — bądź pierwszy",
+        emptyTitle: "Brak questów w okolicy",
+        emptySubtitle: "Bądź pierwszy — stwórz slot na mapie",
+        goToMap: "Przejdź do mapy",
         createQuest: "Stwórz slot",
         signIn: "Zaloguj się, żeby zobaczyć feed.",
         errorPrefix: "Nie udało się wczytać feedu:",
       }
     : {
-        title: "Quests",
+        title: "Quests nearby",
+        subtitle: "Find your crew and go",
         allActivities: "All",
         allDates: "All dates",
-        emptyTitle: "No slots nearby — be the first",
+        emptyTitle: "No quests nearby",
+        emptySubtitle: "Be the first — create a slot on the map",
+        goToMap: "Go to map",
         createQuest: "Create slot",
         signIn: "You need to sign in to see quests.",
         errorPrefix: "Could not load feed:",

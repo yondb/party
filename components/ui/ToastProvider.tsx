@@ -50,10 +50,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             key={t.id}
             className={`pointer-events-auto max-w-md rounded-md border px-4 py-3 text-center text-sm shadow-lg ${
               t.kind === "error"
-                ? "border-[var(--status-full)] bg-[var(--bg-void)] text-[var(--status-full)]"
+                ? "border-[var(--status-full)] bg-[var(--bg-page)] text-[var(--status-full)]"
                 : t.kind === "success"
-                  ? "border-[var(--status-open)] bg-[var(--bg-void)] text-[var(--status-open)]"
-                  : "border-[var(--gold-dim)] bg-[var(--bg-card)] text-[var(--text-bright)]"
+                  ? "border-[var(--status-open)] bg-[var(--bg-page)] text-[var(--status-open)]"
+                  : "border-[var(--border-medium)] bg-[var(--bg-card)] text-[var(--text-primary)]"
             }`}
           >
             {t.message}

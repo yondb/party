@@ -34,7 +34,7 @@ export function OnboardingWizard() {
   const step = steps[i] ?? steps[0];
 
   return (
-    <div className="wow-card w-full max-w-md rounded-lg p-8">
+    <div className="card w-full max-w-md rounded-lg p-8">
       <AnimatePresence mode="wait">
         <motion.div
           key={i}
@@ -43,11 +43,11 @@ export function OnboardingWizard() {
           exit={{ opacity: 0, x: -16 }}
           transition={{ duration: 0.25 }}
         >
-          <h1 className="font-display text-2xl font-bold text-[var(--text-bright)]">{step.title}</h1>
+          <h1 className="text-2xl font-bold font-bold text-[var(--text-primary)]">{step.title}</h1>
           <p className="mt-3 text-[var(--text-secondary)]">{step.body}</p>
           {i === 3 ? (
             <textarea
-              className="input-wow mt-4 min-h-[5rem] w-full resize-y rounded-md border border-[var(--gold-dim)] bg-[var(--bg-input)] p-3 text-sm text-[var(--text-primary)]"
+              className="input-wow mt-4 min-h-[5rem] w-full resize-y rounded-md border border-[var(--border-medium)] bg-[var(--bg-input)] p-3 text-sm text-[var(--text-primary)]"
               placeholder={nav.goalPlaceholder}
               value={goals}
               onChange={(e) => setGoals(e.target.value)}
@@ -56,7 +56,7 @@ export function OnboardingWizard() {
           {i === 4 ? (
             <input
               type="text"
-              className="input-wow mt-4 w-full rounded-md border border-[var(--gold-dim)] bg-[var(--bg-input)] p-3 text-sm text-[var(--text-primary)]"
+              className="input-wow mt-4 w-full rounded-md border border-[var(--border-medium)] bg-[var(--bg-input)] p-3 text-sm text-[var(--text-primary)]"
               placeholder={nav.cityPlaceholder}
               value={city}
               onChange={(e) => setCity(e.target.value)}

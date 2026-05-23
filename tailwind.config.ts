@@ -9,14 +9,15 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        display: ["var(--font-display)", "serif"],
-        body: ["var(--font-body)", "Georgia", "serif"],
+        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        display: ["var(--font-sans)", "system-ui", "sans-serif"],
+        body: ["var(--font-sans)", "system-ui", "sans-serif"],
       },
       colors: {
-        void: "var(--bg-void)",
-        deep: "var(--bg-deep)",
+        page: "var(--bg-page)",
+        surface: "var(--bg-surface)",
+        accent: "var(--accent)",
         card: "var(--bg-card)",
-        gold: "var(--gold-mid)",
       },
     },
   },

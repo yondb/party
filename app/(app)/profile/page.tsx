@@ -2,7 +2,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ProfileCard } from "@/components/profile/ProfileCard";
-import { PageHeader } from "@/components/layout/PageHeader";
 import { signOut } from "@/app/actions/profile";
 import { normalizeActivityKey, type ActivityKey } from "@/lib/activities";
 import { getServerLang } from "@/lib/i18n-server";
@@ -81,26 +80,19 @@ export default async function OwnProfilePage() {
   const hostAndPlayerMaster = (profile.total_hosted ?? 0) >= 10 && (profile.total_activities ?? 0) >= 10;
 
   return (
-    <div className="page-shell py-8 pb-10">
-      <PageHeader
-        title={p.title}
-        right={
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <Link
-              href="/settings"
-              className="inline-flex min-h-[2.75rem] items-center justify-center rounded-md border border-[var(--gold-dim)] px-3 py-2 font-display text-xs font-bold uppercase tracking-[0.12em] text-[var(--text-secondary)] transition hover:border-[var(--gold-mid)] hover:text-[var(--gold-bright)]"
-            >
-              {p.settings}
-            </Link>
-            <Link
-              href="/profile/edit"
-              className="inline-flex min-h-[2.75rem] items-center justify-center rounded-md border-2 border-[var(--gold-dim)] bg-[linear-gradient(180deg,#2a2210,#14110c)] px-4 py-2 font-display text-sm font-bold uppercase tracking-[0.14em] text-[var(--gold-bright)] shadow-[var(--shadow-glow-gold)] transition hover:border-[var(--gold-bright)] hover:brightness-110"
-            >
-              {p.edit}
-            </Link>
-          </div>
-        }
-      />
+    <div className="page-shell pb-bottom-main pt-nav-safe">
+      <div className="flex items-center justify-end gap-2 py-4">
+        <Link
+          href="/settings"
+          className="rounded-full px-3 py-1.5 text-sm font-semibold text-[var(--text-secondary)] transition hover:bg-[var(--bg-surface-2)] hover:text-[var(--text-primary)]"
+        >
+          {p.settings}
+        </Link>
+        <Link href="/profile/edit" className="btn-primary px-4 py-2 text-sm">
+          {p.edit}
+        </Link>
+      </div>
+
       <ProfileCard
         user={{
           id: profile.id,
@@ -126,10 +118,11 @@ export default async function OwnProfilePage() {
         }}
         isOwn
       />
-      <form action={signOut} className="mt-8 text-center">
+
+      <form action={signOut} className="mt-10 pb-8 text-center">
         <button
           type="submit"
-          className="text-sm text-[var(--text-muted)] underline-offset-2 transition hover:text-[var(--gold-mid)] hover:underline"
+          className="text-sm text-[var(--text-muted)] underline-offset-2 transition hover:text-[var(--accent)] hover:underline"
         >
           {p.signOut}
         </button>

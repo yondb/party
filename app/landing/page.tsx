@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getActivity } from "@/lib/activities";
 import { ActivityIcon } from "@/components/slots/ActivityIcon";
@@ -27,27 +27,24 @@ export default async function LandingPage() {
   return (
     <SplashGate>
       <LandingTopBar />
-      <div className="min-h-dvh pb-10">
+      <div className="min-h-dvh bg-[var(--bg-page)] pb-10">
         <section className="flex min-h-[72dvh] flex-col items-center justify-center px-5 text-center sm:px-6">
-          <h1 className="font-display text-4xl font-black leading-tight text-[var(--gold-bright)] sm:text-5xl">
+          <h1 className="text-4xl font-extrabold leading-tight text-[var(--accent)] sm:text-5xl">
             {t.hero}
           </h1>
-          <p className="mt-4 max-w-md text-xl italic leading-snug text-[var(--text-secondary)] sm:text-2xl">
+          <p className="mt-4 max-w-md text-xl leading-snug text-[var(--text-secondary)] sm:text-2xl">
             {t.tagline}
           </p>
           <p className="mt-6 text-base text-[var(--text-muted)] sm:text-lg">
             ~ {activeCount} {t.activePlayers}
           </p>
           <div className="mt-8 flex w-full max-w-sm flex-col gap-3">
-            <Link
-              href="/auth"
-              className="btn-primary inline-flex min-h-[3rem] items-center justify-center rounded-md px-4 py-3 font-display text-base font-bold uppercase tracking-[0.1em]"
-            >
+            <Link href="/auth" className="btn-primary inline-flex min-h-[3rem] w-full items-center justify-center px-4 py-3 text-base font-bold">
               {t.ctaJoin}
             </Link>
             <a
               href="#how-it-works"
-              className="btn-secondary inline-flex min-h-[3rem] items-center justify-center rounded-md px-4 py-3 font-display text-base font-semibold uppercase tracking-[0.1em]"
+              className="btn-secondary inline-flex min-h-[3rem] w-full items-center justify-center px-4 py-3 text-base font-semibold"
             >
               {t.ctaHow}
             </a>
@@ -55,7 +52,7 @@ export default async function LandingPage() {
         </section>
 
         <section id="quests" className="mx-auto max-w-lg px-4 sm:px-5">
-          <h2 className="font-display text-xl text-[var(--text-bright)] sm:text-2xl">{t.questsTitle}</h2>
+          <h2 className="text-xl font-bold text-[var(--text-primary)] sm:text-2xl">{t.questsTitle}</h2>
           <hr className="divider-gold my-4" />
           <div className="space-y-4">
             {(slots ?? []).map((s) => {
@@ -64,11 +61,11 @@ export default async function LandingPage() {
                 <Link
                   key={s.id}
                   href="/auth"
-                  className="block rounded-lg border border-[var(--gold-dim)] bg-[var(--bg-card)] p-4 sm:p-5"
+                  className="block rounded-lg border border-[var(--border-medium)] bg-[var(--bg-card)] p-4 sm:p-5"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="font-display text-lg text-[var(--text-bright)] sm:text-xl">{s.title}</p>
+                      <p className="text-lg font-semibold text-[var(--text-primary)] sm:text-xl">{s.title}</p>
                       <p className="mt-1 text-sm leading-snug text-[var(--text-muted)] sm:text-base">
                         {new Date(s.date_time).toLocaleString(locale, {
                           weekday: "short",
@@ -77,14 +74,14 @@ export default async function LandingPage() {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}{" "}
-                        · {s.location_name}
+                        � {s.location_name}
                       </p>
                     </div>
                     <div className="shrink-0" title={act.label}>
                       <ActivityIcon activityType={s.activity_type} size="md" />
                     </div>
                   </div>
-                  <p className="mt-3 font-display text-xs font-semibold uppercase tracking-[0.14em] text-[var(--gold-mid)] sm:text-sm">
+                  <p className="mt-3 font-display text-xs font-semibold uppercase tracking-[0.14em] text-[var(--accent)] sm:text-sm">
                     {t.signInToApply}
                   </p>
                 </Link>
@@ -97,19 +94,19 @@ export default async function LandingPage() {
         </section>
 
         <section id="how-it-works" className="mx-auto mt-12 max-w-lg px-4 sm:px-5">
-          <h2 className="font-display text-xl text-[var(--text-bright)] sm:text-2xl">{t.howTitle}</h2>
+          <h2 className="text-xl font-bold text-[var(--text-primary)] sm:text-2xl">{t.howTitle}</h2>
           <hr className="divider-gold my-4" />
           <div className="grid gap-4">
-            <div className="wow-card rounded-lg p-4 sm:p-5">
-              <p className="font-display text-base font-bold text-[var(--gold-bright)] sm:text-lg">{t.step1Title}</p>
+            <div className="card rounded-lg p-4 sm:p-5">
+              <p className="font-display text-base font-bold text-[var(--accent)] sm:text-lg">{t.step1Title}</p>
               <p className="mt-2 text-base leading-relaxed text-[var(--text-secondary)] sm:text-lg">{t.step1Body}</p>
             </div>
-            <div className="wow-card rounded-lg p-4 sm:p-5">
-              <p className="font-display text-base font-bold text-[var(--gold-bright)] sm:text-lg">{t.step2Title}</p>
+            <div className="card rounded-lg p-4 sm:p-5">
+              <p className="font-display text-base font-bold text-[var(--accent)] sm:text-lg">{t.step2Title}</p>
               <p className="mt-2 text-base leading-relaxed text-[var(--text-secondary)] sm:text-lg">{t.step2Body}</p>
             </div>
-            <div className="wow-card rounded-lg p-4 sm:p-5">
-              <p className="font-display text-base font-bold text-[var(--gold-bright)] sm:text-lg">{t.step3Title}</p>
+            <div className="card rounded-lg p-4 sm:p-5">
+              <p className="font-display text-base font-bold text-[var(--accent)] sm:text-lg">{t.step3Title}</p>
               <p className="mt-2 text-base leading-relaxed text-[var(--text-secondary)] sm:text-lg">{t.step3Body}</p>
             </div>
           </div>
@@ -117,11 +114,11 @@ export default async function LandingPage() {
 
         <footer className="mx-auto mt-16 max-w-lg px-4 pb-8 text-center sm:px-5">
           <hr className="divider-gold mb-6" />
-          <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 font-display text-xs uppercase tracking-[0.14em] text-[var(--text-muted)]">
-            <Link href="/legal/privacy" className="hover:text-[var(--gold-mid)]">
+          <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-[var(--text-muted)]">
+            <Link href="/legal/privacy" className="hover:text-[var(--accent)]">
               {t.privacy}
             </Link>
-            <Link href="/legal/terms" className="hover:text-[var(--gold-mid)]">
+            <Link href="/legal/terms" className="hover:text-[var(--accent)]">
               {t.terms}
             </Link>
           </nav>

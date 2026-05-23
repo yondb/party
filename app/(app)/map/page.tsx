@@ -40,7 +40,7 @@ export default async function MapPage() {
   const placePins = buildPlaceMapPins(places ?? [], slots ?? []);
 
   return (
-    <div className="map-page pb-6 lg:pb-0">
+    <div className="map-page pb-bottom-main lg:pb-0">
       <PageHeader
         title={m.title}
         backHref={user ? "/feed" : undefined}

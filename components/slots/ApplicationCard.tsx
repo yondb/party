@@ -46,13 +46,13 @@ export function ApplicationCard({ row, index = 0, copy, hostControls = false }: 
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04 }}
-      className={`wow-card flex flex-col gap-3 rounded-lg p-4 ${dim ? "opacity-60" : ""}`}
+      className={`card flex flex-col gap-3 rounded-lg p-4 ${dim ? "opacity-60" : ""}`}
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
         <Avatar src={row.avatar_url} name={row.name} size={48} className="shrink-0" />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-display text-lg text-[var(--text-bright)]">{row.name}</span>
+            <span className="text-lg font-semibold text-[var(--text-primary)]">{row.name}</span>
             <LevelBadge level={row.level} />
             <ReliabilityScore score={row.reliability_score} size={28} />
           </div>
@@ -60,7 +60,7 @@ export function ApplicationCard({ row, index = 0, copy, hostControls = false }: 
             {copy.exp} {row.exp}
           </p>
           {row.message ? (
-            <p className="mt-2 break-words rounded border border-[var(--gold-dim)] bg-[var(--bg-input)] p-2 text-sm leading-relaxed text-[var(--text-secondary)]">
+            <p className="mt-2 break-words rounded border border-[var(--border-medium)] bg-[var(--bg-input)] p-2 text-sm leading-relaxed text-[var(--text-secondary)]">
               {row.message}
             </p>
           ) : null}

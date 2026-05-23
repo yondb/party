@@ -74,3 +74,26 @@ export function placeCategoryLabel(lang: "en" | "pl", category: PlaceCategory): 
 export function isPlaceCategory(raw: string): raw is PlaceCategory {
   return (PLACE_CATEGORIES as string[]).includes(raw);
 }
+
+const GENERIC_PLACE_NAMES = new Set([
+  "basketball spot",
+  "running spot",
+  "cycling spot",
+  "gym spot",
+  "tennis spot",
+  "hiking spot",
+  "padel spot",
+  "volleyball spot",
+]);
+
+/** OSM imports often use generic English names — show category + district instead. */
+export function displayPlaceName(
+  place: { name: string; category: PlaceCategory; district: string | null },
+  lang: "en" | "pl",
+): string {
+  if (GENERIC_PLACE_NAMES.has(place.name.toLowerCase().trim())) {
+    const catLabel = placeCategoryLabel(lang, place.category);
+    return place.district ? `${catLabel} · ${place.district}` : catLabel;
+  }
+  return place.name;
+}

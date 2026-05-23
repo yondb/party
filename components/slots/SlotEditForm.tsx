@@ -113,9 +113,9 @@ export function SlotEditForm({ initial }: { initial: SlotEditInitial }) {
       />
       <form onSubmit={onSubmit} className="space-y-5 pb-8">
         {initial.place && placeMeta ? (
-          <section className="wow-card rounded-lg border border-[var(--gold-dim)] p-3">
+          <section className="card rounded-lg border border-[var(--border-medium)] p-3">
             <p className="text-xs uppercase tracking-widest text-[var(--text-muted)]">{t.placeLocked}</p>
-            <p className="mt-1 font-display text-lg text-[var(--text-bright)]">
+            <p className="mt-1 text-lg font-semibold text-[var(--text-primary)]">
               {placeMeta.icon} {initial.place.name}
             </p>
             <p className="text-sm text-[var(--text-muted)]">
@@ -134,13 +134,13 @@ export function SlotEditForm({ initial }: { initial: SlotEditInitial }) {
           required
         />
 
-        <div className="flex items-center justify-between rounded border border-[var(--gold-dim)] bg-[var(--bg-input)] px-3 py-2">
+        <div className="flex items-center justify-between rounded border border-[var(--border-medium)] bg-[var(--bg-input)] px-3 py-2">
           <span className="text-sm text-[var(--text-secondary)]">{t.spots}</span>
           <div className="flex items-center gap-2">
             <Button type="button" variant="secondary" className="!px-3 !py-1" onClick={() => setMaxSpots((n) => Math.max(2, n - 1))}>
               −
             </Button>
-            <span className="font-display w-8 text-center text-[var(--gold-bright)]">{maxSpots}</span>
+            <span className="font-display w-8 text-center text-[var(--accent)]">{maxSpots}</span>
             <Button type="button" variant="secondary" className="!px-3 !py-1" onClick={() => setMaxSpots((n) => Math.min(10, n + 1))}>
               +
             </Button>
@@ -148,7 +148,7 @@ export function SlotEditForm({ initial }: { initial: SlotEditInitial }) {
         </div>
 
         <div>
-          <p className="mb-2 font-display text-sm font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
             {t.audience}
           </p>
           <div className="flex gap-2">
@@ -167,8 +167,8 @@ export function SlotEditForm({ initial }: { initial: SlotEditInitial }) {
                   onClick={() => setGenderScope(key)}
                   className={`flex min-h-[4rem] flex-1 flex-col items-center justify-center gap-1 rounded-lg border px-1 py-2 text-center text-[10px] font-semibold uppercase sm:text-xs ${
                     sel
-                      ? "border-[var(--gold-bright)] bg-[linear-gradient(180deg,#e8c56a,#c9963a)] text-[var(--bg-void)]"
-                      : "border-[var(--gold-dim)] text-[var(--text-muted)]"
+                      ? "border-[var(--accent)] bg-[var(--accent)] text-white"
+                      : "border-[var(--border-medium)] text-[var(--text-muted)]"
                   }`}
                 >
                   <span className="font-mono text-2xl">{icon}</span>

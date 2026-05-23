@@ -118,8 +118,8 @@ export function ProfileEditForm({
             onClick={() => setGender("female")}
             className={`flex min-h-[3rem] flex-1 items-center justify-center rounded-lg border font-mono text-2xl transition ${
               gender === "female"
-                ? "border-[var(--gold-bright)] shadow-[var(--shadow-glow-gold)]"
-                : "border-[var(--gold-dim)] bg-[var(--bg-card)] hover:border-[var(--gold-dark)]"
+                ? "border-[var(--accent)] shadow-[var(--shadow-sm)]"
+                : "border-[var(--border-medium)] bg-[var(--bg-card)] hover:border-[var(--border-strong)]"
             }`}
           >
             {ICON_FEMALE}
@@ -131,8 +131,8 @@ export function ProfileEditForm({
             onClick={() => setGender("male")}
             className={`flex min-h-[3rem] flex-1 items-center justify-center rounded-lg border font-mono text-2xl transition ${
               gender === "male"
-                ? "border-[var(--gold-bright)] shadow-[var(--shadow-glow-gold)]"
-                : "border-[var(--gold-dim)] bg-[var(--bg-card)] hover:border-[var(--gold-dark)]"
+                ? "border-[var(--accent)] shadow-[var(--shadow-sm)]"
+                : "border-[var(--border-medium)] bg-[var(--bg-card)] hover:border-[var(--border-strong)]"
             }`}
           >
             {ICON_MALE}
@@ -148,7 +148,7 @@ export function ProfileEditForm({
           type="file"
           accept="image/*"
           onChange={(e) => onAvatarSelected(e.target.files?.[0] ?? null)}
-          className="input-wow w-full file:mr-3 file:rounded file:border file:border-[var(--gold-dark)] file:bg-[var(--bg-card)] file:px-3 file:py-1 file:text-xs file:text-[var(--text-secondary)]"
+          className="input-wow w-full file:mr-3 file:rounded file:border file:border-[var(--border-strong)] file:bg-[var(--bg-card)] file:px-3 file:py-1 file:text-xs file:text-[var(--text-secondary)]"
         />
         <p className="mt-1 text-xs text-[var(--text-muted)]">
           {uploadingAvatar ? t.avatarUploading : avatarUrl ? t.avatarDone : t.noAvatarYet}

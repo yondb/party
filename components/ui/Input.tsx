@@ -10,18 +10,18 @@ export function Input({ label, error, className = "", id, ...rest }: InputProps)
   return (
     <label className="flex flex-col gap-1.5 text-base" htmlFor={inputId}>
       {label ? (
-        <span className="font-display text-sm font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">
+        <span className="text-sm font-semibold text-[var(--text-secondary)]">
           {label}
         </span>
       ) : null}
       <input
         id={inputId}
-        className={`input-wow ${error ? "border-[var(--gold-bright)] ring-1 ring-[var(--gold-mid)]/50" : ""} ${className}`}
+        className={`input-wow ${error ? "border-[var(--accent)] ring-1 ring-[var(--accent)]/50" : ""} ${className}`}
         aria-invalid={error ? true : undefined}
         {...rest}
       />
       {error ? (
-        <span className="text-sm text-[var(--gold-bright)]">{error}</span>
+        <span className="text-sm text-[var(--accent)]">{error}</span>
       ) : null}
     </label>
   );

@@ -78,10 +78,10 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
   const isOwn = user?.id === profile.id;
 
   return (
-    <div className="pb-6">
-      <PageHeader title={profile.name} backHref="/" />
+    <div className="page-shell pb-bottom-main pt-nav-safe">
+      <PageHeader title={profile.name} backHref="/feed" />
       {isOwn ? (
-        <Link href="/profile/edit" className="mb-4 block text-sm text-[var(--gold-mid)]">
+        <Link href="/profile/edit" className="mb-4 block text-sm text-[var(--accent)]">
           Edit profile
         </Link>
       ) : user ? (

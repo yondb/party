@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { SITE_NAME } from "@/lib/site";
+import { Logo } from "@/components/ui/Logo";
 
 export function SplashGate({ children }: { children: React.ReactNode }) {
   const [showSplash, setShowSplash] = useState(false);
@@ -19,7 +19,6 @@ export function SplashGate({ children }: { children: React.ReactNode }) {
         return () => window.clearTimeout(t);
       }
     } catch {
-      // localStorage may be unavailable in some embedded/privacy contexts
       setShowSplash(false);
     }
   }, []);
@@ -30,7 +29,7 @@ export function SplashGate({ children }: { children: React.ReactNode }) {
         {showSplash ? (
           <motion.div
             key="splash"
-            className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--bg-void)]"
+            className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--bg-page)]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -42,12 +41,7 @@ export function SplashGate({ children }: { children: React.ReactNode }) {
               transition={{ duration: 0.45, ease: "easeOut" }}
               className="text-center"
             >
-              <h1
-                className="font-display text-4xl font-black tracking-tight text-[var(--gold-bright)] sm:text-5xl"
-                style={{ textShadow: "0 0 20px rgba(240,192,64,0.25)" }}
-              >
-                {SITE_NAME}
-              </h1>
+              <Logo size="lg" href="" />
             </motion.div>
           </motion.div>
         ) : null}

@@ -8,6 +8,7 @@ import {
   PLACE_CATEGORIES,
   PLACE_CATEGORY_META,
   placeCategoryLabel,
+  displayPlaceName,
   type PlaceCategory,
 } from "@/lib/places";
 import { useLanguage } from "@/components/i18n/LanguageProvider";
@@ -33,10 +34,10 @@ export type PlaceMapPin = {
 };
 
 const controlFocus =
-  "outline-none transition focus-visible:border-[var(--gold-mid)] focus-visible:ring-2 focus-visible:ring-[var(--gold-mid)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-card)]";
+  "outline-none transition focus-visible:border-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent-soft)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-surface)]";
 
 const filterLabelClass =
-  "mb-1 font-display text-xs uppercase tracking-widest text-[var(--gold-mid)]";
+  "mb-1 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]";
 
 function MapFilterField({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -78,9 +79,10 @@ function buildPopupHtml(
     p.activeSlotCount > 0
       ? ` <span class="lfparty-map-popup__badge">${p.activeSlotCount} ${escapeHtml(m.popupSlotsBadge)}</span>`
       : "";
+  const displayName = displayPlaceName(p, lang);
   return `
     <div class="lfparty-map-popup">
-      <p class="lfparty-map-popup__title">${meta.icon} ${escapeHtml(p.name)}${badge}</p>
+      <p class="lfparty-map-popup__title">${meta.icon} ${escapeHtml(displayName)}${badge}</p>
       <p class="lfparty-map-popup__meta">${escapeHtml(catLabel)}${districtLine}</p>
       <p class="lfparty-map-popup__section">${escapeHtml(m.popupUpcoming)}</p>
       ${slotsHtml}
@@ -173,7 +175,7 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
         : [21.0122, 52.2297];
     const map = new mapboxgl.Map({
       container: ref.current,
-      style: "mapbox://styles/mapbox/dark-v11",
+      style: "mapbox://styles/mapbox/light-v11",
       center: center as [number, number],
       zoom: 11,
     });
@@ -209,10 +211,10 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
 
   if (!token) {
     return (
-      <div className="wow-card rounded-lg p-6 text-center text-sm text-[var(--text-muted)]">
-        Set <code className="text-[var(--gold-mid)]">NEXT_PUBLIC_MAPBOX_TOKEN</code> in{" "}
+      <div className="card p-6 text-center text-sm text-[var(--text-muted)]">
+        Set <code className="text-[var(--accent)]">NEXT_PUBLIC_MAPBOX_TOKEN</code> in{" "}
         <code>.env.local</code> (dev) or in{" "}
-        <span className="text-[var(--gold-mid)]">Vercel → Project → Settings → Environment Variables</span>{" "}
+        <span className="text-[var(--accent)]">Vercel → Project → Settings → Environment Variables</span>{" "}
         (production), then redeploy. Places in DB: {places.length}.
       </div>
     );
@@ -222,7 +224,7 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
 
   const filters = (
     <section
-      className="rounded-lg border border-[var(--gold-dim)] bg-[var(--bg-card)] p-4 shadow-[inset_0_1px_0_rgba(240,192,64,0.04)] lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none"
+      className="card p-4 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none"
       aria-label={lang === "pl" ? "Filtry mapy" : "Map filters"}
     >
       <div className="flex flex-col gap-4">
@@ -256,7 +258,7 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
               type="checkbox"
               checked={onlyOpenSlots}
               onChange={(e) => setOnlyOpenSlots(e.target.checked)}
-              className="accent-[var(--gold-mid)]"
+              className="accent-[var(--accent)]"
             />
             {m.onlyOpenSlotsHint}
           </label>
@@ -267,8 +269,8 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
             <button
               type="button"
               onClick={requestMyLocation}
-              className={`btn-secondary min-h-[2.75rem] w-full rounded-lg px-3 text-sm font-semibold lg:w-auto ${controlFocus} ${
-                locationEnabled ? "border-[var(--gold-bright)] text-[var(--gold-bright)]" : ""
+              className={`btn-secondary min-h-[2.75rem] w-full px-3 text-sm font-semibold lg:w-auto ${controlFocus} ${
+                locationEnabled ? "border-[var(--accent)] text-[var(--accent)]" : ""
               }`}
             >
               {m.useMyLocation}
@@ -287,7 +289,7 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
               aria-valuemax={10}
               aria-valuenow={radiusKm}
               aria-label={radiusCaption}
-              className={`h-2.5 w-full cursor-pointer accent-[var(--gold-mid)] ${controlFocus} rounded-full bg-[var(--bg-input)] disabled:opacity-40`}
+              className={`h-2.5 w-full cursor-pointer accent-[var(--accent)] ${controlFocus} rounded-full bg-[var(--bg-input)] disabled:opacity-40`}
             />
           </div>
         </MapFilterField>
@@ -321,22 +323,43 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
               key={place.id}
               type="button"
               onClick={() => flyToPlace(place)}
-              className="wow-card wow-card-hover mb-2 flex w-full items-center gap-3 px-3 py-2.5 text-left"
+              className="card card-hover mb-2 w-full text-left"
+              style={{
+                padding: "10px 14px",
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                border: "1px solid var(--border)",
+              }}
             >
-              <span className="text-lg">{meta.icon}</span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate font-display text-sm font-semibold text-[var(--text-bright)]">
-                  {place.name}
+              <span style={{ fontSize: 18 }}>{meta.icon}</span>
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span
+                  style={{
+                    display: "block",
+                    fontSize: "0.875rem",
+                    fontWeight: 600,
+                    color: "var(--text-primary)",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {displayPlaceName(place, lang)}
                 </span>
-                <span className="block text-xs text-[var(--text-secondary)]">
+                <span
+                  style={{
+                    display: "block",
+                    fontSize: "0.75rem",
+                    color: "var(--text-secondary)",
+                  }}
+                >
                   {catLabel}
                   {place.district ? ` · ${place.district}` : ""}
                 </span>
               </span>
               {place.activeSlotCount > 0 ? (
-                <span className="rounded-full bg-[var(--gold-dim)] px-2 py-0.5 text-xs font-bold text-[var(--gold-bright)]">
-                  {place.activeSlotCount}
-                </span>
+                <span className="badge badge-accent">{place.activeSlotCount}</span>
               ) : null}
             </button>
           );
@@ -359,9 +382,8 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
           tabIndex={0}
           role="application"
           aria-label={m.title}
-          className={`map-canvas-inner overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold-mid)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-deep)] lg:rounded-none lg:border-0 ${
-            /* mobile: card-style map below filters */
-            "rounded-lg border border-[var(--gold-dim)] lg:h-full"
+          className={`map-canvas-inner overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-soft)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-page)] lg:rounded-none lg:border-0 ${
+            "rounded-lg border border-[var(--border)] lg:h-full"
           }`}
         />
       </div>

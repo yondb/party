@@ -10,15 +10,15 @@ export async function AppFooter() {
   const lang = getServerLang();
   const t = appFooterUi(lang);
   return (
-    <footer className="mt-8 border-t border-[var(--gold-dim)]/60 px-4 py-6 text-center">
-      <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 font-display text-[11px] uppercase tracking-[0.14em] text-[var(--text-muted)]">
-        <Link href="/legal/privacy" className="hover:text-[var(--gold-mid)]">
+    <footer className="mt-8 border-t border-[var(--border-medium)]/60 px-4 py-6 text-center">
+      <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-[var(--text-muted)]">
+        <Link href="/legal/privacy" className="hover:text-[var(--accent)]">
           {t.legalPrivacy}
         </Link>
-        <Link href="/legal/terms" className="hover:text-[var(--gold-mid)]">
+        <Link href="/legal/terms" className="hover:text-[var(--accent)]">
           {t.legalTerms}
         </Link>
-        <a href={`mailto:${SUPPORT}`} className="hover:text-[var(--gold-mid)]">
+        <a href={`mailto:${SUPPORT}`} className="hover:text-[var(--accent)]">
           {t.support}
         </a>
       </nav>

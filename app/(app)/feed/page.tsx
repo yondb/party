@@ -2,7 +2,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { FeedList } from "@/components/feed/FeedList";
 import type { SlotCardData, SlotCardHost } from "@/components/slots/SlotCard";
-import { PageHeader } from "@/components/layout/PageHeader";
 import { normalizeActivityKey, type ActivityKey } from "@/lib/activities";
 import { getServerLang } from "@/lib/i18n-server";
 import { activityLabel, feedUi } from "@/lib/i18n-ui";
@@ -129,33 +128,37 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
   };
 
   return (
-    <div className="page-shell pb-6">
-      <PageHeader title={ui.title} />
-      <div className="relative mb-3">
-          <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-            <FilterPill href={feedHref({ date: validDate })} label={ui.allActivities} active={!validActivity} />
-            {activityOptions.map((k) => (
-              <FilterPill
-                key={k}
-                href={feedHref({ activity: k, date: validDate })}
-                label={activityLabel(lang, k)}
-                active={validActivity === k}
-              />
-            ))}
-          </div>
-        </div>
+    <div className="page-shell pb-bottom-main pt-nav-safe">
+      <div style={{ paddingTop: "1.5rem", paddingBottom: "1rem" }}>
+        <h1 style={{ fontSize: "1.6rem", fontWeight: 800, marginBottom: 4 }}>{ui.title}</h1>
+        <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)" }}>{ui.subtitle}</p>
+      </div>
 
-        <div className="mb-4 flex flex-wrap gap-2">
-          <FilterPill href={feedHref({ activity: validActivity })} label={ui.allDates} active={!validDate} />
-          {dateOptions.map((d) => (
+      <div className="relative mb-3">
+        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          <FilterPill href={feedHref({ date: validDate })} label={ui.allActivities} active={!validActivity} />
+          {activityOptions.map((k) => (
             <FilterPill
-              key={d}
-              href={feedHref({ activity: validActivity, date: d })}
-              label={formatFilterDate(d, lang)}
-              active={validDate === d}
+              key={k}
+              href={feedHref({ activity: k, date: validDate })}
+              label={activityLabel(lang, k)}
+              active={validActivity === k}
             />
           ))}
         </div>
+      </div>
+
+      <div className="mb-4 flex flex-wrap gap-2">
+        <FilterPill href={feedHref({ activity: validActivity })} label={ui.allDates} active={!validDate} />
+        {dateOptions.map((d) => (
+          <FilterPill
+            key={d}
+            href={feedHref({ activity: validActivity, date: d })}
+            label={formatFilterDate(d, lang)}
+            active={validDate === d}
+          />
+        ))}
+      </div>
 
       <FeedList cards={cards} userId={user.id} appStatusBySlot={appStatusBySlot} />
     </div>
@@ -175,11 +178,23 @@ function FilterPill({ href, label, active }: { href: string; label: string; acti
   return (
     <Link
       href={href}
-      className={`inline-flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full border px-3 py-2 font-display text-xs font-semibold uppercase tracking-[0.12em] transition active:scale-[0.98] sm:text-sm ${
+      className="inline-flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center px-3 py-2 text-sm font-semibold transition active:scale-[0.98]"
+      style={
         active
-          ? "border-[var(--gold-bright)] bg-[linear-gradient(180deg,#c9963a,#8a6420)] text-[var(--bg-void)]"
-          : "border-[var(--gold-dim)] text-[var(--text-secondary)] hover:border-[var(--gold-dark)]"
-      }`}
+          ? {
+              borderRadius: "var(--radius-full)",
+              fontFamily: "var(--font-sans)",
+              background: "var(--accent-soft)",
+              border: "1.5px solid var(--accent)",
+              color: "var(--accent-text)",
+            }
+          : {
+              borderRadius: "var(--radius-full)",
+              fontFamily: "var(--font-sans)",
+              border: "1.5px solid var(--border-medium)",
+              color: "var(--text-secondary)",
+            }
+      }
     >
       {label}
     </Link>

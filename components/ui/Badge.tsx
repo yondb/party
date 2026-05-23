@@ -4,15 +4,11 @@ type BadgeProps = {
   className?: string;
 };
 
-export function Badge({ label, color = "var(--gold-mid)", className = "" }: BadgeProps) {
+export function Badge({ label, color = "var(--accent)", className = "" }: BadgeProps) {
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2 py-0.5 font-display text-[11px] font-semibold uppercase tracking-widest ${className}`}
-      style={{
-        backgroundColor: `color-mix(in srgb, ${color} 15%, transparent)`,
-        borderColor: `color-mix(in srgb, ${color} 40%, transparent)`,
-        color,
-      }}
+      className={`badge badge-accent ${className}`}
+      style={color !== "var(--accent)" ? { color, borderColor: color } : undefined}
     >
       {label}
     </span>
