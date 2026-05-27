@@ -25,6 +25,12 @@
     min-height: 100vh;
   }
 
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-bricolage), system-ui, sans-serif;
+    color: #18181B;
+    letter-spacing: -0.02em;
+  }
+
   ::selection {
     background: #FDE68A;
     color: #18181B;
@@ -60,8 +66,15 @@
 
   /* honey underline highlight (jak hand-drawn underline) */
   .honey-highlight {
-    background-image: linear-gradient(180deg, transparent 60%, #FDE68A 60%);
-    padding: 0 4px;
+    background-image: linear-gradient(180deg, transparent 62%, rgba(253, 230, 138, 0.45) 62%);
+    padding: 0 2px;
+  }
+
+  .panel-ash {
+    border-radius: 24px;
+    border: 1px solid rgba(228, 228, 231, 0.55);
+    background: rgba(244, 244, 245, 0.85);
+    box-shadow: 0 1px 2px 0 rgba(24, 24, 27, 0.04);
   }
 
   .map-root {

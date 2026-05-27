@@ -484,7 +484,7 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
           </span>
         </span>
         {place.activeSlotCount > 0 ? (
-          <span className="shrink-0 rounded-full bg-honey-50 px-2 py-0.5 text-xs font-semibold text-honey-700">
+          <span className="shrink-0 rounded-full bg-graphite px-2 py-0.5 text-xs font-semibold text-surface">
             {place.activeSlotCount}
           </span>
         ) : null}
@@ -503,7 +503,7 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
       ) : null}
 
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex flex-col gap-2 p-3 lg:left-3 lg:max-w-sm lg:p-4">
-        <div className="pointer-events-auto flex items-center gap-2 rounded-2xl border border-ash-200/40 bg-surface/95 px-3 py-2 shadow-sm backdrop-blur-md">
+        <div className="pointer-events-auto flex items-center gap-2 rounded-2xl border border-ash-200/60 bg-surface-2/95 px-3 py-2 shadow-sm backdrop-blur-md">
           <span className="text-ash-400" aria-hidden>
             ⌕
           </span>
@@ -519,19 +519,19 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
             onClick={() => setFiltersOpen((o) => !o)}
             className={cn(
               "shrink-0 rounded-full px-2.5 py-1 text-xs font-medium text-ash-600 hover:bg-ash-100 transition",
-              filtersOpen && "bg-honey-50 text-honey-700",
+              filtersOpen && "bg-graphite text-surface",
             )}
           >
             {m.filters}
           </button>
         </div>
 
-        <div className="pointer-events-auto rounded-2xl border border-ash-200/40 bg-surface/95 p-2 shadow-sm backdrop-blur-md">
+        <div className="pointer-events-auto rounded-2xl border border-ash-200/60 bg-surface-2/95 p-2 shadow-sm backdrop-blur-md">
           {categoryChips}
         </div>
 
         {filtersOpen ? (
-          <div className="pointer-events-auto rounded-2xl border border-ash-200/40 bg-surface/95 p-3 shadow-sm backdrop-blur-md lg:block">
+          <div className="pointer-events-auto rounded-2xl border border-ash-200/60 bg-surface-2/95 p-3 shadow-sm backdrop-blur-md lg:block">
             {advancedFilters}
           </div>
         ) : null}

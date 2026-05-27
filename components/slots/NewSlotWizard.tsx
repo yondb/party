@@ -98,7 +98,7 @@ export function NewSlotWizard({ initialPlaceName = '', placeId }: NewSlotWizardP
             <p className="mt-2 text-body-lg text-ash-500">Detale slota.</p>
           </header>
 
-          <Card className="!bg-honey-50 !border-honey-200/40 flex items-center justify-between">
+          <Card className="panel-ash !shadow-none flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-3xl">{CATEGORY_LIST.find((c) => c.id === category)?.emoji}</span>
               <div>
@@ -108,7 +108,7 @@ export function NewSlotWizard({ initialPlaceName = '', placeId }: NewSlotWizardP
                 <p className="font-mono text-body-sm text-ash-600">{placeName}</p>
               </div>
             </div>
-            <button type="button" onClick={() => setStep(1)} className="text-body-sm font-medium text-honey-700 hover:underline">
+            <button type="button" onClick={() => setStep(1)} className="text-body-sm font-medium text-ash-600 hover:text-ash-900 hover:underline">
               Zmień
             </button>
           </Card>

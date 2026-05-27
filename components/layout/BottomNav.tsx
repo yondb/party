@@ -44,14 +44,14 @@ export function BottomNav({ isGuest = false }: { isGuest?: boolean }) {
             aria-current={active ? "page" : undefined}
           >
             <Icon
-              className={cn("h-6 w-6", active ? "text-ash-900" : "text-ash-400")}
+              className={cn("h-6 w-6", active ? "text-graphite" : "text-ash-400")}
               strokeWidth={active ? 2.25 : 1.75}
               aria-hidden
             />
             <span
               className={cn(
                 "text-[11px] font-medium leading-none",
-                active ? "text-ash-900" : "text-ash-400",
+                active ? "text-graphite" : "text-ash-500",
               )}
             >
               {label}

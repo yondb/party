@@ -35,9 +35,10 @@ export function ProfileFixIt({
 
   return (
     <div className="relative">
-      <div className="absolute inset-x-0 top-0 h-80 bg-gradient-to-b from-honey-100 via-honey-50 to-transparent pointer-events-none" />
+      <div className="absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-ash-100 via-bg to-transparent pointer-events-none" />
+      <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-br from-honey-50/25 via-transparent to-transparent pointer-events-none" />
 
-      <div className="relative mx-auto max-w-3xl px-4 lg:px-8 py-6 lg:py-10 space-y-6">
+      <div className="relative mx-auto max-w-3xl space-y-5 px-4 py-5 lg:px-8 lg:py-8">
         <div className="flex justify-end gap-2">
           <Link href="/settings">
             <Button size="sm" variant="ghost" icon={<Settings className="size-4" />}>

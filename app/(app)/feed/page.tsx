@@ -1,13 +1,9 @@
-﻿import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
-import { FeedList } from "@/components/feed/FeedList";
-import { FeedHero } from "@/components/feed/FeedHero";
-import { SuggestedActivities } from "@/components/feed/SuggestedActivities";
+﻿import { createClient } from "@/lib/supabase/server";
+import { FeedExperience } from "@/components/feed/FeedExperience";
 import type { SlotCardData, SlotCardHost } from "@/components/slots/SlotCard";
 import { normalizeActivityKey, type ActivityKey } from "@/lib/activities";
 import { getServerLang } from "@/lib/i18n-server";
-import { activityLabel, feedUi } from "@/lib/i18n-ui";
-import { formatFilterDate } from "@/lib/geo";
+import { feedUi } from "@/lib/i18n-ui";
 
 export const dynamic = "force-dynamic";
 
@@ -36,11 +32,7 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return (
-      <div className="py-10 text-center text-[var(--status-full)]">
-        {ui.signIn}
-      </div>
-    );
+    return <div className="py-10 text-center text-danger">{ui.signIn}</div>;
   }
 
   const { data: slots, error: slotsErr } = await supabase
@@ -50,29 +42,10 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
     .order("date_time", { ascending: true });
   if (slotsErr) return <ErrorBox lang={lang} message={slotsErr.message} />;
 
-  const { data: myApps, error: appsErr } = await supabase
-    .from("applications")
-    .select("slot_id, status")
-    .eq("applicant_id", user.id);
-  if (appsErr) return <ErrorBox lang={lang} message={appsErr.message} />;
-
-  const appStatusBySlot: Record<string, "pending" | "accepted" | "rejected"> = {};
-  (myApps ?? []).forEach((a) => {
-    appStatusBySlot[a.slot_id] = a.status;
-  });
-
   const hostIds = Array.from(new Set((slots ?? []).map((s) => s.host_id)));
   const { data: hosts } = hostIds.length
     ? await supabase.from("users").select("id, name, avatar_url, reliability_score, gender").in("id", hostIds)
-    : {
-        data: [] as {
-          id: string;
-          name: string;
-          avatar_url: string | null;
-          reliability_score: number | null;
-          gender: string | null;
-        }[],
-      };
+    : { data: [] as { id: string; name: string; avatar_url: string | null; reliability_score: number | null; gender: string | null }[] };
 
   const hostMap = new Map<string, SlotCardHost>(
     (hosts ?? []).map((h) => [
@@ -107,7 +80,7 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
 
   const activityOptions = Array.from(
     new Set(allCards.map((c) => normalizeActivityKey(c.activity_type))),
-  );
+  ) as ActivityKey[];
   const dateOptions = Array.from(new Set(allCards.map((c) => c.date_time.slice(0, 10)))).sort();
   const validActivity =
     searchParams.activity && activityOptions.includes(searchParams.activity as ActivityKey)
@@ -121,7 +94,7 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
     return true;
   });
 
-  const feedHref = (next: { activity?: string; date?: string }) => {
+  const buildHref = (next: { activity?: string; date?: string }) => {
     const params = new URLSearchParams();
     if (next.activity) params.set("activity", next.activity);
     if (next.date) params.set("date", next.date);
@@ -132,61 +105,23 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
   const { data: me } = await supabase.from("users").select("name").eq("id", user.id).single();
 
   return (
-    <div className="mx-auto max-w-5xl px-4 lg:px-8 py-6 lg:py-10 space-y-10">
-      <FeedHero userName={me?.name?.split(" ")[0] ?? "Ty"} activeCount={allCards.length} />
-
-      <div className="sticky top-16 z-20 -mx-1 mb-1 bg-bg/95 py-2 backdrop-blur-md">
-        <div className="flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <FilterPill href={feedHref({ date: validDate })} label={ui.allActivities} active={!validActivity} />
-          {activityOptions.map((k) => (
-            <FilterPill
-              key={k}
-              href={feedHref({ activity: k, date: validDate })}
-              label={activityLabel(lang, k)}
-              active={validActivity === k}
-            />
-          ))}
-        </div>
-        {dateOptions.length > 0 ? (
-          <div className="mt-2 flex gap-2 overflow-x-auto px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <FilterPill href={feedHref({ activity: validActivity })} label={ui.allDates} active={!validDate} />
-            {dateOptions.map((d) => (
-              <FilterPill
-                key={d}
-                href={feedHref({ activity: validActivity, date: d })}
-                label={formatFilterDate(d, lang)}
-                active={validDate === d}
-              />
-            ))}
-          </div>
-        ) : null}
-      </div>
-
-      <SuggestedActivities activeActivity={validActivity} validDate={validDate} />
-
-      <FeedList
-        cards={cards}
-        userId={user.id}
-        appStatusBySlot={appStatusBySlot}
-        totalCount={allCards.length}
-      />
-    </div>
+    <FeedExperience
+      userName={me?.name?.split(" ")[0] ?? "Ty"}
+      cards={cards}
+      allCards={allCards}
+      activityOptions={activityOptions}
+      dateOptions={dateOptions}
+      validActivity={validActivity}
+      validDate={validDate}
+      buildHref={buildHref}
+    />
   );
 }
 
 function ErrorBox({ lang, message }: { lang: import("@/lib/i18n-lang").Lang; message: string }) {
-  const prefix = feedUi(lang).errorPrefix;
   return (
-    <div className="py-10 text-center text-[var(--status-full)]">
-      {prefix} {message}
+    <div className="py-10 text-center text-danger">
+      {feedUi(lang).errorPrefix} {message}
     </div>
-  );
-}
-
-function FilterPill({ href, label, active }: { href: string; label: string; active: boolean }) {
-  return (
-    <Link href={href} className={`chip shrink-0 ${active ? "chip-active" : ""}`}>
-      {label}
-    </Link>
   );
 }

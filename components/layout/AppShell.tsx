@@ -32,7 +32,7 @@ export function AppShell({
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-bg">
+    <div className="flex min-h-screen flex-col bg-bg bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(253,230,138,0.12),transparent)]">
       <TopBar userName={userName} userLevel={userLevel} avatarUrl={avatarUrl} isGuest={isGuest} />
       <div className="flex-1 flex">
         <Sidebar isGuest={isGuest} />

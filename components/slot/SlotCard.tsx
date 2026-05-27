@@ -33,7 +33,7 @@ export function SlotCard({ slot, compact }: Props) {
 
   return (
     <Link href={`/slots/${slot.id}`} className="block group">
-      <div className="relative bg-surface rounded-3xl border border-ash-200/40 shadow-sm overflow-hidden transition-all duration-200 ease-out-soft hover:shadow-md hover:-translate-y-0.5">
+      <div className="relative overflow-hidden rounded-3xl border border-ash-200/50 bg-surface shadow-sm transition-all duration-200 ease-out-soft hover:-translate-y-0.5 hover:border-ash-300/60 hover:shadow-md">
         <span
           className="absolute left-0 top-0 h-full w-1.5 group-hover:w-2 transition-all duration-200"
           style={{ backgroundColor: cat.color }}

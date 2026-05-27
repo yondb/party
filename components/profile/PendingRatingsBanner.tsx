@@ -10,7 +10,7 @@ export function PendingRatingsBanner({ items }: { items: PendingRatingSlot[] }) 
   const first = items[0];
 
   return (
-    <div className="mb-4 rounded-3xl border border-honey-200/50 bg-honey-50 p-4 shadow-sm">
+    <div className="mb-4 rounded-3xl border border-ash-200/60 border-l-4 border-l-honey-500 bg-surface-2 p-4 shadow-sm">
       <p className="text-sm font-semibold text-honey-700">{t.title}</p>
       <p className="mt-1 text-sm text-ash-600">
         {items.length === 1
@@ -19,7 +19,7 @@ export function PendingRatingsBanner({ items }: { items: PendingRatingSlot[] }) 
       </p>
       <Link
         href={first.rateHref}
-        className="mt-3 inline-flex min-h-[44px] items-center justify-center rounded-2xl bg-honey-500 px-4 text-sm font-semibold text-graphite shadow-honey"
+        className="mt-3 inline-flex min-h-[44px] items-center justify-center rounded-2xl bg-graphite px-4 text-sm font-semibold text-surface shadow-md hover:bg-graphite-soft"
       >
         {t.cta}
       </Link>
