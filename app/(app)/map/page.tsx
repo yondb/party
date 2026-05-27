@@ -30,13 +30,7 @@ export default async function MapPage() {
   const placePins = buildPlaceMapPins(places ?? [], slots ?? []);
 
   return (
-    <div
-      className="relative -mx-5 w-[calc(100%+2.5rem)] sm:-mx-6 sm:w-[calc(100%+3rem)]"
-      style={{
-        height: "calc(100dvh - var(--nav-height) - var(--dock-height) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 1.5rem)",
-        minHeight: "420px",
-      }}
-    >
+    <div className="relative w-full h-[calc(100dvh-var(--nav-height)-var(--dock-height))] min-h-[420px] lg:h-[calc(100dvh-var(--nav-height))] lg:min-h-[560px]">
       <MapPlaces places={placePins} />
     </div>
   );

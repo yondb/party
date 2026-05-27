@@ -37,7 +37,14 @@ export function buildPlaceMapPins(
   }
 
   return places
-    .filter((p) => isPlaceCategory(p.category))
+    .filter(
+      (p) =>
+        isPlaceCategory(p.category) &&
+        Number.isFinite(p.lat) &&
+        Number.isFinite(p.lng) &&
+        Math.abs(p.lat) <= 90 &&
+        Math.abs(p.lng) <= 180,
+    )
     .map((p) => {
       const upcoming = (byPlace.get(p.id) ?? []).sort((a, b) =>
         a.date_time.localeCompare(b.date_time),

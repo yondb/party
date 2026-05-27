@@ -13,6 +13,8 @@ import {
 } from "@/lib/places";
 import { useLanguage } from "@/components/i18n/LanguageProvider";
 import { mapUi } from "@/lib/i18n-ui";
+import { Chip } from "@/components/ui/Chip";
+import { cn } from "@/lib/utils";
 
 export type PlaceSlotPreview = {
   id: string;
@@ -119,6 +121,7 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [sheetExpanded, setSheetExpanded] = useState(false);
   const [activePlaceId, setActivePlaceId] = useState<string | null>(null);
+  const [mapError, setMapError] = useState<string | null>(null);
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
   function requestMyLocation() {
@@ -216,6 +219,7 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
         ? [places[0].lng, places[0].lat]
         : [21.0122, 52.2297];
 
+    setMapError(null);
     const map = new mapboxgl.Map({
       container: ref.current,
       style: "mapbox://styles/mapbox/light-v11",
@@ -226,6 +230,11 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
     mapRef.current = map;
     mapReadyRef.current = false;
     map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "bottom-right");
+
+    map.on("error", (e) => {
+      console.error("Mapbox error:", e.error);
+      setMapError(lang === "pl" ? "Nie udało się załadować mapy." : "Failed to load map.");
+    });
 
     const onClusterClick = (e: mapboxgl.MapMouseEvent & { features?: mapboxgl.MapboxGeoJSONFeature[] }) => {
       const features = map.queryRenderedFeatures(e.point, { layers: [CLUSTER_LAYER] });
@@ -317,9 +326,16 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
       });
 
       mapReadyRef.current = true;
+      map.resize();
     });
 
+    const resizeObserver = new ResizeObserver(() => {
+      map.resize();
+    });
+    resizeObserver.observe(ref.current);
+
     return () => {
+      resizeObserver.disconnect();
       popupRef.current?.remove();
       youMarkerRef.current?.remove();
       map.remove();
@@ -327,7 +343,7 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
       mapReadyRef.current = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- map init once per token
-  }, [token]);
+  }, [token, lang]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -359,7 +375,7 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
     if (!myPosition) return;
     const youEl = document.createElement("div");
     youEl.style.cssText =
-      "width:16px;height:16px;border-radius:50%;background:#3b82f6;border:3px solid white;box-shadow:0 2px 12px rgba(59,130,246,.5)";
+      "width:16px;height:16px;border-radius:50%;background:#F5B800;border:3px solid white;box-shadow:0 2px 12px rgba(245,184,0,.45)";
     youMarkerRef.current = new mapboxgl.Marker({ element: youEl })
       .setLngLat([myPosition.lng, myPosition.lat])
       .addTo(map);
@@ -367,64 +383,65 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
 
   if (!token) {
     return (
-      <div className="floating-card flex h-full items-center justify-center p-8 text-center text-sm text-[var(--text-secondary)]">
-        Set <code className="text-[var(--accent)]">NEXT_PUBLIC_MAPBOX_TOKEN</code> in .env.local
+      <div className="map-root flex h-full items-center justify-center p-8 text-center">
+        <p className="text-sm text-ash-600">
+          Ustaw <code className="text-honey-700">NEXT_PUBLIC_MAPBOX_TOKEN</code> w .env.local
+        </p>
       </div>
     );
   }
 
   const categoryChips = (
-    <div className="flex gap-2 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      <button
-        type="button"
-        className={`chip shrink-0 ${category === "all" ? "chip-active" : ""}`}
-        onClick={() => setCategory("all")}
-      >
+    <div className="flex gap-2 overflow-x-auto pb-0.5 scrollbar-hide">
+      <Chip active={category === "all"} onClick={() => setCategory("all")} className="shrink-0">
         {m.all}
-      </button>
+      </Chip>
       {PLACE_CATEGORIES.map((key) => {
         const meta = PLACE_CATEGORY_META[key];
         return (
-          <button
+          <Chip
             key={key}
-            type="button"
-            className={`chip shrink-0 ${category === key ? "chip-active" : ""}`}
+            emoji={meta.icon}
+            active={category === key}
             onClick={() => setCategory(key)}
+            className="shrink-0"
           >
-            <span>{meta.icon}</span>
             {placeCategoryLabel(lang, key)}
-          </button>
+          </Chip>
         );
       })}
     </div>
   );
 
   const advancedFilters = (
-    <div className="mt-3 space-y-3 border-t border-[var(--border)] pt-3">
+    <div className="mt-3 space-y-3 border-t border-ash-200/60 pt-3">
       <input
         type="date"
         value={dateFilter}
         onChange={(e) => setDateFilter(e.target.value)}
-        className="input-wow text-sm"
+        className="w-full h-11 px-3 rounded-2xl bg-surface-2 border border-ash-200 text-body-sm text-ash-900 focus:outline-none focus:border-honey-500 focus:ring-2 focus:ring-honey-200"
         aria-label={m.date}
       />
-      <label className="flex cursor-pointer items-center gap-2 text-sm text-[var(--text-secondary)]">
+      <label className="flex cursor-pointer items-center gap-2 text-sm text-ash-600">
         <input
           type="checkbox"
           checked={onlyOpenSlots}
           onChange={(e) => setOnlyOpenSlots(e.target.checked)}
-          className="accent-[var(--accent)]"
+          className="accent-honey-500"
         />
         {m.onlyOpenSlotsHint}
       </label>
       <button
         type="button"
         onClick={requestMyLocation}
-        className={`btn-secondary w-full text-sm ${locationEnabled ? "!text-[var(--accent)]" : ""}`}
+        className={cn(
+          "w-full h-11 rounded-2xl border border-ash-200 bg-surface text-body-sm font-medium text-ash-900 shadow-xs hover:bg-ash-50 transition",
+          locationEnabled && "border-honey-300 text-honey-700",
+        )}
       >
         {m.useMyLocation}
       </button>
-      {locationError ? <p className="text-xs text-[var(--status-full)]">{locationError}</p> : null}
+      {locationError ? <p className="text-xs text-danger">{locationError}</p> : null}
       <input
         type="range"
         min={1}
@@ -432,7 +449,7 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
         value={radiusKm}
         disabled={!locationEnabled}
         onChange={(e) => setRadiusKm(Number(e.target.value))}
-        className="h-2 w-full accent-[var(--accent)] disabled:opacity-40"
+        className="h-2 w-full accent-honey-500 disabled:opacity-40"
         aria-label={m.radius}
       />
     </div>
@@ -446,9 +463,10 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
         key={place.id}
         type="button"
         onClick={() => flyToPlace(place)}
-        className={`floating-card-hover mb-2 flex w-full items-center gap-3 p-3 text-left transition ${
-          activePlaceId === place.id ? "ring-2 ring-[var(--accent)] ring-offset-2" : ""
-        }`}
+        className={cn(
+          "mb-2 flex w-full items-center gap-3 rounded-3xl border border-ash-200/40 bg-surface p-3 text-left shadow-sm transition hover:shadow-md hover:-translate-y-0.5",
+          activePlaceId === place.id && "ring-2 ring-honey-500 ring-offset-2",
+        )}
       >
         <span
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-lg"
@@ -457,16 +475,18 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
           {meta.icon}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-semibold text-[var(--text-primary)]">
+          <span className="block truncate text-sm font-semibold text-ash-900">
             {displayPlaceName(place, lang)}
           </span>
-          <span className="block text-xs text-[var(--text-secondary)]">
+          <span className="block text-xs text-ash-500">
             {catLabel}
             {place.district ? ` · ${place.district}` : ""}
           </span>
         </span>
         {place.activeSlotCount > 0 ? (
-          <span className="badge badge-accent shrink-0">{place.activeSlotCount}</span>
+          <span className="shrink-0 rounded-full bg-honey-50 px-2 py-0.5 text-xs font-semibold text-honey-700">
+            {place.activeSlotCount}
+          </span>
         ) : null}
       </button>
     );
@@ -476,9 +496,15 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
     <div className="map-root">
       <div ref={ref} className="map-canvas-inner" role="application" aria-label={m.title} />
 
+      {mapError ? (
+        <div className="pointer-events-none absolute inset-x-4 top-20 z-20 rounded-2xl border border-danger/30 bg-danger-soft px-4 py-3 text-center text-sm text-danger">
+          {mapError}
+        </div>
+      ) : null}
+
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex flex-col gap-2 p-3 lg:left-3 lg:max-w-sm lg:p-4">
-        <div className="glass-strong pointer-events-auto flex items-center gap-2 rounded-2xl px-3 py-2 shadow-[var(--shadow-md)]">
-          <span className="text-[var(--text-muted)]" aria-hidden>
+        <div className="pointer-events-auto flex items-center gap-2 rounded-2xl border border-ash-200/40 bg-surface/95 px-3 py-2 shadow-sm backdrop-blur-md">
+          <span className="text-ash-400" aria-hidden>
             ⌕
           </span>
           <input
@@ -486,35 +512,40 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={m.searchPlaceholder}
-            className="min-w-0 flex-1 border-none bg-transparent text-sm outline-none placeholder:text-[var(--text-muted)]"
+            className="min-w-0 flex-1 border-none bg-transparent text-sm outline-none placeholder:text-ash-400 text-ash-900"
           />
           <button
             type="button"
             onClick={() => setFiltersOpen((o) => !o)}
-            className={`btn-ghost shrink-0 text-xs ${filtersOpen ? "bg-[var(--accent-soft)] text-[var(--accent)]" : ""}`}
+            className={cn(
+              "shrink-0 rounded-full px-2.5 py-1 text-xs font-medium text-ash-600 hover:bg-ash-100 transition",
+              filtersOpen && "bg-honey-50 text-honey-700",
+            )}
           >
             {m.filters}
           </button>
         </div>
 
-        <div className="pointer-events-auto">{categoryChips}</div>
+        <div className="pointer-events-auto rounded-2xl border border-ash-200/40 bg-surface/95 p-2 shadow-sm backdrop-blur-md">
+          {categoryChips}
+        </div>
 
         {filtersOpen ? (
-          <div className="glass-strong pointer-events-auto rounded-2xl p-3 shadow-[var(--shadow-md)] lg:block">
+          <div className="pointer-events-auto rounded-2xl border border-ash-200/40 bg-surface/95 p-3 shadow-sm backdrop-blur-md lg:block">
             {advancedFilters}
           </div>
         ) : null}
       </div>
 
-      <div className="pointer-events-none absolute bottom-4 left-4 top-auto z-10 hidden max-h-[min(420px,55%)] w-[min(340px,90%)] lg:pointer-events-auto lg:block">
-        <div className="glass-strong pointer-events-auto flex h-full max-h-[inherit] flex-col overflow-hidden rounded-2xl shadow-[var(--shadow-float)]">
-          <div className="border-b border-[var(--border)] px-4 py-3">
-            <p className="text-sm font-semibold text-[var(--text-primary)]">{m.listTitle}</p>
-            <p className="text-xs text-[var(--text-muted)]">{m.resultsFound(filteredPlaces.length)}</p>
+      <div className="pointer-events-none absolute bottom-4 left-4 top-auto z-10 hidden max-h-[min(420px,55%)] w-[min(380px,90%)] lg:pointer-events-auto lg:block">
+        <div className="pointer-events-auto flex h-full max-h-[inherit] flex-col overflow-hidden rounded-3xl border border-ash-200/40 bg-surface shadow-md">
+          <div className="border-b border-ash-200/60 px-4 py-3">
+            <p className="text-sm font-semibold text-ash-900">{m.listTitle}</p>
+            <p className="text-xs text-ash-500">{m.resultsFound(filteredPlaces.length)}</p>
           </div>
           <div className="flex-1 overflow-y-auto p-2">
             {filteredPlaces.length === 0 ? (
-              <p className="p-4 text-center text-sm text-[var(--text-muted)]">
+              <p className="p-4 text-center text-sm text-ash-500">
                 {lang === "pl" ? "Brak miejsc" : "No places"}
               </p>
             ) : (
@@ -525,9 +556,10 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
       </div>
 
       <div
-        className={`map-bottom-sheet glass-strong pointer-events-auto lg:hidden ${
-          sheetExpanded ? "max-h-[58dvh]" : "max-h-[38dvh]"
-        }`}
+        className={cn(
+          "map-bottom-sheet pointer-events-auto lg:hidden",
+          sheetExpanded ? "max-h-[58dvh]" : "max-h-[38dvh]",
+        )}
       >
         <button
           type="button"
@@ -535,14 +567,14 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
           onClick={() => setSheetExpanded((e) => !e)}
           aria-expanded={sheetExpanded}
         >
-          <span className="mb-2 h-1 w-10 rounded-full bg-[var(--border-strong)]" />
-          <span className="px-4 text-sm font-semibold text-[var(--text-primary)]">
+          <span className="mb-2 h-1 w-10 rounded-full bg-ash-300" />
+          <span className="px-4 text-sm font-semibold text-ash-900">
             {m.listTitle} · {m.resultsFound(filteredPlaces.length)}
           </span>
         </button>
         <div className="flex-1 overflow-y-auto px-3 pb-4 pt-1">
           {filteredPlaces.length === 0 ? (
-            <p className="py-6 text-center text-sm text-[var(--text-muted)]">
+            <p className="py-6 text-center text-sm text-ash-500">
               {lang === "pl" ? "Brak miejsc dla filtrów" : "No places match"}
             </p>
           ) : (
