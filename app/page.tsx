@@ -12,5 +12,5 @@ export default async function RootPage() {
   const setupDone = user.user_metadata?.setup_done === true;
   if (!setupDone) redirect("/setup");
 
-  redirect("/feed");
+  redirect("/map");
 }

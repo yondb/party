@@ -1,8 +1,8 @@
-export default function FeedLoading() {
+﻿export default function FeedLoading() {
   return (
     <div className="animate-pulse space-y-6 pb-6" aria-busy aria-label="Loading feed">
-      <div className="h-44 rounded-[var(--radius-2xl)] bg-[var(--bg-surface-2)]" />
-      <div className="flex gap-2">
+      <div className="h-48 rounded-3xl bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]" />
+      <div className="flex gap-3">
         <div className="chip h-9 w-20 bg-[var(--bg-surface-2)]" />
         <div className="chip h-9 w-24 bg-[var(--bg-surface-2)]" />
         <div className="chip h-9 w-28 bg-[var(--bg-surface-2)]" />

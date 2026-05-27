@@ -1,5 +1,6 @@
 import { Navbar } from "./Navbar";
 import { BottomNav } from "./BottomNav";
+import { Sidebar } from "./Sidebar";
 import { AppFooter } from "./AppFooter";
 import { PendingRatingsBanner } from "@/components/profile/PendingRatingsBanner";
 import type { PendingRatingSlot } from "@/lib/pending-ratings";
@@ -14,7 +15,8 @@ export async function AppShell({
   isGuest?: boolean;
 }) {
   return (
-    <div className="min-h-dvh bg-[var(--bg-page)] pb-bottom-main pt-nav-safe">
+    <div className="min-h-dvh bg-bg pb-bottom-main pt-nav-safe lg:pl-20">
+      <Sidebar isGuest={isGuest} />
       <Navbar />
       <main className="w-full">
         {!isGuest ? (

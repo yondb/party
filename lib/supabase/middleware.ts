@@ -93,7 +93,7 @@ export async function updateSession(request: NextRequest) {
     }
     if (setupDone && (path === "/auth" || path === "/landing")) {
       const redirectUrl = request.nextUrl.clone();
-      redirectUrl.pathname = "/feed";
+      redirectUrl.pathname = "/map";
       return attachLangToRedirect(request, NextResponse.redirect(redirectUrl));
     }
 

@@ -34,8 +34,8 @@ export function SuggestedActivities({ activeActivity, validDate }: Props) {
 
   return (
     <section className="mb-6">
-      <h2 className="mb-3 text-base font-bold text-[var(--text-primary)]">{title}</h2>
-      <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <h2 className="mb-4 text-base font-bold text-slate-800">{title}</h2>
+      <div className="flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {FEATURED.map((key) => {
           const act = ACTIVITIES[key];
           const active = activeActivity === key;
@@ -43,12 +43,11 @@ export function SuggestedActivities({ activeActivity, validDate }: Props) {
             <Link
               key={key}
               href={buildFeedHref(key, validDate)}
-              className={`chip shrink-0 ${active ? "chip-active" : ""}`}
-              style={
-                !active
-                  ? { background: `color-mix(in srgb, ${act.color} 12%, white)` }
-                  : undefined
-              }
+              className={`inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-all duration-300 ${
+                active
+                  ? "bg-ash-900 text-surface shadow-sm"
+                  : "bg-surface text-ash-800 shadow-sm hover:bg-ash-100 hover:shadow-[0_0_0_1px_rgba(245,184,0,0.35)]"
+              }`}
             >
               <span>{act.icon}</span>
               {activityLabel(lang, key)}

@@ -129,9 +129,8 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
   };
 
   return (
-    <div className="page-shell pb-bottom-main">
-      {/* Filter chips */}
-      <div className="sticky top-[calc(var(--nav-height)+env(safe-area-inset-top)+0.5rem)] z-20 -mx-1 mb-2 bg-[var(--bg-page)]/90 py-2 backdrop-blur-md">
+    <div className="page-shell flex flex-col gap-6 pb-bottom-main">
+      <div className="sticky top-[calc(var(--nav-height)+env(safe-area-inset-top)+0.5rem)] z-20 -mx-1 mb-1 bg-[#f4f4f5]/95 py-2 backdrop-blur-md">
         <div className="flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <FilterPill href={feedHref({ date: validDate })} label={ui.allActivities} active={!validActivity} />
           {activityOptions.map((k) => (

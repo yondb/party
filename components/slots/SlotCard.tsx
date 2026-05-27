@@ -4,7 +4,7 @@ import Link from "next/link";
 import { m } from "framer-motion";
 import { ActivityIcon } from "./ActivityIcon";
 import { Avatar } from "@/components/ui/Avatar";
-import { getActivity } from "@/lib/activities";
+import { getCategory } from "@/lib/categories";
 import { isPlaceCategory, placeCategoryLabel } from "@/lib/places";
 import { applyToSlot } from "@/app/actions/applications";
 import { useLanguage } from "@/components/i18n/LanguageProvider";
@@ -62,7 +62,7 @@ export function SlotCard({
   const { lang } = useLanguage();
   const t = slotCardUi(lang);
   const locale = lang === "pl" ? "pl-PL" : "en-GB";
-  const act = getActivity(slot.activity_type);
+  const cat = getCategory(slot.place_category ?? slot.activity_type);
   const guestCap = Math.max(1, slot.max_spots - 1);
   const full = slot.status === "full" || slot.spots_taken >= guestCap;
   const totalPartySize = Math.max(2, slot.max_spots);
@@ -114,15 +114,14 @@ export function SlotCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1], delay: Math.min(index * 0.05, 0.25) }}
       whileHover={{ y: -3 }}
-      className="floating-card-hover floating-card overflow-hidden"
+      className="floating-card-hover relative overflow-hidden rounded-3xl border border-ash-200/40 bg-surface shadow-sm"
     >
-      {/* Banner */}
       <div
-        className="relative flex items-center justify-between px-4 py-3"
-        style={{
-          background: `linear-gradient(135deg, color-mix(in srgb, ${act.color} 22%, white), color-mix(in srgb, ${act.color} 8%, white))`,
-        }}
-      >
+        className="absolute left-0 top-0 h-full w-1.5 transition-all duration-base group-hover:w-2"
+        style={{ background: cat.color }}
+        aria-hidden
+      />
+      <div className="relative flex items-center justify-between bg-ash-50/80 px-5 py-4 pl-6">
         <div className="flex items-center gap-3">
           <div
             className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/80 shadow-sm"
@@ -144,7 +143,7 @@ export function SlotCard({
         ) : null}
       </div>
 
-      <div className="space-y-4 p-4 pt-3">
+      <div className="space-y-4 p-6 pt-4">
         <div>
           <Link href={`/slots/${slot.id}`} className="text-lg font-bold leading-snug text-[var(--text-primary)]">
             {headline}

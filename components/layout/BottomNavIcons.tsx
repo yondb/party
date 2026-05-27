@@ -1,7 +1,7 @@
 /** Small stroke icons for bottom nav */
 
 function stroke(active: boolean) {
-  return active ? "var(--accent)" : "var(--text-muted)";
+  return active ? "#f97316" : "#64748b";
 }
 
 export function BottomIconFeed({ active }: { active: boolean }) {
