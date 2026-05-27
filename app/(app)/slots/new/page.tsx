@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { NewSlotWizard } from "@/components/slots/NewSlotWizard";
 import { SlotCreateForm } from "@/components/slots/SlotCreateForm";
 import type { PlaceRow } from "@/lib/places";
 
@@ -19,14 +20,19 @@ export default async function NewSlotPage({ searchParams }: { searchParams: Sear
     .select("id, name, category, lat, lng, city, district, is_free, description, osm_id")
     .order("name");
 
+  const place = (places ?? []).find((p) => p.id === searchParams.place_id);
+
   return (
-    <div className="page-shell py-8">
-      <Suspense fallback={<div className="py-12 text-center text-[var(--text-muted)]">…</div>}>
-        <SlotCreateForm
-          places={(places ?? []) as PlaceRow[]}
-          initialPlaceId={searchParams.place_id}
-        />
-      </Suspense>
-    </div>
+    <>
+      <NewSlotWizard initialPlaceName={place?.name ?? ""} placeId={searchParams.place_id} />
+      <div className="page-shell py-8 hidden">
+        <Suspense fallback={<div className="py-12 text-center text-ash-400">…</div>}>
+          <SlotCreateForm
+            places={(places ?? []) as PlaceRow[]}
+            initialPlaceId={searchParams.place_id}
+          />
+        </Suspense>
+      </div>
+    </>
   );
 }

@@ -1,6 +1,5 @@
 import nextDynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/server";
-import { MapFab } from "@/components/layout/MapFab";
 import { MapLoadingPlaceholder } from "@/components/map/MapLoadingPlaceholder";
 import { buildPlaceMapPins } from "@/lib/build-place-pins";
 
@@ -16,10 +15,6 @@ export const dynamic = "force-dynamic";
 
 export default async function MapPage() {
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
   const [{ data: places }, { data: slots }] = await Promise.all([
     supabase
       .from("places")
@@ -43,7 +38,6 @@ export default async function MapPage() {
       }}
     >
       <MapPlaces places={placePins} />
-      {user ? <MapFab /> : null}
     </div>
   );
 }

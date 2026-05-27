@@ -1,7 +1,6 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { ProfileCard } from "@/components/profile/ProfileCard";
+import { ProfileFixIt } from "./ProfileFixIt";
 import { signOut } from "@/app/actions/profile";
 import { normalizeActivityKey, type ActivityKey } from "@/lib/activities";
 import { getServerLang } from "@/lib/i18n-server";
@@ -71,62 +70,43 @@ export default async function OwnProfilePage() {
     "movies",
   ];
   const completionist = completionKeys.every((k) => (activityCounts[k] ?? 0) > 0);
-  const createdAt = new Date(profile.birth_date ?? profile.created_at);
-  const anniversaryQuest = (slots ?? []).some((s) => {
-    if (s.status !== "completed") return false;
-    const d = new Date(s.date_time);
-    return d.getUTCMonth() === createdAt.getUTCMonth() && d.getUTCDate() === createdAt.getUTCDate();
-  });
-  const hostAndPlayerMaster = (profile.total_hosted ?? 0) >= 10 && (profile.total_activities ?? 0) >= 10;
+  const reliabilityPct = Math.round((profile.reliability_score ?? 1) * 100);
+  const xp = profile.exp ?? 0;
+  const level = profile.level ?? 1;
+  const xpToNext = Math.max(300, level * 300);
+
+  const badges = [
+    { id: "first-host", name: "Pierwszy host", earned: (profile.total_hosted ?? 0) >= 1, icon: "trophy" as const },
+    { id: "reliable", name: "Niezawodny", earned: reliabilityPct >= 90, icon: "shield" as const },
+    { id: "streak", name: "5 z rzędu", earned: samePersonRuns >= 5, icon: "zap" as const },
+    { id: "social", name: "Społecznik", earned: socialButterfly, icon: "award" as const },
+    { id: "explorer", name: "Odkrywca", earned: completionist, icon: "award" as const },
+    { id: "morning", name: "Ranny ptaszek", earned: false, icon: "award" as const },
+  ];
 
   return (
-    <div className="page-shell pb-bottom-main pt-nav-safe">
-      <div className="flex items-center justify-end gap-2 py-4">
-        <Link
-          href="/settings"
-          className="rounded-full px-3 py-1.5 text-sm font-semibold text-[var(--text-secondary)] transition hover:bg-[var(--bg-surface-2)] hover:text-[var(--text-primary)]"
-        >
-          {p.settings}
-        </Link>
-        <Link href="/profile/edit" className="btn-primary px-4 py-2 text-sm">
-          {p.edit}
-        </Link>
-      </div>
-
-      <ProfileCard
-        user={{
-          id: profile.id,
-          name: profile.name,
-          bio: profile.bio,
-          avatar_url: profile.avatar_url,
-          gender: profile.gender === "male" ? "male" : "female",
-          birth_date: profile.birth_date ?? "2000-01-01",
-          reliability_score: profile.reliability_score ?? 1,
-          exp: profile.exp ?? 0,
-          level: profile.level ?? 1,
-          total_activities: profile.total_activities ?? 0,
-          total_hosted: profile.total_hosted ?? 0,
+    <>
+      <ProfileFixIt
+        name={profile.name}
+        gender={profile.gender === "male" ? "M" : "F"}
+        level={level}
+        levelName="Newcomer"
+        xp={xp}
+        xpToNext={xpToNext}
+        reliability={reliabilityPct}
+        stats={{
+          events: profile.total_activities ?? 0,
+          hosted: profile.total_hosted ?? 0,
+          rating: avg != null ? avg.toFixed(1) : null,
         }}
-        avgRating={avg}
-        activityCounts={activityCounts}
-        occasionalStats={{
-          completionist,
-          samePersonRuns,
-          anniversaryQuest,
-          socialButterfly,
-          hostAndPlayerMaster,
-        }}
-        isOwn
+        city={profile.city ?? "Warszawa"}
+        badges={badges}
       />
-
-      <form action={signOut} className="mt-10 pb-8 text-center">
-        <button
-          type="submit"
-          className="text-sm text-[var(--text-muted)] underline-offset-2 transition hover:text-[var(--accent)] hover:underline"
-        >
+      <form action={signOut} className="pb-12 text-center">
+        <button type="submit" className="text-body-sm text-ash-500 hover:text-ash-700 underline-offset-4 hover:underline">
           {p.signOut}
         </button>
       </form>
-    </div>
+    </>
   );
 }

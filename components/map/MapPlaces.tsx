@@ -263,15 +263,7 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
         source: SOURCE_ID,
         filter: ["has", "point_count"],
         paint: {
-          "circle-color": [
-            "step",
-            ["get", "point_count"],
-            "rgba(255, 122, 0, 0.85)",
-            8,
-            "rgba(255, 122, 0, 0.95)",
-            20,
-            "rgba(234, 88, 12, 1)",
-          ],
+          "circle-color": "#18181B",
           "circle-radius": ["step", ["get", "point_count"], 18, 8, 24, 20, 30],
           "circle-stroke-width": 3,
           "circle-stroke-color": "#ffffff",

@@ -1,30 +1,29 @@
-import type { HTMLAttributes } from "react";
+import { type HTMLAttributes, forwardRef } from 'react';
+import { cn } from '@/lib/utils';
 
-export type CardProps = HTMLAttributes<HTMLDivElement> & {
-  accentColor?: string;
-  hover?: boolean;
-};
-
-export function Card({
-  className = "",
-  accentColor,
-  hover = false,
-  children,
-  style,
-  ...rest
-}: CardProps) {
-  return (
-    <div
-      className={`card relative overflow-hidden p-4 ${hover ? "card-hover" : ""} ${className}`}
-      style={{
-        ...(accentColor
-          ? { borderTopColor: accentColor, borderTopWidth: 3, borderTopStyle: "solid" as const }
-          : {}),
-        ...style,
-      }}
-      {...rest}
-    >
-      {children}
-    </div>
-  );
+interface CardProps extends HTMLAttributes<HTMLDivElement> {
+  interactive?: boolean;
+  hero?: boolean;
 }
+
+export const Card = forwardRef<HTMLDivElement, CardProps>(
+  ({ interactive, hero, className, children, ...props }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          'bg-surface rounded-3xl border border-ash-200/40 shadow-sm',
+          hero ? 'p-8' : 'p-6',
+          interactive &&
+            'cursor-pointer transition-all duration-200 ease-out-soft ' +
+              'hover:shadow-md hover:-translate-y-0.5 hover:border-ash-200/80',
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </div>
+    );
+  }
+);
+Card.displayName = 'Card';

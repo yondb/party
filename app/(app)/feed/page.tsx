@@ -1,6 +1,7 @@
 ﻿import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { FeedList } from "@/components/feed/FeedList";
+import { FeedHero } from "@/components/feed/FeedHero";
 import { SuggestedActivities } from "@/components/feed/SuggestedActivities";
 import type { SlotCardData, SlotCardHost } from "@/components/slots/SlotCard";
 import { normalizeActivityKey, type ActivityKey } from "@/lib/activities";
@@ -128,9 +129,13 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
     return qs ? `/feed?${qs}` : "/feed";
   };
 
+  const { data: me } = await supabase.from("users").select("name").eq("id", user.id).single();
+
   return (
-    <div className="page-shell flex flex-col gap-6 pb-bottom-main">
-      <div className="sticky top-[calc(var(--nav-height)+env(safe-area-inset-top)+0.5rem)] z-20 -mx-1 mb-1 bg-[#f4f4f5]/95 py-2 backdrop-blur-md">
+    <div className="mx-auto max-w-5xl px-4 lg:px-8 py-6 lg:py-10 space-y-10">
+      <FeedHero userName={me?.name?.split(" ")[0] ?? "Ty"} activeCount={allCards.length} />
+
+      <div className="sticky top-16 z-20 -mx-1 mb-1 bg-bg/95 py-2 backdrop-blur-md">
         <div className="flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <FilterPill href={feedHref({ date: validDate })} label={ui.allActivities} active={!validActivity} />
           {activityOptions.map((k) => (

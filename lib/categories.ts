@@ -1,45 +1,61 @@
-import type { ActivityKey } from "@/lib/activities";
-import type { PlaceCategory } from "@/lib/places";
+import type { LucideIcon } from 'lucide-react';
+import { Activity, Bike, Coffee, Dumbbell, Trophy, Footprints, Zap, CircleDot } from 'lucide-react';
 
-export type CategoryId = ActivityKey | PlaceCategory | "football";
+export type CategoryId =
+  | 'running' | 'cycling' | 'basketball' | 'coffee'
+  | 'gym' | 'tennis' | 'volleyball' | 'football';
 
-export type CategoryDef = {
+export interface Category {
   id: CategoryId;
-  label: { pl: string; en: string };
+  label: string;
   emoji: string;
-  color: string;
-  colorDark: string;
-};
-
-const CAT: Record<string, Omit<CategoryDef, "id">> = {
-  running: { label: { pl: "Bieganie", en: "Running" }, emoji: "🏃", color: "#F97316", colorDark: "#EA580C" },
-  cycling: { label: { pl: "Rower", en: "Cycling" }, emoji: "🚴", color: "#14B8A6", colorDark: "#0D9488" },
-  basketball: { label: { pl: "Koszykówka", en: "Basketball" }, emoji: "🏀", color: "#EA580C", colorDark: "#C2410C" },
-  coffee: { label: { pl: "Kawa", en: "Coffee" }, emoji: "☕", color: "#92400E", colorDark: "#78350F" },
-  gym: { label: { pl: "Siłownia", en: "Gym" }, emoji: "💪", color: "#7C3AED", colorDark: "#6D28D9" },
-  tennis: { label: { pl: "Tenis", en: "Tennis" }, emoji: "🎾", color: "#84CC16", colorDark: "#65A30D" },
-  volleyball: { label: { pl: "Siatkówka", en: "Volleyball" }, emoji: "🏐", color: "#0EA5E9", colorDark: "#0284C7" },
-  padel: { label: { pl: "Padel", en: "Padel" }, emoji: "🎾", color: "#14B8A6", colorDark: "#0D9488" },
-  hiking: { label: { pl: "Wędrówki", en: "Hiking" }, emoji: "⛰️", color: "#84CC16", colorDark: "#65A30D" },
-  football: { label: { pl: "Piłka", en: "Football" }, emoji: "⚽", color: "#16A34A", colorDark: "#15803D" },
-  boardgames: { label: { pl: "Planszówki", en: "Board games" }, emoji: "♟️", color: "#8B5CF6", colorDark: "#7C3AED" },
-  walking: { label: { pl: "Spacer", en: "Walking" }, emoji: "🚶", color: "#22C55E", colorDark: "#16A34A" },
-  yoga: { label: { pl: "Joga", en: "Yoga" }, emoji: "🧘", color: "#A855F7", colorDark: "#9333EA" },
-  movies: { label: { pl: "Kino", en: "Movies" }, emoji: "🎬", color: "#6366F1", colorDark: "#4F46E5" },
-  food: { label: { pl: "Jedzenie", en: "Food" }, emoji: "🍜", color: "#F59E0B", colorDark: "#D97706" },
-  study: { label: { pl: "Nauka", en: "Study" }, emoji: "📚", color: "#0EA5E9", colorDark: "#0284C7" },
-  other: { label: { pl: "Inne", en: "Other" }, emoji: "✨", color: "#71717A", colorDark: "#52525B" },
-};
-
-export const CATEGORIES: Record<string, CategoryDef> = Object.fromEntries(
-  Object.entries(CAT).map(([id, def]) => [id, { id: id as CategoryId, ...def }]),
-);
-
-export function getCategory(id: string): CategoryDef {
-  return CATEGORIES[id] ?? CATEGORIES.other;
+  color: string;       // hex jasny
+  colorDark: string;   // hex ciemny do gradientu marker
+  icon: LucideIcon;
 }
 
-export function categoryColorVar(id: string): string {
+export const CATEGORIES: Record<CategoryId, Category> = {
+  running:    { id: 'running',    label: 'Bieganie',   emoji: '🏃', color: '#F97316', colorDark: '#C2410C', icon: Footprints },
+  cycling:    { id: 'cycling',    label: 'Rower',      emoji: '🚴', color: '#14B8A6', colorDark: '#0F766E', icon: Bike },
+  basketball: { id: 'basketball', label: 'Koszykówka', emoji: '🏀', color: '#EA580C', colorDark: '#9A3412', icon: CircleDot },
+  coffee:     { id: 'coffee',     label: 'Kawa',       emoji: '☕', color: '#92400E', colorDark: '#451A03', icon: Coffee },
+  gym:        { id: 'gym',        label: 'Siłownia',   emoji: '💪', color: '#7C3AED', colorDark: '#5B21B6', icon: Dumbbell },
+  tennis:     { id: 'tennis',     label: 'Tenis',      emoji: '🎾', color: '#84CC16', colorDark: '#4D7C0F', icon: Trophy },
+  volleyball: { id: 'volleyball', label: 'Siatkówka',  emoji: '🏐', color: '#0EA5E9', colorDark: '#0369A1', icon: Activity },
+  football:   { id: 'football',   label: 'Piłka',      emoji: '⚽', color: '#16A34A', colorDark: '#15803D', icon: Zap },
+};
+
+export const CATEGORY_LIST: Category[] = Object.values(CATEGORIES);
+
+const ACTIVITY_TO_CATEGORY: Record<string, CategoryId> = {
+  running: 'running',
+  cycling: 'cycling',
+  basketball: 'basketball',
+  coffee: 'coffee',
+  gym: 'gym',
+  tennis: 'tennis',
+  volleyball: 'volleyball',
+  football: 'football',
+  padel: 'tennis',
+  hiking: 'running',
+  boardgames: 'coffee',
+  walking: 'running',
+  yoga: 'gym',
+  movies: 'coffee',
+  food: 'coffee',
+  study: 'coffee',
+  other: 'basketball',
+};
+
+export function getCategory(id: string): Category {
+  const key = id as CategoryId;
+  if (CATEGORIES[key]) return CATEGORIES[key];
+  const mapped = ACTIVITY_TO_CATEGORY[id];
+  if (mapped) return CATEGORIES[mapped];
+  return CATEGORIES.basketball;
+}
+
+export function toCategoryId(id: string): CategoryId {
   const c = getCategory(id);
-  return c.color;
+  return c.id;
 }

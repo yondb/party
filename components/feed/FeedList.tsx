@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { LazyMotion, domAnimation, m } from "framer-motion";
-import { SlotCard, type SlotCardData } from "@/components/slots/SlotCard";
+import { SlotCard, slotDataFromLegacy } from "@/components/slot/SlotCard";
+import type { SlotCardData } from "@/components/slots/SlotCard";
 import { useLanguage } from "@/components/i18n/LanguageProvider";
 import { feedUi } from "@/lib/i18n-ui";
 import { distanceKm, formatDistanceKm } from "@/lib/geo";
@@ -15,7 +16,7 @@ type FeedListProps = {
   totalCount: number;
 };
 
-export function FeedList({ cards, userId, appStatusBySlot, totalCount }: FeedListProps) {
+export function FeedList({ cards }: FeedListProps) {
   const { lang } = useLanguage();
   const ui = feedUi(lang);
   const [position, setPosition] = useState<{ lat: number; lng: number } | null>(null);
@@ -48,49 +49,35 @@ export function FeedList({ cards, userId, appStatusBySlot, totalCount }: FeedLis
 
   return (
     <LazyMotion features={domAnimation}>
-      <m.section
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-8 flex flex-col items-center rounded-3xl border border-ash-200/40 bg-surface p-8 text-center shadow-float"
-      >
-        <p className="text-sm font-semibold text-orange-500">
-          {lang === "pl" ? "Gotowy na ruch?" : "Ready to move?"}
-        </p>
-        <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-ash-900">{ui.title}</h1>
-        <p className="mt-3 max-w-sm text-base leading-relaxed text-slate-500">{ui.subtitle}</p>
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
-          <Link href="/map" className="btn-primary">
-            {ui.heroCta}
-          </Link>
-          <span className="rounded-full bg-slate-50 px-4 py-2 text-sm font-medium text-slate-500 shadow-sm">
-            {totalCount} {lang === "pl" ? "aktywnych questów" : "active quests"}
-          </span>
-        </div>
-      </m.section>
-
       {cards.length === 0 ? (
         <FeedEmpty ui={ui} />
       ) : (
         <>
-          <div className="mb-5 flex items-end justify-between px-1">
-            <h2 className="text-lg font-bold text-slate-800">{ui.nearbySection}</h2>
-            <span className="text-sm text-slate-500">
-              {cards.length} {lang === "pl" ? "wyników" : "results"}
-            </span>
+          <div className="mb-5 flex items-end justify-between">
+            <h2 className="font-display text-display-md text-ash-900">{ui.nearbySection}</h2>
+            <Link href="/map" className="text-body-sm font-medium text-ash-700 hover:text-honey-700">
+              {ui.goToMap} →
+            </Link>
           </div>
-          <ul className="flex flex-col gap-6" suppressHydrationWarning>
-            {cardsWithDistance.map(({ slot, distanceLabel }, i) => (
-              <li key={slot.id}>
-                <SlotCard
-                  slot={slot}
-                  index={i}
-                  distanceLabel={distanceLabel}
-                  applicationStatus={appStatusBySlot[slot.id] ?? "none"}
-                  isHost={userId === slot.host?.id}
-                />
-              </li>
-            ))}
-          </ul>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4" suppressHydrationWarning>
+            {cardsWithDistance.map(({ slot, distanceLabel }) => {
+              const data = slotDataFromLegacy({
+                ...slot,
+                host: slot.host
+                  ? {
+                      name: slot.host.name,
+                      avatar_url: slot.host.avatar_url,
+                      reliability_score: slot.host.reliability_score,
+                    }
+                  : null,
+              });
+              if (distanceLabel) {
+                const km = parseFloat(distanceLabel);
+                if (!Number.isNaN(km)) data.distanceMeters = km * 1000;
+              }
+              return <SlotCard key={slot.id} slot={data} />;
+            })}
+          </div>
         </>
       )}
     </LazyMotion>
@@ -102,7 +89,7 @@ function FeedEmpty({ ui }: { ui: ReturnType<typeof feedUi> }) {
     <m.div
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="flex flex-col items-center rounded-3xl bg-white px-8 py-16 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
+      className="flex flex-col items-center rounded-3xl bg-surface border border-ash-200/40 px-8 py-16 text-center shadow-sm"
     >
       <m.div
         animate={{ y: [0, -6, 0] }}
