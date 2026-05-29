@@ -16,9 +16,11 @@ const MapPlaces = nextDynamic(
 export function MapPlacesClient({
   places,
   slots,
+  initialQuery,
 }: {
   places: PlaceMapPin[];
   slots: MapSlot[];
+  initialQuery?: string;
 }) {
-  return <MapPlaces places={places} slots={slots} />;
+  return <MapPlaces places={places} slots={slots} initialQuery={initialQuery} />;
 }

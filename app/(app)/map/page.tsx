@@ -5,7 +5,12 @@ import { buildMapSlots } from "@/lib/map-slots";
 
 export const dynamic = "force-dynamic";
 
-export default async function MapPage() {
+export default async function MapPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q } = await searchParams;
   const supabase = await createClient();
   const [{ data: places }, { data: slots }] = await Promise.all([
     supabase
@@ -56,7 +61,7 @@ export default async function MapPage() {
 
   return (
     <div className="relative w-full h-[calc(100dvh-var(--nav-height)-var(--dock-height))] min-h-[420px] lg:h-[calc(100dvh-var(--nav-height))] lg:min-h-[560px]">
-      <MapPlacesClient places={placePins} slots={mapSlots} />
+      <MapPlacesClient places={placePins} slots={mapSlots} initialQuery={q?.trim() || ""} />
     </div>
   );
 }

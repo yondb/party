@@ -15,7 +15,8 @@
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
     "seed:places": "node --experimental-strip-types scripts/seed-places.ts",
-    "import:places": "node --experimental-strip-types scripts/import-places.ts"
+    "import:places": "node --experimental-strip-types scripts/import-places.ts",
+    "seed:demo": "node --experimental-strip-types scripts/seed-demo.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",

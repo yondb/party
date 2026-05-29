@@ -13,6 +13,8 @@ export type MapSlot = {
   lat: number;
   lng: number;
   dateTime: string;
+  maxSpots: number;
+  spotsTaken: number;
   participants: MapSlotParticipant[];
   participantCount: number;
 };
@@ -32,6 +34,8 @@ type SlotRow = {
   host_id: string;
   title: string;
   date_time: string;
+  max_spots?: number;
+  spots_taken?: number;
 };
 
 type UserRow = { id: string; name: string; avatar_url: string | null };
@@ -75,6 +79,8 @@ export function buildMapSlots(
       lat: place.lat,
       lng: place.lng,
       dateTime: s.date_time,
+      maxSpots: s.max_spots ?? 2,
+      spotsTaken: s.spots_taken ?? 0,
       participants,
       participantCount: participants.length,
     });

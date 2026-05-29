@@ -119,7 +119,15 @@ function buildGeoJson(places: PlaceMapPin[]): GeoJSON.FeatureCollection {
   };
 }
 
-export function MapPlaces({ places, slots }: { places: PlaceMapPin[]; slots: MapSlot[] }) {
+export function MapPlaces({
+  places,
+  slots,
+  initialQuery = "",
+}: {
+  places: PlaceMapPin[];
+  slots: MapSlot[];
+  initialQuery?: string;
+}) {
   const { lang } = useLanguage();
   const m = mapUi(lang);
   const ref = useRef<HTMLDivElement>(null);
@@ -139,7 +147,7 @@ export function MapPlaces({ places, slots }: { places: PlaceMapPin[]; slots: Map
   const [onlyOpenSlots, setOnlyOpenSlots] = useState(false);
   const [locationEnabled, setLocationEnabled] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [sheetHeight, setSheetHeight] = useState(30);
   const [activePlaceId, setActivePlaceId] = useState<string | null>(null);
@@ -232,6 +240,10 @@ export function MapPlaces({ places, slots }: { places: PlaceMapPin[]; slots: Map
         const ymd = new Date(slot.dateTime).toISOString().slice(0, 10);
         if (ymd !== dateFilter) return false;
       }
+      if (onlyOpenSlots) {
+        const cap = Math.max(1, slot.maxSpots - 1);
+        if (slot.spotsTaken >= cap) return false;
+      }
       if (locationEnabled && myPosition) {
         const km = distanceKm(myPosition.lat, myPosition.lng, slot.lat, slot.lng);
         if (km > radiusKm) return false;
@@ -242,7 +254,7 @@ export function MapPlaces({ places, slots }: { places: PlaceMapPin[]; slots: Map
     const buckets: Record<SlotBucket, MapSlot[]> = { now: [], today: [], week: [] };
     for (const slot of filtered) buckets[bucketForSlot(slot.dateTime, now)].push(slot);
     return buckets;
-  }, [slots, category, searchQuery, dateFilter, locationEnabled, myPosition, radiusKm, now]);
+  }, [slots, category, searchQuery, dateFilter, onlyOpenSlots, locationEnabled, myPosition, radiusKm, now]);
 
   const totalSlots =
     groupedSlots.now.length + groupedSlots.today.length + groupedSlots.week.length;
@@ -656,6 +668,22 @@ export function MapPlaces({ places, slots }: { places: PlaceMapPin[]; slots: Map
       {mapError ? (
         <div className="pointer-events-none absolute inset-x-4 top-20 z-20 rounded-2xl border border-danger/30 bg-danger-soft px-4 py-3 text-center text-sm text-danger">
           {mapError}
+        </div>
+      ) : null}
+
+      {!mapError && filteredPlaces.length === 0 ? (
+        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center p-6">
+          <div className="pointer-events-auto max-w-xs rounded-3xl border border-ash-200/60 bg-surface/95 px-6 py-5 text-center shadow-lg backdrop-blur-md">
+            <p className="text-2xl" aria-hidden>🔍</p>
+            <p className="mt-2 font-display text-heading-md text-ash-900">
+              {lang === "pl" ? "Brak miejsc dla filtrów" : "No places match your filters"}
+            </p>
+            <p className="mt-1 text-body-sm text-ash-500">
+              {lang === "pl"
+                ? "Zmień kategorię, datę lub powiększ promień."
+                : "Try another category, date, or a wider radius."}
+            </p>
+          </div>
         </div>
       ) : null}
 

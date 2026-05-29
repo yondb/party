@@ -22,7 +22,10 @@ export default async function LandingPage() {
     .order("date_time", { ascending: true })
     .limit(4);
 
-  const activeCount = (slots?.length ?? 0) * 7 + 12;
+  const { count: playerCount } = await supabase
+    .from("users")
+    .select("id", { count: "exact", head: true });
+  const activeCount = playerCount ?? 0;
 
   return (
     <SplashGate>

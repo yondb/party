@@ -20,6 +20,7 @@ export default async function MainAppLayout({
   let userName: string | undefined;
   let userLevel: number | undefined;
   let avatarUrl: string | null | undefined;
+  let unreadCount = 0;
 
   if (user) {
     await runSlotLifecycle(supabase);
@@ -32,10 +33,16 @@ export default async function MainAppLayout({
     userName = profile?.name ?? undefined;
     userLevel = profile?.level ?? undefined;
     avatarUrl = profile?.avatar_url ?? null;
+    const { count } = await supabase
+      .from("notifications")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("read", false);
+    unreadCount = count ?? 0;
   }
 
   return (
-    <AppShell isGuest={!user} userName={userName} userLevel={userLevel} avatarUrl={avatarUrl}>
+    <AppShell isGuest={!user} userName={userName} userLevel={userLevel} avatarUrl={avatarUrl} unreadCount={unreadCount}>
       {!user || pendingRatings.length === 0 ? null : (
         <div className="mx-auto max-w-5xl px-4 lg:px-8 pt-4">
           <PendingRatingsBanner items={pendingRatings} />

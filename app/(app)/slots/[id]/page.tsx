@@ -134,19 +134,23 @@ export default async function SlotDetailPage({ params }: { params: Promise<{ id:
             </h2>
             <div className="mt-3 flex flex-wrap gap-2">
               {host ? (
-                <span className="flex items-center gap-1 rounded-full border border-[var(--border-medium)] px-2.5 py-1.5 text-sm">
+                <Link
+                  href={`/profile/${host.id}`}
+                  className="flex items-center gap-1 rounded-full border border-[var(--border-medium)] px-2.5 py-1.5 text-sm transition hover:border-[var(--border-strong)] hover:bg-[var(--bg-card-hover)]"
+                >
                   <Avatar src={host.avatar_url} name={host.name} size={24} />
                   {host.name} ({d.hostTag})
-                </span>
+                </Link>
               ) : null}
               {cleanMembers.map((m) => (
-                <span
+                <Link
                   key={m.id}
-                  className="flex items-center gap-1 rounded-full border border-[var(--border-medium)] px-2.5 py-1.5 text-sm"
+                  href={`/profile/${m.id}`}
+                  className="flex items-center gap-1 rounded-full border border-[var(--border-medium)] px-2.5 py-1.5 text-sm transition hover:border-[var(--border-strong)] hover:bg-[var(--bg-card-hover)]"
                 >
                   <Avatar src={m.avatar_url} name={m.name} size={24} />
                   {m.name}
-                </span>
+                </Link>
               ))}
             </div>
             <p className="mt-2 text-base text-[var(--text-muted)]">
