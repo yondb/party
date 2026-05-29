@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getServerLang } from "@/lib/i18n-server";
 import { normalizeActivityKey } from "@/lib/activities";
 import { placeCategoryToActivityType } from "@/lib/places";
+import { isOverRateLimit } from "@/lib/action-rate-limit";
 
 export type CreateSlotInput = {
   place_id?: string;
@@ -116,11 +117,15 @@ function slotEditCapacityError(lang: "pl" | "en"): string {
 }
 
 export async function createSlotAction(input: CreateSlotInput) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
+
+  if (await isOverRateLimit(supabase, user.id, "slots")) {
+    return { error: "Too many slots created. Try again later." };
+  }
 
   const parsed = parseSlotInput(input);
   if ("error" in parsed) return { error: parsed.error };
@@ -161,8 +166,8 @@ export async function createSlotAction(input: CreateSlotInput) {
 }
 
 export async function updateSlotAction(slotId: string, input: CreateSlotInput) {
-  const lang = getServerLang();
-  const supabase = createClient();
+  const lang = await getServerLang();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -211,7 +216,7 @@ export async function updateSlotAction(slotId: string, input: CreateSlotInput) {
 }
 
 export async function deleteSlotAction(slotId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -236,7 +241,7 @@ export async function deleteSlotAction(slotId: string) {
 }
 
 export async function updateSlotStatus(slotId: string, status: "completed" | "cancelled") {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

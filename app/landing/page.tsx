@@ -10,11 +10,11 @@ import { landingUi } from "@/lib/i18n-ui";
 export const dynamic = "force-dynamic";
 
 export default async function LandingPage() {
-  const lang = getServerLang();
+  const lang = await getServerLang();
   const t = landingUi(lang);
   const locale = lang === "pl" ? "pl-PL" : "en-GB";
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: slots } = await supabase
     .from("slots")
     .select("id, title, activity_type, date_time, location_name")

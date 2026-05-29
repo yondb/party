@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { Calendar, MapPin } from 'lucide-react';
-import { CATEGORIES, type CategoryId, toCategoryId } from '@/lib/categories';
+import { CATEGORIES, type CategoryId } from '@/lib/categories';
 import { Avatar } from '@/components/ui/Avatar';
 import { AvatarStack } from '@/components/ui/AvatarStack';
 import { Badge } from '@/components/ui/Badge';
@@ -14,7 +14,7 @@ export interface SlotData {
   title: string;
   startAt: string;
   placeName: string;
-  distanceMeters: number;
+  distanceMeters?: number;
   host: { name: string; avatarUrl?: string | null; reliability: number };
   participants: Array<{ name: string; avatarUrl?: string | null }>;
   capacity: number;
@@ -74,7 +74,10 @@ export function SlotCard({ slot, compact }: Props) {
               <div className="flex items-center gap-2 text-ash-600">
                 <MapPin className="size-4 shrink-0" />
                 <span className="font-mono text-body-sm">
-                  {slot.placeName} · {formatDistance(slot.distanceMeters)}
+                  {slot.placeName}
+                  {slot.distanceMeters && slot.distanceMeters > 0
+                    ? ` · ${formatDistance(slot.distanceMeters)}`
+                    : ''}
                 </span>
               </div>
             </div>
@@ -105,36 +108,4 @@ export function SlotCard({ slot, compact }: Props) {
       </div>
     </Link>
   );
-}
-
-export function slotDataFromLegacy(slot: {
-  id: string;
-  title: string;
-  activity_type: string;
-  date_time: string;
-  location_name: string;
-  max_spots: number;
-  spots_taken: number;
-  place_name?: string | null;
-  place_category?: string | null;
-  host: { name: string; avatar_url?: string | null; reliability_score?: number | null } | null;
-}): SlotData {
-  const category = toCategoryId(slot.place_category ?? slot.activity_type);
-  return {
-    id: slot.id,
-    category,
-    title: slot.place_name ?? slot.title,
-    startAt: slot.date_time,
-    placeName: slot.place_name ?? slot.location_name,
-    distanceMeters: 0,
-    host: {
-      name: slot.host?.name ?? '?',
-      avatarUrl: slot.host?.avatar_url,
-      reliability: Math.round((slot.host?.reliability_score ?? 1) * 100),
-    },
-    participants: Array.from({ length: Math.min(slot.spots_taken, 3) }, (_, i) => ({
-      name: `U${i + 1}`,
-    })),
-    capacity: slot.max_spots,
-  };
 }

@@ -1,7 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Bricolage_Grotesque } from 'next/font/google';
-import { GeistSans } from 'geist/font/sans';
-import { GeistMono } from 'geist/font/mono';
+import { Bricolage_Grotesque, Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
 import { LanguageProvider } from '@/components/i18n/LanguageProvider';
@@ -17,6 +15,17 @@ const bricolage = Bricolage_Grotesque({
   weight: ['400', '500', '600', '700', '800'],
 });
 
+const geistSans = Geist({
+  subsets: ['latin'],
+  variable: '--font-geist-sans',
+  display: 'swap',
+});
+
+const geistMono = Geist_Mono({
+  subsets: ['latin'],
+  variable: '--font-geist-mono',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   metadataBase: getSiteUrl(),
@@ -38,7 +47,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pl" className={`${bricolage.variable} ${GeistSans.variable} ${GeistMono.variable}`}>
+    <html lang="pl" className={`${bricolage.variable} ${geistSans.variable} ${geistMono.variable}`}>
       <body className="bg-bg text-ash-900 font-sans antialiased min-h-screen">
         <LanguageProvider>
           <DocumentLang />

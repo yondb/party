@@ -71,7 +71,7 @@ async function applyRatingEffects(
 
 /** Any party member rates peers after the slot is completed. */
 export async function submitMyRatings(slotId: string, ratings: RatingInput[]) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

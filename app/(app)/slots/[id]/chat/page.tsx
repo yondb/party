@@ -4,8 +4,9 @@ import { SlotChat } from "@/components/slots/SlotChat";
 
 export const dynamic = "force-dynamic";
 
-export default async function SlotChatPage({ params }: { params: { id: string } }) {
-  const supabase = createClient();
+export default async function SlotChatPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -14,7 +15,7 @@ export default async function SlotChatPage({ params }: { params: { id: string } 
   const { data: slot } = await supabase
     .from("slots")
     .select("id, title, host_id")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
   if (!slot) notFound();
 

@@ -5,6 +5,7 @@ import {
   finalizeWithLang,
   redirectIfLangParams,
 } from "@/lib/i18n-middleware";
+import { isAdminUser } from "@/lib/admin";
 
 const PUBLIC_PREFIXES = [
   "/",
@@ -85,6 +86,12 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (user) {
+    if (startsWithAny(path, ["/admin"]) && !isAdminUser({ id: user.id, email: user.email })) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/map";
+      return attachLangToRedirect(request, NextResponse.redirect(redirectUrl));
+    }
+
     const setupDone = user.user_metadata?.setup_done === true;
     if (!setupDone && path !== "/setup" && path !== "/auth" && !path.startsWith("/dev")) {
       const redirectUrl = request.nextUrl.clone();

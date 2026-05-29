@@ -13,15 +13,16 @@ import { SlotCard, type SlotCardData, type SlotCardHost } from "@/components/slo
 
 export const dynamic = "force-dynamic";
 
-export default async function PlacePage({ params }: { params: { id: string } }) {
-  const lang = getServerLang();
+export default async function PlacePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const lang = await getServerLang();
   const back = pageHeaderUi(lang);
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: place } = await supabase
     .from("places")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", id)
     .maybeSingle();
 
   if (!place) notFound();
@@ -29,7 +30,7 @@ export default async function PlacePage({ params }: { params: { id: string } }) 
   const { data: slots } = await supabase
     .from("slots")
     .select("*")
-    .eq("place_id", params.id)
+    .eq("place_id", id)
     .in("status", ["open", "full"])
     .order("date_time", { ascending: true });
 

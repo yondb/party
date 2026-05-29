@@ -9,9 +9,9 @@ import { profileUi } from "@/lib/i18n-ui";
 export const dynamic = "force-dynamic";
 
 export default async function OwnProfilePage() {
-  const lang = getServerLang();
+  const lang = await getServerLang();
   const p = profileUi(lang);
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

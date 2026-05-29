@@ -6,20 +6,30 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatDate(date: Date | string): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return new Intl.DateTimeFormat('pl-PL', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-  }).format(d);
+  try {
+    const d = typeof date === 'string' ? new Date(date) : date;
+    if (Number.isNaN(d.getTime())) return '—';
+    return new Intl.DateTimeFormat('pl-PL', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+    }).format(d);
+  } catch {
+    return '—';
+  }
 }
 
 export function formatTime(date: Date | string): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return new Intl.DateTimeFormat('pl-PL', {
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(d);
+  try {
+    const d = typeof date === 'string' ? new Date(date) : date;
+    if (Number.isNaN(d.getTime())) return '—';
+    return new Intl.DateTimeFormat('pl-PL', {
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(d);
+  } catch {
+    return '—';
+  }
 }
 
 export function formatDistance(meters: number): string {

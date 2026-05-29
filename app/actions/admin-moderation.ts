@@ -6,7 +6,7 @@ import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import { isAdminUser } from "@/lib/admin";
 
 async function requireAdmin(): Promise<{ error?: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -37,6 +37,20 @@ export async function banUserFromReport(reportId: string, reportedUserId: string
 
   const admin = createServiceRoleClient();
 
+  // Resolve the report and derive the target user from the row itself,
+  // never trusting the client-supplied reportedUserId.
+  const { data: report, error: getErr } = await admin
+    .from("profile_reports")
+    .select("reported_user_id")
+    .eq("id", reportId)
+    .maybeSingle();
+  if (getErr) return { error: getErr.message };
+  if (!report?.reported_user_id) return { error: "Report not found" };
+  if (reportedUserId && reportedUserId !== report.reported_user_id) {
+    return { error: "Report/user mismatch" };
+  }
+  const targetUserId = report.reported_user_id;
+
   const { error: rErr } = await admin
     .from("profile_reports")
     .update({ status: "resolved" })
@@ -44,16 +58,16 @@ export async function banUserFromReport(reportId: string, reportedUserId: string
     .eq("status", "pending");
   if (rErr) return { error: rErr.message };
 
-  const { error: uErr } = await admin.from("users").update({ banned: true }).eq("id", reportedUserId);
+  const { error: uErr } = await admin.from("users").update({ banned: true }).eq("id", targetUserId);
   if (uErr) return { error: uErr.message };
 
-  const { error: authErr } = await admin.auth.admin.updateUserById(reportedUserId, {
+  const { error: authErr } = await admin.auth.admin.updateUserById(targetUserId, {
     ban_duration: "876000h",
   });
   if (authErr) return { error: authErr.message };
 
   revalidatePath("/admin");
-  revalidatePath(`/profile/${reportedUserId}`);
+  revalidatePath(`/profile/${targetUserId}`);
   return { ok: true };
 }
 

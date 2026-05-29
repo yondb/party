@@ -6,7 +6,7 @@ import { pageHeaderUi, premiumUi } from "@/lib/i18n-ui";
 export const dynamic = "force-dynamic";
 
 export default async function PremiumPage() {
-  const lang = getServerLang();
+  const lang = await getServerLang();
   const t = premiumUi(lang);
   const back = pageHeaderUi(lang);
   return (

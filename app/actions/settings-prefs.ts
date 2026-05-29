@@ -9,7 +9,7 @@ export type NotificationPrefs = {
 };
 
 export async function updateNotificationPrefs(prefs: NotificationPrefs) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

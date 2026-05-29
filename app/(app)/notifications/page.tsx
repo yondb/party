@@ -10,13 +10,13 @@ import { notificationsUi, pageHeaderUi } from "@/lib/i18n-ui";
 export const dynamic = "force-dynamic";
 
 export default async function NotificationsPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/auth");
 
-  const lang = getServerLang();
+  const lang = await getServerLang();
   const t = notificationsUi(lang);
   const back = pageHeaderUi(lang);
 

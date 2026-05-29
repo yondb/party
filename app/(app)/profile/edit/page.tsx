@@ -8,7 +8,7 @@ import { pageHeaderUi, profileEditUi } from "@/lib/i18n-ui";
 export const dynamic = "force-dynamic";
 
 export default async function EditProfilePage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -17,7 +17,7 @@ export default async function EditProfilePage() {
   const { data: profile } = await supabase.from("users").select("*").eq("id", user.id).single();
   if (!profile) redirect("/auth");
 
-  const lang = getServerLang();
+  const lang = await getServerLang();
   const t = profileEditUi(lang);
   const back = pageHeaderUi(lang);
 

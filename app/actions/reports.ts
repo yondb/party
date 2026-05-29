@@ -7,8 +7,8 @@ import { commonErrors } from "@/lib/i18n-ui";
 import { isOverRateLimit } from "@/lib/action-rate-limit";
 
 export async function reportProfile(reportedUserId: string, reason: string) {
-  const supabase = createClient();
-  const lang = getServerLang();
+  const supabase = await createClient();
+  const lang = await getServerLang();
   const errs = commonErrors(lang);
   const {
     data: { user },

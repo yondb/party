@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createRoot, type Root } from "react-dom/client";
 import mapboxgl from "mapbox-gl";
 import type { GeoJSONSource } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -15,6 +16,17 @@ import { useLanguage } from "@/components/i18n/LanguageProvider";
 import { mapUi } from "@/lib/i18n-ui";
 import { Chip } from "@/components/ui/Chip";
 import { cn } from "@/lib/utils";
+import { MapMarker, MapClusterMarker } from "@/components/map/MapMarker";
+import { SlotPreviewCard } from "@/components/map/SlotPreviewCard";
+import { CATEGORIES, toCategoryId } from "@/lib/categories";
+import { AvatarStack } from "@/components/ui/AvatarStack";
+import {
+  bucketForSlot,
+  relativeStart,
+  formatStartTime,
+  type MapSlot,
+  type SlotBucket,
+} from "@/lib/map-slots";
 
 export type PlaceSlotPreview = {
   id: string;
@@ -36,9 +48,15 @@ export type PlaceMapPin = {
 };
 
 const SOURCE_ID = "places";
-const CLUSTER_LAYER = "clusters";
-const CLUSTER_COUNT_LAYER = "cluster-count";
-const POINT_LAYER = "unclustered-point";
+/** Off-white CARTO Voyager basemap (no Mapbox styling needed). */
+const MAP_STYLE_URL = "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json";
+
+type MarkerEntry = {
+  marker: mapboxgl.Marker;
+  root: Root;
+  type: "cluster" | "point";
+  placeId?: string;
+};
 
 function buildPopupHtml(
   p: PlaceMapPin,
@@ -79,8 +97,8 @@ function buildPopupHtml(
       <p class="lfparty-map-popup__section">${escapeHtml(m.popupUpcoming)}</p>
       ${slotsHtml}
       <div class="lfparty-map-popup__actions">
-        <a class="lfparty-map-popup__link" href="/slots/new?place_id=${p.id}">${escapeHtml(m.popupCreateSlot)}</a>
-        <a class="lfparty-map-popup__link lfparty-map-popup__link--muted" href="/places/${p.id}">${escapeHtml(m.popupViewAll)}</a>
+        <a class="lfparty-map-popup__link" href="/slots/new?place_id=${encodeURIComponent(p.id)}">${escapeHtml(m.popupCreateSlot)}</a>
+        <a class="lfparty-map-popup__link lfparty-map-popup__link--muted" href="/places/${encodeURIComponent(p.id)}">${escapeHtml(m.popupViewAll)}</a>
       </div>
     </div>`;
 }
@@ -101,7 +119,7 @@ function buildGeoJson(places: PlaceMapPin[]): GeoJSON.FeatureCollection {
   };
 }
 
-export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
+export function MapPlaces({ places, slots }: { places: PlaceMapPin[]; slots: MapSlot[] }) {
   const { lang } = useLanguage();
   const m = mapUi(lang);
   const ref = useRef<HTMLDivElement>(null);
@@ -109,6 +127,10 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
   const popupRef = useRef<mapboxgl.Popup | null>(null);
   const youMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const placesByIdRef = useRef<Map<string, PlaceMapPin>>(new Map());
+  const markersRef = useRef<Record<string, MarkerEntry>>({});
+  const markersOnScreenRef = useRef<Record<string, MarkerEntry>>({});
+  const activePlaceIdRef = useRef<string | null>(null);
+  const flyToPlaceRef = useRef<((place: PlaceMapPin) => void) | null>(null);
   const mapReadyRef = useRef(false);
   const [myPosition, setMyPosition] = useState<{ lat: number; lng: number } | null>(null);
   const [radiusKm, setRadiusKm] = useState(10);
@@ -119,10 +141,17 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
   const [locationError, setLocationError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [sheetExpanded, setSheetExpanded] = useState(false);
+  const [sheetHeight, setSheetHeight] = useState(30);
   const [activePlaceId, setActivePlaceId] = useState<string | null>(null);
+  const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
+  const [now, setNow] = useState(() => Date.now());
   const [mapError, setMapError] = useState<string | null>(null);
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(t);
+  }, []);
 
   function requestMyLocation() {
     if (!navigator.geolocation) {
@@ -182,6 +211,47 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
     placesByIdRef.current = new Map(filteredPlaces.map((p) => [p.id, p]));
   }, [filteredPlaces]);
 
+  const slotDistanceLabel = useCallback(
+    (slot: MapSlot): string | null => {
+      if (!locationEnabled || !myPosition) return null;
+      const km = distanceKm(myPosition.lat, myPosition.lng, slot.lat, slot.lng);
+      return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`;
+    },
+    [locationEnabled, myPosition],
+  );
+
+  const groupedSlots = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    const filtered = slots.filter((slot) => {
+      if (category !== "all" && slot.category !== category) return false;
+      if (q) {
+        const hay = `${slot.title} ${slot.placeName} ${slot.district ?? ""}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      if (dateFilter) {
+        const ymd = new Date(slot.dateTime).toISOString().slice(0, 10);
+        if (ymd !== dateFilter) return false;
+      }
+      if (locationEnabled && myPosition) {
+        const km = distanceKm(myPosition.lat, myPosition.lng, slot.lat, slot.lng);
+        if (km > radiusKm) return false;
+      }
+      return true;
+    });
+
+    const buckets: Record<SlotBucket, MapSlot[]> = { now: [], today: [], week: [] };
+    for (const slot of filtered) buckets[bucketForSlot(slot.dateTime, now)].push(slot);
+    return buckets;
+  }, [slots, category, searchQuery, dateFilter, locationEnabled, myPosition, radiusKm, now]);
+
+  const totalSlots =
+    groupedSlots.now.length + groupedSlots.today.length + groupedSlots.week.length;
+
+  const selectedSlot = useMemo(
+    () => slots.find((s) => s.id === selectedSlotId) ?? null,
+    [slots, selectedSlotId],
+  );
+
   const openPlacePopup = useCallback(
     (place: PlaceMapPin) => {
       const map = mapRef.current;
@@ -204,10 +274,122 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
       if (!map) return;
       map.flyTo({ center: [place.lng, place.lat], zoom: 15, duration: 900 });
       openPlacePopup(place);
-      setSheetExpanded(true);
     },
     [openPlacePopup],
   );
+
+  useEffect(() => {
+    flyToPlaceRef.current = flyToPlace;
+  }, [flyToPlace]);
+
+  const selectSlot = useCallback((slot: MapSlot) => {
+    setSelectedSlotId(slot.id);
+    setActivePlaceId(slot.placeId);
+    const map = mapRef.current;
+    if (map) {
+      popupRef.current?.remove();
+      map.flyTo({ center: [slot.lng, slot.lat], zoom: 15, duration: 900 });
+    }
+    setSheetHeight((h) => (h < 50 ? 55 : h));
+  }, []);
+
+  const dragRef = useRef<{ startY: number; startH: number } | null>(null);
+  const onSheetPointerDown = (e: React.PointerEvent) => {
+    dragRef.current = { startY: e.clientY, startH: sheetHeight };
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  };
+  const onSheetPointerMove = (e: React.PointerEvent) => {
+    if (!dragRef.current) return;
+    const dy = dragRef.current.startY - e.clientY;
+    const vh = (dy / window.innerHeight) * 100;
+    setSheetHeight(Math.min(80, Math.max(30, dragRef.current.startH + vh)));
+  };
+  const onSheetPointerUp = () => {
+    if (!dragRef.current) return;
+    dragRef.current = null;
+    setSheetHeight((h) => (h > 55 ? 80 : 30));
+  };
+
+  const renderPointMarker = useCallback((entry: MarkerEntry, place: PlaceMapPin) => {
+    entry.root.render(
+      <MapMarker
+        category={toCategoryId(place.category)}
+        count={place.activeSlotCount}
+        active={activePlaceIdRef.current === place.id}
+        onClick={() => flyToPlaceRef.current?.(place)}
+      />,
+    );
+  }, []);
+
+  /** Render cluster + point capsule markers from the clustered source on the fly. */
+  const updateMarkers = useCallback(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const source = map.getSource(SOURCE_ID) as GeoJSONSource | undefined;
+    if (!source) return;
+
+    const newMarkers: Record<string, MarkerEntry> = {};
+    const features = map.querySourceFeatures(SOURCE_ID);
+
+    for (const feature of features) {
+      if (feature.geometry.type !== "Point") continue;
+      const props = feature.properties ?? {};
+      const isCluster = Boolean(props.cluster);
+      const id = isCluster ? `cluster-${props.cluster_id}` : `pt-${props.id}`;
+      if (newMarkers[id]) continue;
+
+      const coords = (feature.geometry as GeoJSON.Point).coordinates as [number, number];
+      let entry = markersRef.current[id];
+
+      if (!entry) {
+        const el = document.createElement("div");
+        const root = createRoot(el);
+        const marker = new mapboxgl.Marker({ element: el }).setLngLat(coords);
+        entry = { marker, root, type: isCluster ? "cluster" : "point" };
+        markersRef.current[id] = entry;
+
+        if (isCluster) {
+          const clusterId = props.cluster_id as number;
+          const count = props.point_count as number;
+          root.render(
+            <MapClusterMarker
+              count={count}
+              onClick={() => {
+                source.getClusterExpansionZoom(clusterId, (err, zoom) => {
+                  if (err || zoom == null) return;
+                  map.easeTo({ center: coords, zoom });
+                });
+              }}
+            />,
+          );
+        } else {
+          const place = placesByIdRef.current.get(props.id as string);
+          if (place) {
+            entry.placeId = place.id;
+            renderPointMarker(entry, place);
+          }
+        }
+      } else {
+        entry.marker.setLngLat(coords);
+      }
+
+      newMarkers[id] = entry;
+      if (!markersOnScreenRef.current[id]) entry.marker.addTo(map);
+    }
+
+    for (const id in markersOnScreenRef.current) {
+      if (!newMarkers[id]) {
+        const stale = markersRef.current[id];
+        stale?.marker.remove();
+        if (stale) {
+          const root = stale.root;
+          setTimeout(() => root.unmount(), 0);
+          delete markersRef.current[id];
+        }
+      }
+    }
+    markersOnScreenRef.current = newMarkers;
+  }, [renderPointMarker]);
 
   useEffect(() => {
     if (!token || !ref.current) return;
@@ -222,7 +404,7 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
     setMapError(null);
     const map = new mapboxgl.Map({
       container: ref.current,
-      style: "mapbox://styles/mapbox/light-v11",
+      style: MAP_STYLE_URL,
       center,
       zoom: 11.5,
       attributionControl: false,
@@ -236,25 +418,9 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
       setMapError(lang === "pl" ? "Nie udało się załadować mapy." : "Failed to load map.");
     });
 
-    const onClusterClick = (e: mapboxgl.MapMouseEvent & { features?: mapboxgl.MapboxGeoJSONFeature[] }) => {
-      const features = map.queryRenderedFeatures(e.point, { layers: [CLUSTER_LAYER] });
-      const clusterId = features[0]?.properties?.cluster_id;
-      if (clusterId == null) return;
-      const source = map.getSource(SOURCE_ID) as GeoJSONSource;
-      source.getClusterExpansionZoom(clusterId, (err, zoom) => {
-        if (err || zoom == null) return;
-        const coords = (features[0].geometry as GeoJSON.Point).coordinates as [number, number];
-        map.easeTo({ center: coords, zoom });
-      });
-    };
-
-    const onPointClick = (e: mapboxgl.MapMouseEvent & { features?: mapboxgl.MapboxGeoJSONFeature[] }) => {
-      const feature = e.features?.[0];
-      const id = feature?.properties?.id as string | undefined;
-      if (!id) return;
-      const place = placesByIdRef.current.get(id);
-      if (!place) return;
-      flyToPlace(place);
+    const onRender = () => {
+      if (!map.isSourceLoaded(SOURCE_ID)) return;
+      updateMarkers();
     };
 
     map.on("load", () => {
@@ -266,67 +432,13 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
         clusterRadius: 52,
       });
 
-      map.addLayer({
-        id: CLUSTER_LAYER,
-        type: "circle",
-        source: SOURCE_ID,
-        filter: ["has", "point_count"],
-        paint: {
-          "circle-color": "#18181B",
-          "circle-radius": ["step", ["get", "point_count"], 18, 8, 24, 20, 30],
-          "circle-stroke-width": 3,
-          "circle-stroke-color": "#ffffff",
-        },
-      });
-
-      map.addLayer({
-        id: CLUSTER_COUNT_LAYER,
-        type: "symbol",
-        source: SOURCE_ID,
-        filter: ["has", "point_count"],
-        layout: {
-          "text-field": "{point_count_abbreviated}",
-          "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
-          "text-size": 13,
-        },
-        paint: { "text-color": "#ffffff" },
-      });
-
-      map.addLayer({
-        id: POINT_LAYER,
-        type: "circle",
-        source: SOURCE_ID,
-        filter: ["!", ["has", "point_count"]],
-        paint: {
-          "circle-color": ["get", "color"],
-          "circle-radius": [
-            "case",
-            ["==", ["get", "id"], activePlaceId ?? ""],
-            14,
-            11,
-          ],
-          "circle-stroke-width": 3,
-          "circle-stroke-color": "#ffffff",
-        },
-      });
-
-      map.on("click", CLUSTER_LAYER, onClusterClick);
-      map.on("click", POINT_LAYER, onPointClick);
-      map.on("mouseenter", CLUSTER_LAYER, () => {
-        map.getCanvas().style.cursor = "pointer";
-      });
-      map.on("mouseleave", CLUSTER_LAYER, () => {
-        map.getCanvas().style.cursor = "";
-      });
-      map.on("mouseenter", POINT_LAYER, () => {
-        map.getCanvas().style.cursor = "pointer";
-      });
-      map.on("mouseleave", POINT_LAYER, () => {
-        map.getCanvas().style.cursor = "";
-      });
+      // Capsule markers are rendered as DOM elements on every render pass.
+      map.on("render", onRender);
+      map.on("moveend", updateMarkers);
 
       mapReadyRef.current = true;
       map.resize();
+      updateMarkers();
     });
 
     const resizeObserver = new ResizeObserver(() => {
@@ -336,8 +448,18 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
 
     return () => {
       resizeObserver.disconnect();
+      map.off("render", onRender);
+      map.off("moveend", updateMarkers);
       popupRef.current?.remove();
       youMarkerRef.current?.remove();
+      for (const id in markersRef.current) {
+        const entry = markersRef.current[id];
+        entry.marker.remove();
+        const root = entry.root;
+        setTimeout(() => root.unmount(), 0);
+      }
+      markersRef.current = {};
+      markersOnScreenRef.current = {};
       map.remove();
       mapRef.current = null;
       mapReadyRef.current = false;
@@ -351,21 +473,21 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
     const apply = () => {
       const source = map.getSource(SOURCE_ID) as GeoJSONSource | undefined;
       if (source) source.setData(geoJsonRef.current);
+      updateMarkers();
     };
     if (map.isStyleLoaded()) apply();
     else map.once("idle", apply);
-  }, [geoJson]);
+  }, [geoJson, updateMarkers]);
 
   useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !map.isStyleLoaded() || !map.getLayer(POINT_LAYER)) return;
-    map.setPaintProperty(POINT_LAYER, "circle-radius", [
-      "case",
-      ["==", ["get", "id"], activePlaceId ?? ""],
-      14,
-      11,
-    ]);
-  }, [activePlaceId]);
+    activePlaceIdRef.current = activePlaceId;
+    for (const id in markersRef.current) {
+      const entry = markersRef.current[id];
+      if (entry.type !== "point" || !entry.placeId) continue;
+      const place = placesByIdRef.current.get(entry.placeId);
+      if (place) renderPointMarker(entry, place);
+    }
+  }, [activePlaceId, renderPointMarker]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -455,42 +577,77 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
     </div>
   );
 
-  const placeListItems = filteredPlaces.map((place) => {
-    const meta = PLACE_CATEGORY_META[place.category];
-    const catLabel = placeCategoryLabel(lang, place.category);
+  const sectionLabels: Record<SlotBucket, string> = {
+    now: lang === "pl" ? "Teraz" : "Now",
+    today: lang === "pl" ? "Dziś" : "Today",
+    week: lang === "pl" ? "W tym tygodniu" : "This week",
+  };
+
+  const renderSlotItem = (slot: MapSlot) => {
+    const cat = CATEGORIES[toCategoryId(slot.category)];
+    const dist = slotDistanceLabel(slot);
+    const isActive = selectedSlotId === slot.id;
     return (
       <button
-        key={place.id}
+        key={slot.id}
         type="button"
-        onClick={() => flyToPlace(place)}
+        onClick={() => selectSlot(slot)}
         className={cn(
-          "mb-2 flex w-full items-center gap-3 rounded-3xl border border-ash-200/40 bg-surface p-3 text-left shadow-sm transition hover:shadow-md hover:-translate-y-0.5",
-          activePlaceId === place.id && "ring-2 ring-honey-500 ring-offset-2",
+          "flex w-full items-start gap-3 rounded-2xl border border-transparent p-2.5 text-left transition hover:bg-ash-50",
+          isActive && "border-ash-200/70 bg-ash-50 ring-2 ring-graphite/10",
         )}
       >
         <span
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-lg"
-          style={{ background: `${meta.color}18` }}
+          className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-2xl text-lg"
+          style={{ backgroundColor: `${cat.color}1A` }}
+          aria-hidden
         >
-          {meta.icon}
+          {cat.emoji}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-semibold text-ash-900">
-            {displayPlaceName(place, lang)}
+          <span className="block truncate text-body-sm font-semibold text-ash-900">
+            {slot.title}
           </span>
-          <span className="block text-xs text-ash-500">
-            {catLabel}
-            {place.district ? ` · ${place.district}` : ""}
+          <span className="mt-0.5 block truncate text-caption text-ash-500">
+            {slot.placeName}
+            {dist ? ` · ${dist}` : ""} · {relativeStart(slot.dateTime, now, lang)}
+          </span>
+          <span className="mt-1.5 flex items-center justify-between gap-2">
+            {slot.participantCount > 0 ? (
+              <AvatarStack avatars={slot.participants} size="xs" max={3} />
+            ) : (
+              <span className="text-caption text-ash-400">
+                {lang === "pl" ? "Brak zapisów" : "No one yet"}
+              </span>
+            )}
+            <span className="shrink-0 font-mono text-body-sm font-semibold text-ash-700 tabular-nums">
+              {formatStartTime(slot.dateTime, lang)}
+            </span>
           </span>
         </span>
-        {place.activeSlotCount > 0 ? (
-          <span className="shrink-0 rounded-full bg-graphite px-2 py-0.5 text-xs font-semibold text-surface">
-            {place.activeSlotCount}
-          </span>
-        ) : null}
       </button>
     );
-  });
+  };
+
+  const slotGroups = (
+    <div className="space-y-1">
+      {(["now", "today", "week"] as SlotBucket[]).map((bucket) =>
+        groupedSlots[bucket].length === 0 ? null : (
+          <section key={bucket}>
+            <h3 className="sticky top-0 z-10 bg-surface/95 px-2 py-1.5 text-caption font-semibold uppercase tracking-wider text-ash-500 backdrop-blur-sm">
+              {sectionLabels[bucket]}
+            </h3>
+            <div className="space-y-0.5">{groupedSlots[bucket].map(renderSlotItem)}</div>
+          </section>
+        ),
+      )}
+      {totalSlots === 0 ? (
+        <p className="px-2 py-8 text-center text-body-sm text-ash-500">
+          {lang === "pl" ? "Brak slotów dla filtrów" : "No slots match"}
+        </p>
+      ) : null}
+    </div>
+  );
 
   return (
     <div className="map-root">
@@ -537,51 +694,49 @@ export function MapPlaces({ places }: { places: PlaceMapPin[] }) {
         ) : null}
       </div>
 
-      <div className="pointer-events-none absolute bottom-4 left-4 top-auto z-10 hidden max-h-[min(420px,55%)] w-[min(380px,90%)] lg:pointer-events-auto lg:block">
+      <aside className="pointer-events-none absolute bottom-4 left-4 top-auto z-10 hidden max-h-[min(460px,60%)] w-[min(380px,90%)] lg:pointer-events-auto lg:block">
         <div className="pointer-events-auto flex h-full max-h-[inherit] flex-col overflow-hidden rounded-3xl border border-ash-200/40 bg-surface shadow-md">
           <div className="border-b border-ash-200/60 px-4 py-3">
-            <p className="text-sm font-semibold text-ash-900">{m.listTitle}</p>
-            <p className="text-xs text-ash-500">{m.resultsFound(filteredPlaces.length)}</p>
+            <p className="font-display text-heading-md text-ash-900">
+              {lang === "pl" ? "Najbliższe sloty" : "Upcoming slots"}
+            </p>
           </div>
-          <div className="flex-1 overflow-y-auto p-2">
-            {filteredPlaces.length === 0 ? (
-              <p className="p-4 text-center text-sm text-ash-500">
-                {lang === "pl" ? "Brak miejsc" : "No places"}
-              </p>
-            ) : (
-              placeListItems
-            )}
-          </div>
+          <div className="flex-1 overflow-y-auto px-2 py-2">{slotGroups}</div>
         </div>
-      </div>
+      </aside>
 
       <div
-        className={cn(
-          "map-bottom-sheet pointer-events-auto lg:hidden",
-          sheetExpanded ? "max-h-[58dvh]" : "max-h-[38dvh]",
-        )}
+        className="map-bottom-sheet pointer-events-auto lg:hidden"
+        style={{ height: `${sheetHeight}dvh` }}
       >
-        <button
-          type="button"
-          className="flex w-full flex-col items-center pt-2 pb-1"
-          onClick={() => setSheetExpanded((e) => !e)}
-          aria-expanded={sheetExpanded}
+        <div
+          className="flex w-full cursor-grab touch-none flex-col items-center pt-2 pb-1 active:cursor-grabbing"
+          onPointerDown={onSheetPointerDown}
+          onPointerMove={onSheetPointerMove}
+          onPointerUp={onSheetPointerUp}
+          onPointerCancel={onSheetPointerUp}
+          role="separator"
+          aria-label={lang === "pl" ? "Przeciągnij, aby rozwinąć" : "Drag to expand"}
         >
-          <span className="mb-2 h-1 w-10 rounded-full bg-ash-300" />
-          <span className="px-4 text-sm font-semibold text-ash-900">
-            {m.listTitle} · {m.resultsFound(filteredPlaces.length)}
+          <span className="mb-2 h-1.5 w-10 rounded-full bg-ash-300" />
+          <span className="px-4 font-display text-heading-md text-ash-900">
+            {lang === "pl" ? "Najbliższe sloty" : "Upcoming slots"}
           </span>
-        </button>
-        <div className="flex-1 overflow-y-auto px-3 pb-4 pt-1">
-          {filteredPlaces.length === 0 ? (
-            <p className="py-6 text-center text-sm text-ash-500">
-              {lang === "pl" ? "Brak miejsc dla filtrów" : "No places match"}
-            </p>
-          ) : (
-            placeListItems
-          )}
         </div>
+        <div className="flex-1 overflow-y-auto px-2 pb-4 pt-1">{slotGroups}</div>
       </div>
+
+      {selectedSlot ? (
+        <div className="pointer-events-none absolute inset-x-0 top-28 z-30 flex justify-center px-4 lg:bottom-4 lg:left-[calc(min(380px,90%)+2.5rem)] lg:right-auto lg:top-auto lg:justify-start lg:px-0">
+          <SlotPreviewCard
+            slot={selectedSlot}
+            now={now}
+            lang={lang}
+            distanceLabel={slotDistanceLabel(selectedSlot)}
+            onClose={() => setSelectedSlotId(null)}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }

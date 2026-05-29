@@ -10,8 +10,8 @@ import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import { SITE_NAME } from "@/lib/site";
 
 export async function applyToSlot(slotId: string, message?: string) {
-  const supabase = createClient();
-  const lang = getServerLang();
+  const supabase = await createClient();
+  const lang = await getServerLang();
   const errs = commonErrors(lang);
   const {
     data: { user },
@@ -38,10 +38,12 @@ export async function applyToSlot(slotId: string, message?: string) {
     return { error: genderApplyBlocked(lang, "male") };
   }
 
+  const trimmedMessage = message?.trim().slice(0, 1000) || null;
+
   const { error } = await supabase.from("applications").insert({
     slot_id: slotId,
     applicant_id: user.id,
-    message: message ?? null,
+    message: trimmedMessage,
     status: "pending",
   });
 
@@ -88,7 +90,14 @@ export async function respondToApplication(
   applicationId: string,
   decision: "accepted" | "rejected" | "pending",
 ) {
-  const supabase = createClient();
+  const supabase = await createClient();
+  const lang = await getServerLang();
+  const errs = commonErrors(lang);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: errs.unauthorized };
+
   const { data: row, error: fetchErr } = await supabase
     .from("applications")
     .select("slot_id, applicant_id, status")
@@ -96,6 +105,14 @@ export async function respondToApplication(
     .single();
 
   if (fetchErr || !row) return { error: fetchErr?.message ?? "Not found" };
+
+  // Only the slot host may accept/reject applications.
+  const { data: slot } = await supabase
+    .from("slots")
+    .select("host_id")
+    .eq("id", row.slot_id)
+    .maybeSingle();
+  if (!slot || slot.host_id !== user.id) return { error: errs.unauthorized };
 
   const prev = row.status;
   const { error } = await supabase

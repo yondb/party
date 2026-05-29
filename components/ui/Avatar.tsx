@@ -24,7 +24,15 @@ const sizeMap: Record<Size, { box: string; text: string; px: number; level: stri
 
 function initialsFrom(name?: string) {
   if (!name) return '?';
-  return name.trim().split(/\s+/).slice(0, 2).map((n) => n[0]?.toUpperCase()).join('');
+  const trimmed = name.trim();
+  return trimmed.includes(' ')
+    ? trimmed
+        .split(/\s+/)
+        .slice(0, 2)
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase()
+    : trimmed.slice(0, 3).toUpperCase();
 }
 
 function resolveSize(size: Size | number | undefined): Size {
@@ -41,23 +49,45 @@ function resolveSize(size: Size | number | undefined): Size {
 export function Avatar({ src, alt, name, size = 'md', level, ringColor, className }: AvatarProps) {
   const resolved = resolveSize(size);
   const cfg = sizeMap[resolved];
-  const ringStyle = ringColor ? { boxShadow: `0 0 0 2px var(--color-bg, #FAFAF9), 0 0 0 4px ${ringColor}` } : undefined;
+
+  const circle = (
+    <div
+      className={cn(
+        cfg.box,
+        'rounded-full overflow-hidden bg-gradient-to-br from-ash-200 to-ash-300 flex items-center justify-center',
+      )}
+    >
+      {src ? (
+        <Image
+          src={src}
+          alt={alt || name || 'avatar'}
+          width={cfg.px}
+          height={cfg.px}
+          className="size-full object-cover"
+        />
+      ) : (
+        <span className={cn('font-display font-semibold text-ash-700', cfg.text)}>
+          {initialsFrom(name)}
+        </span>
+      )}
+    </div>
+  );
 
   return (
-    <div className={cn('relative inline-flex shrink-0', className)} style={ringStyle}>
-      <div className={cn(cfg.box, 'rounded-full overflow-hidden bg-gradient-to-br from-ash-200 to-ash-300 flex items-center justify-center')}>
-        {src ? (
-          <Image src={src} alt={alt || name || 'avatar'} width={cfg.px} height={cfg.px} className="size-full object-cover" />
-        ) : (
-          <span className={cn('font-display font-semibold text-ash-700', cfg.text)}>{initialsFrom(name)}</span>
-        )}
-      </div>
+    <div className={cn('relative inline-flex shrink-0', className)}>
+      {ringColor ? (
+        <div className="rounded-full p-1" style={{ backgroundColor: ringColor }}>
+          <div className="rounded-full bg-bg p-1">{circle}</div>
+        </div>
+      ) : (
+        circle
+      )}
       {level !== undefined && (
         <span
           className={cn(
             'absolute font-mono font-bold rounded-full bg-honey-500 text-graphite',
             'flex items-center justify-center border-2 border-bg',
-            cfg.level
+            cfg.level,
           )}
         >
           {level}

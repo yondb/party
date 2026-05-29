@@ -8,13 +8,14 @@ import { normalizeActivityKey, type ActivityKey } from "@/lib/activities";
 
 export const dynamic = "force-dynamic";
 
-export default async function PublicProfilePage({ params }: { params: { id: string } }) {
-  const supabase = createClient();
+export default async function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { data: profile } = await supabase.from("users").select("*").eq("id", params.id).single();
+  const { data: profile } = await supabase.from("users").select("*").eq("id", id).single();
   if (!profile) notFound();
 
   const { data: apps } = await supabase

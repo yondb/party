@@ -3,9 +3,9 @@ import type { PendingRatingSlot } from "@/lib/pending-ratings";
 import { getServerLang } from "@/lib/i18n-server";
 import { pendingRatingsUi } from "@/lib/i18n-ui";
 
-export function PendingRatingsBanner({ items }: { items: PendingRatingSlot[] }) {
+export async function PendingRatingsBanner({ items }: { items: PendingRatingSlot[] }) {
   if (items.length === 0) return null;
-  const lang = getServerLang();
+  const lang = await getServerLang();
   const t = pendingRatingsUi(lang);
   const first = items[0];
 

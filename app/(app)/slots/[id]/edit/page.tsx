@@ -5,8 +5,9 @@ import { isPlaceCategory, placeCategoryToActivityType, type PlaceCategory } from
 
 export const dynamic = "force-dynamic";
 
-export default async function EditSlotPage({ params }: { params: { id: string } }) {
-  const supabase = createClient();
+export default async function EditSlotPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -14,7 +15,7 @@ export default async function EditSlotPage({ params }: { params: { id: string } 
   const { data: slot, error } = await supabase
     .from("slots")
     .select("*, places(name, category)")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
 
   if (error || !slot) notFound();

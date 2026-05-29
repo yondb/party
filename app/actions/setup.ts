@@ -12,11 +12,15 @@ export async function completeSetup(input: {
   home_city?: string | null;
   quest_goals?: string | null;
 }) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
+
+  if (input.birth_date && Number.isNaN(Date.parse(input.birth_date))) {
+    return { error: "Invalid date" };
+  }
 
   const updates: {
     name: string;
@@ -24,11 +28,17 @@ export async function completeSetup(input: {
     birth_date: string;
     avatar_url?: string | null;
   } = {
-    name: input.name.trim() || "Adventurer",
+    name: input.name.trim().slice(0, 80) || "Adventurer",
     gender: input.gender,
     birth_date: input.birth_date,
   };
-  if (input.avatar_url !== undefined) updates.avatar_url = input.avatar_url;
+  if (input.avatar_url !== undefined) {
+    const url = input.avatar_url?.trim() ?? "";
+    if (url && (!/^https?:\/\//i.test(url) || url.length > 1000)) {
+      return { error: "Invalid avatar URL" };
+    }
+    updates.avatar_url = url || null;
+  }
 
   const { error: profileErr } = await supabase.from("users").update(updates).eq("id", user.id);
   if (profileErr) return { error: profileErr.message };

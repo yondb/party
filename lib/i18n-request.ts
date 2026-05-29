@@ -8,10 +8,11 @@ import {
 } from "@/lib/i18n-lang";
 
 /** Server Components: cookie, or lang resolved in middleware for this request. */
-export function getServerLang(): Lang {
-  const h = headers();
+export async function getServerLang(): Promise<Lang> {
+  const h = await headers();
   const fromMiddleware = parseLang(h.get(LANG_HEADER));
   if (fromMiddleware) return fromMiddleware;
 
-  return parseLang(cookies().get(LANG_COOKIE)?.value) ?? DEFAULT_LANG;
+  const cookieStore = await cookies();
+  return parseLang(cookieStore.get(LANG_COOKIE)?.value) ?? DEFAULT_LANG;
 }

@@ -9,8 +9,8 @@ import { getPusherServer } from "@/lib/pusher-server";
 import { slotChannelName } from "@/lib/realtime-channels";
 
 export async function sendSlotMessage(slotId: string, content: string) {
-  const supabase = createClient();
-  const lang = getServerLang();
+  const supabase = await createClient();
+  const lang = await getServerLang();
   const errs = commonErrors(lang);
   const {
     data: { user },

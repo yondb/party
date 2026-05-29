@@ -7,12 +7,12 @@ import { SettingsAccountPanel } from "@/components/settings/SettingsAccountPanel
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const lang = getServerLang();
+  const lang = await getServerLang();
   const t = settingsUi(lang);
   const back = pageHeaderUi(lang);
 

@@ -1,31 +1,131 @@
 'use client';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Check, Users, User as UserIcon } from 'lucide-react';
+import { ArrowLeft, Check, Users, User as UserIcon, MapPin, Search } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input, Textarea } from '@/components/ui/Input';
 import { Stepper } from '@/components/ui/Stepper';
 import { Card } from '@/components/ui/Card';
 import { CATEGORY_LIST, type CategoryId } from '@/lib/categories';
 import { cn } from '@/lib/utils';
+import dynamic from 'next/dynamic';
+import { createSlotAction } from '@/app/actions/slots';
+import type { PickedPoint } from '@/components/slots/PlacePickerModal';
+
+const PlacePickerModal = dynamic(
+  () => import('@/components/slots/PlacePickerModal').then((m) => m.PlacePickerModal),
+  { ssr: false },
+);
 
 type Step = 1 | 2;
 type Gender = 'all' | 'female' | 'male';
 
-type NewSlotWizardProps = {
-  initialPlaceName?: string;
-  placeId?: string;
+export type PlaceOption = {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  city: string | null;
+  district: string | null;
 };
 
-export function NewSlotWizard({ initialPlaceName = '', placeId }: NewSlotWizardProps) {
+type SelectedPlace = { id: string; name: string; lat: number; lng: number };
+
+type NewSlotWizardProps = {
+  places: PlaceOption[];
+  initialPlaceId?: string;
+};
+
+export function NewSlotWizard({ places, initialPlaceId }: NewSlotWizardProps) {
   const router = useRouter();
+  const initialPlace = initialPlaceId
+    ? places.find((p) => p.id === initialPlaceId)
+    : undefined;
+
   const [step, setStep] = useState<Step>(1);
   const [category, setCategory] = useState<CategoryId | null>(null);
-  const [placeName, setPlaceName] = useState(initialPlaceName);
+
+  const [placeQuery, setPlaceQuery] = useState(initialPlace?.name ?? '');
+  const [selectedPlace, setSelectedPlace] = useState<SelectedPlace | null>(
+    initialPlace
+      ? { id: initialPlace.id, name: initialPlace.name, lat: initialPlace.lat, lng: initialPlace.lng }
+      : null,
+  );
+  const [customPoint, setCustomPoint] = useState<PickedPoint | null>(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [mapOpen, setMapOpen] = useState(false);
+
   const [startAt, setStartAt] = useState('');
   const [partySize, setPartySize] = useState(4);
   const [gender, setGender] = useState<Gender>('all');
   const [description, setDescription] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const chosenName = selectedPlace?.name ?? customPoint?.name ?? '';
+  const hasPlace = Boolean(selectedPlace || customPoint);
+
+  const suggestions = useMemo(() => {
+    const q = placeQuery.trim().toLowerCase();
+    if (!q) return [];
+    return places
+      .filter((p) =>
+        `${p.name} ${p.city ?? ''} ${p.district ?? ''}`.toLowerCase().includes(q),
+      )
+      .slice(0, 6);
+  }, [places, placeQuery]);
+
+  function selectExisting(p: PlaceOption) {
+    setSelectedPlace({ id: p.id, name: p.name, lat: p.lat, lng: p.lng });
+    setCustomPoint(null);
+    setPlaceQuery(p.name);
+    setShowSuggestions(false);
+  }
+
+  function handlePlaceQueryChange(value: string) {
+    setPlaceQuery(value);
+    setSelectedPlace(null);
+    setCustomPoint(null);
+    setShowSuggestions(true);
+  }
+
+  function applyCustomPoint(point: PickedPoint) {
+    setCustomPoint(point);
+    setSelectedPlace(null);
+    setPlaceQuery(point.name);
+    setMapOpen(false);
+    setShowSuggestions(false);
+  }
+
+  async function submit() {
+    if (!category || !hasPlace || !startAt) return;
+    const lat = selectedPlace?.lat ?? customPoint?.lat;
+    const lng = selectedPlace?.lng ?? customPoint?.lng;
+    if (lat == null || lng == null) return;
+
+    setSubmitting(true);
+    setError(null);
+    const res = await createSlotAction({
+      place_id: selectedPlace?.id,
+      activity_type: category,
+      title: chosenName || category,
+      description: description.trim() || undefined,
+      date_time: new Date(startAt).toISOString(),
+      location_name: chosenName,
+      location_lat: lat,
+      location_lng: lng,
+      max_spots: partySize,
+      min_reliability: 0,
+      min_level: 0,
+      gender_scope: gender === 'all' ? 'any' : gender,
+    });
+    if ('error' in res) {
+      setError(res.error ?? 'Nie udało się utworzyć slota.');
+      setSubmitting(false);
+      return;
+    }
+    router.push(`/slots/${res.id}`);
+  }
 
   return (
     <div className="mx-auto max-w-2xl px-4 lg:px-8 py-6 lg:py-10">
@@ -50,7 +150,7 @@ export function NewSlotWizard({ initialPlaceName = '', placeId }: NewSlotWizardP
         <div className="space-y-8 animate-fade-up">
           <header>
             <h1 className="font-display text-display-xl text-ash-900">Co robisz?</h1>
-            <p className="mt-2 text-body-lg text-ash-500">Wybierz aktywność.</p>
+            <p className="mt-2 text-body-lg text-ash-500">Wybierz aktywność i miejsce.</p>
           </header>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -66,7 +166,7 @@ export function NewSlotWizard({ initialPlaceName = '', placeId }: NewSlotWizardP
                     'border-2',
                     active
                       ? 'border-honey-500 shadow-honey scale-[1.02]'
-                      : 'border-transparent bg-surface shadow-sm hover:shadow-md hover:scale-[1.01]'
+                      : 'border-transparent bg-surface shadow-sm hover:shadow-md hover:scale-[1.01]',
                   )}
                   style={active ? { backgroundColor: `${cat.color}14` } : undefined}
                 >
@@ -78,14 +178,70 @@ export function NewSlotWizard({ initialPlaceName = '', placeId }: NewSlotWizardP
             })}
           </div>
 
-          <Input
-            label="Miejsce"
-            placeholder="np. Park Łazienkowski"
-            value={placeName}
-            onChange={(e) => setPlaceName(e.target.value)}
-          />
+          <div className="space-y-2">
+            <span className="block text-caption text-ash-500">Miejsce</span>
+            <div className="relative">
+              <Search className="absolute left-3.5 top-1/2 z-10 size-4 -translate-y-1/2 text-ash-400" />
+              <input
+                value={placeQuery}
+                onChange={(e) => handlePlaceQueryChange(e.target.value)}
+                onFocus={() => setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                placeholder="Szukaj miejsca…"
+                className="h-12 w-full rounded-2xl border border-ash-200 bg-surface pl-10 pr-4 text-body text-ash-900 placeholder:text-ash-400 focus:border-honey-500 focus:outline-none focus:ring-2 focus:ring-honey-200"
+              />
+              {showSuggestions && suggestions.length > 0 ? (
+                <ul className="absolute z-20 mt-1 max-h-64 w-full overflow-y-auto rounded-2xl border border-ash-200/70 bg-surface p-1 shadow-lg">
+                  {suggestions.map((p) => (
+                    <li key={p.id}>
+                      <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => selectExisting(p)}
+                        className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left hover:bg-ash-50"
+                      >
+                        <MapPin className="size-4 shrink-0 text-ash-400" />
+                        <span className="min-w-0">
+                          <span className="block truncate text-body-sm font-medium text-ash-900">
+                            {p.name}
+                          </span>
+                          {(p.district || p.city) && (
+                            <span className="block truncate text-caption text-ash-500">
+                              {[p.district, p.city].filter(Boolean).join(' · ')}
+                            </span>
+                          )}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
 
-          <Button fullWidth size="lg" disabled={!category || !placeName} onClick={() => setStep(2)}>
+            <button
+              type="button"
+              onClick={() => setMapOpen(true)}
+              className="inline-flex items-center gap-1.5 text-body-sm font-medium text-ash-600 hover:text-ash-900"
+            >
+              <MapPin className="size-4" />
+              lub wybierz na mapie →
+            </button>
+
+            {hasPlace ? (
+              <p className="flex items-center gap-1.5 text-body-sm text-success">
+                <Check className="size-4" />
+                {customPoint ? 'Punkt na mapie: ' : 'Wybrano: '}
+                <span className="font-medium text-ash-900">{chosenName}</span>
+              </p>
+            ) : null}
+          </div>
+
+          <Button
+            fullWidth
+            size="lg"
+            disabled={!category || !hasPlace}
+            onClick={() => setStep(2)}
+          >
             Dalej
           </Button>
         </div>
@@ -105,7 +261,7 @@ export function NewSlotWizard({ initialPlaceName = '', placeId }: NewSlotWizardP
                 <p className="font-display text-heading-md text-ash-900">
                   {CATEGORY_LIST.find((c) => c.id === category)?.label}
                 </p>
-                <p className="font-mono text-body-sm text-ash-600">{placeName}</p>
+                <p className="font-mono text-body-sm text-ash-600">{chosenName}</p>
               </div>
             </div>
             <button type="button" onClick={() => setStep(1)} className="text-body-sm font-medium text-ash-600 hover:text-ash-900 hover:underline">
@@ -115,7 +271,7 @@ export function NewSlotWizard({ initialPlaceName = '', placeId }: NewSlotWizardP
 
           <Input label="Data i godzina" type="datetime-local" value={startAt} onChange={(e) => setStartAt(e.target.value)} />
 
-          <Stepper label="Wielkość paczki (z hostem)" value={partySize} min={2} max={20} onChange={setPartySize} />
+          <Stepper label="Wielkość paczki (z hostem)" value={partySize} min={2} max={10} onChange={setPartySize} />
 
           <div className="space-y-1.5">
             <span className="block text-caption text-ash-500">Kto może dołączyć</span>
@@ -137,7 +293,7 @@ export function NewSlotWizard({ initialPlaceName = '', placeId }: NewSlotWizardP
                       'h-20 rounded-2xl flex flex-col items-center justify-center gap-1 border transition',
                       active
                         ? 'bg-graphite text-surface border-graphite'
-                        : 'bg-surface text-ash-700 border-ash-200 hover:bg-ash-50'
+                        : 'bg-surface text-ash-700 border-ash-200 hover:bg-ash-50',
                     )}
                   >
                     <Icon className="size-5" />
@@ -155,19 +311,21 @@ export function NewSlotWizard({ initialPlaceName = '', placeId }: NewSlotWizardP
             onChange={(e) => setDescription(e.target.value)}
           />
 
-          <Button
-            fullWidth
-            size="lg"
-            disabled={!startAt}
-            onClick={() => {
-              const qs = placeId ? `?place_id=${placeId}` : '';
-              router.push(`/slots/new${qs}`);
-            }}
-          >
+          {error ? <p className="text-body-sm text-danger">{error}</p> : null}
+
+          <Button fullWidth size="lg" disabled={!startAt || submitting} loading={submitting} onClick={submit}>
             Stwórz slot
           </Button>
         </div>
       )}
+
+      {mapOpen ? (
+        <PlacePickerModal
+          initialName={customPoint?.name ?? ''}
+          onPick={applyCustomPoint}
+          onClose={() => setMapOpen(false)}
+        />
+      ) : null}
     </div>
   );
 }

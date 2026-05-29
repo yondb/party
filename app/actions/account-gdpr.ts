@@ -6,7 +6,7 @@ import { createServiceRoleClient } from "@/lib/supabase/service-role";
 export async function exportUserDataJson(): Promise<
   { ok: true; json: string; filename: string } | { ok: false; error: string }
 > {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -58,7 +58,7 @@ export async function exportUserDataJson(): Promise<
 export async function deleteOwnAccount(): Promise<
   { ok: true } | { ok: false; error: "unauthorized" | "no_service_role" | string }
 > {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

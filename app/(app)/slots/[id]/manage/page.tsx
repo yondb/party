@@ -9,13 +9,14 @@ import { applicationCardUi, pageHeaderUi, slotManageUi } from "@/lib/i18n-ui";
 
 export const dynamic = "force-dynamic";
 
-export default async function ManageSlotPage({ params }: { params: { id: string } }) {
-  const lang = getServerLang();
+export default async function ManageSlotPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const lang = await getServerLang();
   const m = slotManageUi(lang);
   const card = applicationCardUi(lang);
   const back = pageHeaderUi(lang);
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -23,7 +24,7 @@ export default async function ManageSlotPage({ params }: { params: { id: string 
   const { data: slot, error } = await supabase
     .from("slots")
     .select("id, title, host_id, status")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
   if (error || !slot) notFound();
   const canMutateQuest = slot.status === "open" || slot.status === "full";

@@ -13,12 +13,13 @@ import { ApplyToPartyForm } from "@/components/slots/ApplyToPartyForm";
 
 export const dynamic = "force-dynamic";
 
-export default async function SlotDetailPage({ params }: { params: { id: string } }) {
-  const lang = getServerLang();
+export default async function SlotDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const lang = await getServerLang();
   const d = slotDetailUi(lang);
   const back = pageHeaderUi(lang);
   const locale = lang === "pl" ? "pl-PL" : "en-GB";
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -26,7 +27,7 @@ export default async function SlotDetailPage({ params }: { params: { id: string 
   const { data: slot, error } = await supabase
     .from("slots")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
   if (error || !slot) notFound();
 
