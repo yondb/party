@@ -54,13 +54,9 @@ const queries: Record<
     out center 30;
   `,
   gym: `
-    [out:json][timeout:60];
-    (
-      node["leisure"="fitness_station"](${CITY_BBOX});
-      way["leisure"="fitness_station"](${CITY_BBOX});
-      node["leisure"="pitch"]["sport"="fitness"](${CITY_BBOX});
-    );
-    out center 40;
+    [out:json][timeout:90];
+    node["leisure"="fitness_station"](${CITY_BBOX});
+    out 80;
   `,
   basketball: `
     [out:json][timeout:60];
@@ -90,8 +86,11 @@ type OsmElement = {
 
 const OVERPASS_ENDPOINTS = [
   "https://overpass.kumi.systems/api/interpreter",
+  "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
   "https://overpass-api.de/api/interpreter",
 ];
+
+const OVERPASS_USER_AGENT = "lfparty/1.0 (https://lfparty.com; places import)";
 
 const OVERPASS_DELAY_MS = 12_000;
 const OVERPASS_429_WAIT_MS = 30_000;
@@ -121,9 +120,17 @@ async function fetchFromOverpass(query: string, attempt = 1): Promise<{ elements
     try {
       const response = await fetch(url, {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Accept: "application/json",
+          "User-Agent": OVERPASS_USER_AGENT,
+        },
         body: `data=${encodeURIComponent(query)}`,
       });
+      if (response.status === 504 || response.status === 502) {
+        console.warn(`  Overpass timeout (${response.status}) on ${url}, próbuję następny mirror…`);
+        continue;
+      }
       if (response.status === 429) {
         if (attempt >= OVERPASS_MAX_429_RETRIES) {
           throw new Error(`Overpass HTTP 429 — limit API, pomijam po ${attempt} próbach`);
