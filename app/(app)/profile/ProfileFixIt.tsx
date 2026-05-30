@@ -1,8 +1,9 @@
-import { Settings, Pencil, Award, Trophy, Shield, Zap } from 'lucide-react';
+import { Settings, Pencil, Award, Trophy, Shield, Zap, ArrowLeft } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
 import Link from 'next/link';
+import type { ReactNode } from 'react';
 
 type ProfileFixItProps = {
   name: string;
@@ -17,6 +18,10 @@ type ProfileFixItProps = {
   stats: { events: number; hosted: number; rating: string | null };
   city: string;
   badges: Array<{ id: string; name: string; earned: boolean; icon: 'trophy' | 'shield' | 'zap' | 'award' }>;
+  isOwn?: boolean;
+  backHref?: string;
+  bio?: string | null;
+  actionSlot?: ReactNode;
 };
 
 const ICONS = { trophy: Trophy, shield: Shield, zap: Zap, award: Award };
@@ -34,6 +39,10 @@ export function ProfileFixIt({
   stats,
   city,
   badges,
+  isOwn = true,
+  backHref,
+  bio,
+  actionSlot,
 }: ProfileFixItProps) {
   const xpPct = Math.min(100, Math.max(0, progressPct));
 
@@ -43,17 +52,34 @@ export function ProfileFixIt({
       <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-br from-honey-50/25 via-transparent to-transparent pointer-events-none" />
 
       <div className="relative mx-auto max-w-6xl px-4 lg:px-8 py-6 lg:py-10">
-        <div className="mb-4 flex justify-end gap-2">
-          <Link href="/settings">
-            <Button size="sm" variant="ghost" icon={<Settings className="size-4" />}>
-              Ustawienia
-            </Button>
-          </Link>
-          <Link href="/profile/edit">
-            <Button size="sm" variant="primary" icon={<Pencil className="size-4" />}>
-              Edytuj
-            </Button>
-          </Link>
+        <div className="mb-4 flex items-center justify-between gap-2">
+          <div>
+            {backHref ? (
+              <Link href={backHref}>
+                <Button size="sm" variant="ghost" icon={<ArrowLeft className="size-4" />}>
+                  Wróć
+                </Button>
+              </Link>
+            ) : null}
+          </div>
+          <div className="flex gap-2">
+            {isOwn ? (
+              <>
+                <Link href="/settings">
+                  <Button size="sm" variant="ghost" icon={<Settings className="size-4" />}>
+                    Ustawienia
+                  </Button>
+                </Link>
+                <Link href="/profile/edit">
+                  <Button size="sm" variant="primary" icon={<Pencil className="size-4" />}>
+                    Edytuj
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              actionSlot
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[400px_1fr]">
@@ -68,6 +94,9 @@ export function ProfileFixIt({
               <p className="mt-1 text-caption uppercase tracking-wider text-ash-500">
                 {levelName} · {city}
               </p>
+              {bio ? (
+                <p className="mt-3 max-w-sm text-body-sm text-ash-600 whitespace-pre-line">{bio}</p>
+              ) : null}
 
               <div className="mt-8 w-full max-w-sm">
                 <div className="flex items-center justify-between mb-2">

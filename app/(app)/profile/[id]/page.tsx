@@ -1,10 +1,14 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { ProfileCard } from "@/components/profile/ProfileCard";
+import { ProfileFixIt } from "../ProfileFixIt";
 import { ReportProfileDialog } from "@/components/profile/ReportProfileDialog";
-import { PageHeader } from "@/components/layout/PageHeader";
 import { normalizeActivityKey, type ActivityKey } from "@/lib/activities";
+import {
+  getLevelFromExp,
+  getNextLevelRow,
+  getExpToNextLevel,
+  getLevelProgress,
+} from "@/lib/exp";
 
 export const dynamic = "force-dynamic";
 
@@ -68,51 +72,49 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
     "movies",
   ];
   const completionist = completionKeys.every((k) => (activityCounts[k] ?? 0) > 0);
-  const createdAt = new Date(profile.birth_date ?? profile.created_at);
-  const anniversaryQuest = (slots ?? []).some((s) => {
-    if (s.status !== "completed") return false;
-    const d = new Date(s.date_time);
-    return d.getUTCMonth() === createdAt.getUTCMonth() && d.getUTCDate() === createdAt.getUTCDate();
-  });
-  const hostAndPlayerMaster = (profile.total_hosted ?? 0) >= 10 && (profile.total_activities ?? 0) >= 10;
 
   const isOwn = user?.id === profile.id;
 
+  const reliabilityPct = Math.round((profile.reliability_score ?? 1) * 100);
+  const xp = profile.exp ?? 0;
+  const levelRow = getLevelFromExp(xp);
+  const nextLevelName = getNextLevelRow(xp)?.title ?? null;
+  const expToNext = getExpToNextLevel(xp);
+  const progressPct = Math.round(getLevelProgress(xp) * 100);
+  const homeCity = (profile as { home_city?: string }).home_city?.trim();
+
+  const badges = [
+    { id: "first-host", name: "Pierwszy host", earned: (profile.total_hosted ?? 0) >= 1, icon: "trophy" as const },
+    { id: "reliable", name: "Niezawodny", earned: reliabilityPct >= 90, icon: "shield" as const },
+    { id: "streak", name: "5 z rzędu", earned: samePersonRuns >= 5, icon: "zap" as const },
+    { id: "social", name: "Społecznik", earned: socialButterfly, icon: "award" as const },
+    { id: "explorer", name: "Odkrywca", earned: completionist, icon: "award" as const },
+    { id: "morning", name: "Ranny ptaszek", earned: false, icon: "award" as const },
+  ];
+
   return (
-    <div className="page-shell pb-bottom-main pt-nav-safe">
-      <PageHeader title={profile.name} backHref="/feed" />
-      {isOwn ? (
-        <Link href="/profile/edit" className="mb-4 block text-sm text-[var(--accent)]">
-          Edit profile
-        </Link>
-      ) : user ? (
-        <ReportProfileDialog reportedUserId={profile.id} />
-      ) : null}
-      <ProfileCard
-        user={{
-          id: profile.id,
-          name: profile.name,
-          bio: profile.bio,
-          avatar_url: profile.avatar_url,
-          gender: profile.gender === "male" ? "male" : "female",
-          birth_date: profile.birth_date ?? "2000-01-01",
-          reliability_score: profile.reliability_score ?? 1,
-          exp: profile.exp ?? 0,
-          level: profile.level ?? 1,
-          total_activities: profile.total_activities ?? 0,
-          total_hosted: profile.total_hosted ?? 0,
-        }}
-        avgRating={avg}
-        activityCounts={activityCounts}
-        occasionalStats={{
-          completionist,
-          samePersonRuns,
-          anniversaryQuest,
-          socialButterfly,
-          hostAndPlayerMaster,
-        }}
-      />
-    </div>
+    <ProfileFixIt
+      name={profile.name}
+      gender={profile.gender === "male" ? "M" : "F"}
+      level={levelRow.level}
+      levelName={levelRow.title}
+      xp={xp}
+      progressPct={progressPct}
+      expToNext={expToNext}
+      nextLevelName={nextLevelName}
+      reliability={reliabilityPct}
+      stats={{
+        events: profile.total_activities ?? 0,
+        hosted: profile.total_hosted ?? 0,
+        rating: avg != null ? avg.toFixed(1) : null,
+      }}
+      city={homeCity || "Warszawa"}
+      bio={profile.bio}
+      badges={badges}
+      isOwn={isOwn}
+      backHref="/feed"
+      actionSlot={user && !isOwn ? <ReportProfileDialog reportedUserId={profile.id} /> : null}
+    />
   );
 }
 

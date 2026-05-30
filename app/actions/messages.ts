@@ -35,6 +35,12 @@ export async function sendSlotMessage(slotId: string, content: string) {
 
   if (error) return { error: error.message || errs.generic };
 
+  const { data: sender } = await supabase
+    .from("users")
+    .select("name, avatar_url")
+    .eq("id", user.id)
+    .maybeSingle();
+
   const pusher = getPusherServer();
   if (pusher) {
     await pusher.trigger(slotChannelName(slotId), "new-message", {
@@ -43,6 +49,8 @@ export async function sendSlotMessage(slotId: string, content: string) {
       sender_id: data.sender_id,
       content: data.content,
       created_at: data.created_at,
+      sender_name: sender?.name ?? null,
+      sender_avatar: sender?.avatar_url ?? null,
     });
   }
 

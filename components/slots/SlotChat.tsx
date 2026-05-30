@@ -19,6 +19,11 @@ type Msg = {
   sender_id: string;
 };
 
+type IncomingMsg = Msg & {
+  sender_name?: string | null;
+  sender_avatar?: string | null;
+};
+
 type SenderInfo = { name: string; avatar_url: string | null };
 
 function dayKey(iso: string) {
@@ -94,16 +99,21 @@ export function SlotChat({
     if (!pusher) return;
     const ch = pusher.subscribe(channelName);
     channelRef.current = ch as { trigger?: (event: string, data: object) => boolean };
-    const handler = (payload: Msg) => {
+    const handler = (payload: IncomingMsg) => {
       setItems((prev) => {
         if (prev.some((m) => m.id === payload.id)) return prev;
         return [...prev, payload];
       });
       setSenderMap((prev) => {
-        if (prev[payload.sender_id]) return prev;
+        const existing = prev[payload.sender_id];
+        const incomingName = payload.sender_name?.trim();
+        if (existing && (existing.name !== "…" || !incomingName)) return prev;
         return {
           ...prev,
-          [payload.sender_id]: { name: "…", avatar_url: null },
+          [payload.sender_id]: {
+            name: incomingName || existing?.name || "…",
+            avatar_url: payload.sender_avatar ?? existing?.avatar_url ?? null,
+          },
         };
       });
     };
@@ -125,8 +135,12 @@ export function SlotChat({
     };
   }, [channelName, currentUserId]);
 
+  const didInitialScroll = useRef(false);
   useEffect(() => {
-    bottom.current?.scrollIntoView({ behavior: "smooth" });
+    bottom.current?.scrollIntoView({
+      behavior: didInitialScroll.current ? "smooth" : "auto",
+    });
+    didInitialScroll.current = true;
   }, [items.length]);
 
   async function onSend(e: React.FormEvent) {
