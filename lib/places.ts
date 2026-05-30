@@ -1,12 +1,25 @@
-/** Static venue categories (OpenStreetMap / map pins). */
+/** Free outdoor venue categories shown on the map and in slot creation. */
 export type PlaceCategory =
   | "running"
   | "cycling"
-  | "gym"
-  | "padel"
-  | "tennis"
   | "basketball"
-  | "hiking";
+  | "hiking"
+  | "gym"; // outdoor street-workout / fitness stations only — NOT indoor gyms
+
+/** Categories we show in the app (free, no venue fee). */
+export const FREE_PLACE_CATEGORIES: PlaceCategory[] = [
+  "running",
+  "cycling",
+  "basketball",
+  "hiking",
+  "gym",
+];
+
+/** @deprecated use FREE_PLACE_CATEGORIES */
+export const PLACE_CATEGORIES = FREE_PLACE_CATEGORIES;
+
+/** Paid venue types reserved for future business upsell (hidden from map until is_free + sponsorship). */
+export const PAID_PLACE_CATEGORIES = ["padel", "tennis", "coffee", "cafe"] as const;
 
 export type PlaceRow = {
   id: string;
@@ -21,27 +34,15 @@ export type PlaceRow = {
   osm_id: string | null;
 };
 
-export const PLACE_CATEGORIES: PlaceCategory[] = [
-  "running",
-  "cycling",
-  "gym",
-  "padel",
-  "tennis",
-  "basketball",
-  "hiking",
-];
-
 export const PLACE_CATEGORY_META: Record<
   PlaceCategory,
   { icon: string; color: string; cssVar: string }
 > = {
   running: { icon: "🏃", color: "#FF6B35", cssVar: "var(--accent)" },
   cycling: { icon: "🚴", color: "#10B981", cssVar: "var(--accent)" },
-  gym: { icon: "💪", color: "#EF4444", cssVar: "var(--accent)" },
-  padel: { icon: "🎾", color: "#14B8A6", cssVar: "var(--accent)" },
-  tennis: { icon: "🎾", color: "#65A30D", cssVar: "var(--accent)" },
   basketball: { icon: "🏀", color: "#F97316", cssVar: "var(--accent)" },
   hiking: { icon: "⛰️", color: "#84CC16", cssVar: "var(--accent)" },
+  gym: { icon: "💪", color: "#7C3AED", cssVar: "var(--accent)" },
 };
 
 /** Map place category → legacy slot `activity_type` for icons/filters. */
@@ -53,26 +54,26 @@ export function placeCategoryLabel(lang: "en" | "pl", category: PlaceCategory): 
   const en: Record<PlaceCategory, string> = {
     running: "Running",
     cycling: "Cycling",
-    gym: "Gym",
-    padel: "Padel",
-    tennis: "Tennis",
     basketball: "Basketball",
     hiking: "Hiking",
+    gym: "Outdoor gym",
   };
   const pl: Record<PlaceCategory, string> = {
     running: "Bieganie",
     cycling: "Rower",
-    gym: "Siłownia",
-    padel: "Padel",
-    tennis: "Tenis",
     basketball: "Koszykówka",
     hiking: "Wędrówki",
+    gym: "Siłownia plenerowa",
   };
   return (lang === "pl" ? pl : en)[category] ?? category;
 }
 
 export function isPlaceCategory(raw: string): raw is PlaceCategory {
-  return (PLACE_CATEGORIES as string[]).includes(raw);
+  return (FREE_PLACE_CATEGORIES as string[]).includes(raw);
+}
+
+export function isFreePlaceCategory(raw: string): raw is PlaceCategory {
+  return isPlaceCategory(raw);
 }
 
 const GENERIC_PLACE_NAMES = new Set([
@@ -80,9 +81,8 @@ const GENERIC_PLACE_NAMES = new Set([
   "running spot",
   "cycling spot",
   "gym spot",
-  "tennis spot",
+  "outdoor gym spot",
   "hiking spot",
-  "padel spot",
   "volleyball spot",
 ]);
 

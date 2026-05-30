@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getServerLang } from "@/lib/i18n-server";
 import { normalizeActivityKey } from "@/lib/activities";
-import { placeCategoryToActivityType } from "@/lib/places";
+import { placeCategoryToActivityType, isFreePlaceCategory } from "@/lib/places";
 import { isOverRateLimit } from "@/lib/action-rate-limit";
 
 export type CreateSlotInput = {
@@ -117,6 +117,7 @@ function slotEditCapacityError(lang: "pl" | "en"): string {
 }
 
 export async function createSlotAction(input: CreateSlotInput) {
+  const lang = await getServerLang();
   const supabase = await createClient();
   const {
     data: { user },
@@ -134,10 +135,18 @@ export async function createSlotAction(input: CreateSlotInput) {
   if (input.place_id?.trim()) {
     const { data: place, error: placeErr } = await supabase
       .from("places")
-      .select("id, name, category, lat, lng")
+      .select("id, name, category, lat, lng, is_free")
       .eq("id", input.place_id.trim())
       .maybeSingle();
     if (placeErr || !place) return { error: "Place not found" };
+    if (!place.is_free || !isFreePlaceCategory(place.category)) {
+      return {
+        error:
+          lang === "pl"
+            ? "To miejsce nie jest dostępne — tylko darmowe, plenerowe lokalizacje."
+            : "This place is not available — only free outdoor venues are allowed.",
+      };
+    }
     place_id = place.id;
     parsed.activity_type = placeCategoryToActivityType(place.category);
     parsed.location_name = place.name;

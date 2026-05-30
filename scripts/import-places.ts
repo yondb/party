@@ -26,9 +26,14 @@ const CITY = "warsaw";
 /** south,west,north,east */
 const CITY_BBOX = "52.0978,20.8515,52.3682,21.2711";
 
-/** Exactly 7 OSM categories — no board_games. */
+/**
+ * FREE activities only — places where you don't pay a venue fee.
+ * Paid venues (indoor gyms, courts, padel, cafes) are excluded; they are a
+ * future upsell (businesses pay for their pin). "gym" = OUTDOOR street-workout
+ * / fitness stations (leisure=fitness_station), which are free public spots.
+ */
 const queries: Record<
-  "running" | "cycling" | "gym" | "padel" | "tennis" | "basketball" | "hiking",
+  "running" | "cycling" | "gym" | "basketball" | "hiking",
   string
 > = {
   running: `
@@ -51,26 +56,11 @@ const queries: Record<
   gym: `
     [out:json][timeout:60];
     (
-      node["leisure"="fitness_centre"](${CITY_BBOX});
-      node["leisure"="sports_centre"](${CITY_BBOX});
+      node["leisure"="fitness_station"](${CITY_BBOX});
+      way["leisure"="fitness_station"](${CITY_BBOX});
+      node["leisure"="pitch"]["sport"="fitness"](${CITY_BBOX});
     );
     out center 40;
-  `,
-  padel: `
-    [out:json][timeout:60];
-    (
-      node["sport"="padel"](${CITY_BBOX});
-      node["leisure"="pitch"]["sport"="padel"](${CITY_BBOX});
-    );
-    out center 20;
-  `,
-  tennis: `
-    [out:json][timeout:60];
-    (
-      node["sport"="tennis"](${CITY_BBOX});
-      way["leisure"="pitch"]["sport"="tennis"](${CITY_BBOX});
-    );
-    out center 30;
   `,
   basketball: `
     [out:json][timeout:60];
@@ -230,7 +220,7 @@ async function importPlaces() {
         const lng = el.lon ?? el.center!.lon;
         const osm_id = String(el.id);
         return {
-          name: el.tags?.name || el.tags?.["name:en"] || `${category} spot`,
+          name: el.tags?.name || el.tags?.["name:en"] || `${category === "gym" ? "outdoor gym" : category} spot`,
           category,
           lat,
           lng,

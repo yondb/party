@@ -1,51 +1,44 @@
 import type { LucideIcon } from 'lucide-react';
-import { Bike, Dumbbell, Trophy, Footprints, CircleDot, Mountain, Activity } from 'lucide-react';
+import { Bike, Dumbbell, Footprints, CircleDot, Mountain } from 'lucide-react';
+import { FREE_PLACE_CATEGORIES, type PlaceCategory } from '@/lib/places';
 
 /**
- * The categories we actually have — aligned 1:1 with the real OpenStreetMap
- * place categories (lib/places.ts PlaceCategory). Keep these in sync.
+ * Free outdoor activity categories — 1:1 with lib/places PlaceCategory.
+ * Paid venues (indoor gym, padel, tennis, cafes) are excluded; those are a
+ * future upsell where businesses pay for their pin on the map.
  */
-export type CategoryId =
-  | 'running'
-  | 'cycling'
-  | 'gym'
-  | 'padel'
-  | 'tennis'
-  | 'basketball'
-  | 'hiking';
+export type CategoryId = PlaceCategory;
 
 export interface Category {
   id: CategoryId;
   label: string;
   emoji: string;
-  color: string;       // hex jasny
-  colorDark: string;   // hex ciemny do gradientu marker
+  color: string;
+  colorDark: string;
   icon: LucideIcon;
 }
 
 export const CATEGORIES: Record<CategoryId, Category> = {
-  running:    { id: 'running',    label: 'Bieganie',   emoji: '🏃', color: '#F97316', colorDark: '#C2410C', icon: Footprints },
-  cycling:    { id: 'cycling',    label: 'Rower',      emoji: '🚴', color: '#14B8A6', colorDark: '#0F766E', icon: Bike },
-  gym:        { id: 'gym',        label: 'Siłownia',   emoji: '💪', color: '#7C3AED', colorDark: '#5B21B6', icon: Dumbbell },
-  padel:      { id: 'padel',      label: 'Padel',      emoji: '🎾', color: '#0EA5E9', colorDark: '#0369A1', icon: Activity },
-  tennis:     { id: 'tennis',     label: 'Tenis',      emoji: '🎾', color: '#84CC16', colorDark: '#4D7C0F', icon: Trophy },
-  basketball: { id: 'basketball', label: 'Koszykówka', emoji: '🏀', color: '#EA580C', colorDark: '#9A3412', icon: CircleDot },
-  hiking:     { id: 'hiking',     label: 'Wędrówki',   emoji: '⛰️', color: '#16A34A', colorDark: '#15803D', icon: Mountain },
+  running:    { id: 'running',    label: 'Bieganie',           emoji: '🏃', color: '#F97316', colorDark: '#C2410C', icon: Footprints },
+  cycling:    { id: 'cycling',    label: 'Rower',              emoji: '🚴', color: '#14B8A6', colorDark: '#0F766E', icon: Bike },
+  basketball: { id: 'basketball', label: 'Koszykówka',         emoji: '🏀', color: '#EA580C', colorDark: '#9A3412', icon: CircleDot },
+  hiking:     { id: 'hiking',     label: 'Wędrówki',           emoji: '⛰️', color: '#16A34A', colorDark: '#15803D', icon: Mountain },
+  gym:        { id: 'gym',        label: 'Siłownia plenerowa', emoji: '💪', color: '#7C3AED', colorDark: '#5B21B6', icon: Dumbbell },
 };
 
-export const CATEGORY_LIST: Category[] = Object.values(CATEGORIES);
+export const CATEGORY_LIST: Category[] = FREE_PLACE_CATEGORIES.map((id) => CATEGORIES[id]);
 
-/** Map legacy / activity strings → one of the categories we have. */
+/** Map legacy / activity strings → one of the free categories we show. */
 const ACTIVITY_TO_CATEGORY: Record<string, CategoryId> = {
   running: 'running',
   cycling: 'cycling',
-  gym: 'gym',
-  padel: 'padel',
-  tennis: 'tennis',
   basketball: 'basketball',
   hiking: 'hiking',
+  gym: 'gym',
   walking: 'hiking',
   yoga: 'gym',
+  padel: 'basketball',
+  tennis: 'basketball',
   volleyball: 'basketball',
   football: 'basketball',
 };
@@ -59,6 +52,5 @@ export function getCategory(id: string): Category {
 }
 
 export function toCategoryId(id: string): CategoryId {
-  const c = getCategory(id);
-  return c.id;
+  return getCategory(id).id;
 }

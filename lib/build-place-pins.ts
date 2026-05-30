@@ -39,6 +39,7 @@ export function buildPlaceMapPins(
   return places
     .filter(
       (p) =>
+        p.is_free !== false &&
         isPlaceCategory(p.category) &&
         Number.isFinite(p.lat) &&
         Number.isFinite(p.lng) &&
