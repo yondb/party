@@ -3,7 +3,7 @@ import { Sun, ArrowRight, CalendarPlus } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getServerLang } from '@/lib/i18n-server';
 import { feedUi } from '@/lib/i18n-ui';
-import { toCategoryId } from '@/lib/categories';
+import { toCategoryId, CATEGORY_LIST, CATEGORIES, type CategoryId } from '@/lib/categories';
 import { SlotCard, type SlotData } from '@/components/slot/SlotCard';
 
 export const dynamic = 'force-dynamic';
@@ -30,9 +30,16 @@ type UserRow = {
 
 type PlaceRow = { id: string; name: string; category: string };
 
-export default async function FeedPage() {
+export default async function FeedPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string }>;
+}) {
   const lang = await getServerLang();
   const ui = feedUi(lang);
+  const sp = await searchParams;
+  const activeCategory: CategoryId | null =
+    sp.category && sp.category in CATEGORIES ? (sp.category as CategoryId) : null;
   const supabase = await createClient();
   const {
     data: { user },
@@ -47,7 +54,7 @@ export default async function FeedPage() {
     .in('status', ['open', 'full'])
     .gte('date_time', nowIso)
     .order('date_time', { ascending: true })
-    .limit(12);
+    .limit(60);
 
   const slots = (slotsData ?? []) as SlotRow[];
   const slotIds = slots.map((s) => s.id);
@@ -92,7 +99,7 @@ export default async function FeedPage() {
     participantsBySlot.set(a.slot_id, arr);
   }
 
-  const cards: SlotData[] = slots.map((s) => {
+  const allCards: SlotData[] = slots.map((s) => {
     const host = userMap.get(s.host_id);
     const place = s.place_id ? placeMap.get(s.place_id) : null;
     return {
@@ -110,6 +117,16 @@ export default async function FeedPage() {
       capacity: s.max_spots,
     };
   });
+
+  const countByCategory = allCards.reduce<Record<string, number>>((acc, c) => {
+    acc[c.category] = (acc[c.category] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  const cards = (activeCategory ? allCards.filter((c) => c.category === activeCategory) : allCards).slice(
+    0,
+    24,
+  );
 
   const userName =
     (user && userMap.get(user.id)?.name) ||
@@ -132,10 +149,10 @@ export default async function FeedPage() {
               {lang === 'pl' ? 'Cześć' : 'Hi'}, <span className="honey-highlight">{userName}</span> 👋
             </h1>
             <p className="max-w-md text-body text-ash-600">
-              {cards.length > 0
+              {allCards.length > 0
                 ? lang === 'pl'
-                  ? `W okolicy ${cards.length} aktywnych slotów — wybierz coś dla siebie.`
-                  : `${cards.length} active slots nearby — pick something for you.`
+                  ? `W okolicy ${allCards.length} aktywnych slotów — wybierz coś dla siebie.`
+                  : `${allCards.length} active slots nearby — pick something for you.`
                 : lang === 'pl'
                   ? 'Brak aktywnych slotów. Może stwórz pierwszy?'
                   : 'No active slots yet. Maybe create the first one?'}
@@ -147,9 +164,43 @@ export default async function FeedPage() {
           />
         </section>
 
+        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-wrap lg:px-0">
+          <Link
+            href="/feed"
+            className={`shrink-0 rounded-full border px-4 py-2 text-body-sm font-medium transition ${
+              activeCategory === null
+                ? 'border-graphite bg-graphite text-surface'
+                : 'border-ash-200 bg-surface text-ash-700 hover:bg-ash-50'
+            }`}
+          >
+            {lang === 'pl' ? 'Wszystko' : 'All'}
+          </Link>
+          {CATEGORY_LIST.map((cat) => {
+            const active = activeCategory === cat.id;
+            const count = countByCategory[cat.id] ?? 0;
+            return (
+              <Link
+                key={cat.id}
+                href={`/feed?category=${cat.id}`}
+                className={`shrink-0 rounded-full border px-4 py-2 text-body-sm font-medium transition ${
+                  active
+                    ? 'border-graphite bg-graphite text-surface'
+                    : 'border-ash-200 bg-surface text-ash-700 hover:bg-ash-50'
+                }`}
+              >
+                <span className="mr-1.5">{cat.emoji}</span>
+                {cat.label}
+                {count > 0 ? <span className={`ml-1.5 ${active ? 'text-surface/70' : 'text-ash-400'}`}>{count}</span> : null}
+              </Link>
+            );
+          })}
+        </div>
+
         <section>
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-display text-display-md text-ash-900">{ui.nearbySection}</h2>
+            <h2 className="font-display text-display-md text-ash-900">
+              {activeCategory ? CATEGORIES[activeCategory].label : ui.nearbySection}
+            </h2>
             <Link
               href="/map"
               className="inline-flex items-center gap-1 text-body-sm font-medium text-ash-600 hover:text-ash-900"
