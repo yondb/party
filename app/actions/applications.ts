@@ -23,8 +23,12 @@ export async function applyToSlot(slotId: string, message?: string) {
   }
 
   const [{ data: slot }, { data: applicant }] = await Promise.all([
-    supabase.from("slots").select("gender_scope").eq("id", slotId).maybeSingle(),
-    supabase.from("users").select("gender").eq("id", user.id).maybeSingle(),
+    supabase
+      .from("slots")
+      .select("gender_scope, min_reliability, min_level")
+      .eq("id", slotId)
+      .maybeSingle(),
+    supabase.from("users").select("gender, reliability_score, level").eq("id", user.id).maybeSingle(),
   ]);
 
   const scopeRaw = (slot?.gender_scope as string | undefined) ?? "any";
@@ -36,6 +40,29 @@ export async function applyToSlot(slotId: string, message?: string) {
   }
   if (scope === "male" && userGender !== "male") {
     return { error: genderApplyBlocked(lang, "male") };
+  }
+
+  const minReliability = Number(slot?.min_reliability ?? 0);
+  const minLevel = Number(slot?.min_level ?? 0);
+  const myReliability = Number(applicant?.reliability_score ?? 1);
+  const myLevel = Number(applicant?.level ?? 1);
+
+  if (minReliability > 0 && myReliability < minReliability) {
+    const pct = Math.round(minReliability * 100);
+    return {
+      error:
+        lang === "pl"
+          ? `Ten slot wymaga rzetelności min. ${pct}%.`
+          : `This slot requires at least ${pct}% reliability.`,
+    };
+  }
+  if (minLevel > 0 && myLevel < minLevel) {
+    return {
+      error:
+        lang === "pl"
+          ? `Ten slot wymaga min. poziomu ${minLevel}.`
+          : `This slot requires at least level ${minLevel}.`,
+    };
   }
 
   const trimmedMessage = message?.trim().slice(0, 1000) || null;

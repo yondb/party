@@ -58,6 +58,8 @@ export function NewSlotWizard({ places, initialPlaceId }: NewSlotWizardProps) {
   const [startAt, setStartAt] = useState('');
   const [partySize, setPartySize] = useState(4);
   const [gender, setGender] = useState<Gender>('all');
+  const [minLevel, setMinLevel] = useState(0);
+  const [minReliability, setMinReliability] = useState(0);
   const [description, setDescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -115,8 +117,8 @@ export function NewSlotWizard({ places, initialPlaceId }: NewSlotWizardProps) {
       location_lat: lat,
       location_lng: lng,
       max_spots: partySize,
-      min_reliability: 0,
-      min_level: 0,
+      min_reliability: minReliability,
+      min_level: minLevel,
       gender_scope: gender === 'all' ? 'any' : gender,
     });
     if ('error' in res) {
@@ -301,6 +303,39 @@ export function NewSlotWizard({ places, initialPlaceId }: NewSlotWizardProps) {
                   </button>
                 );
               })}
+            </div>
+          </div>
+
+          <div className="space-y-3 rounded-2xl border border-ash-200 bg-surface p-4">
+            <span className="block text-caption text-ash-500">Wymagania (opcjonalnie)</span>
+            <Stepper label="Minimalny poziom" value={minLevel} min={0} max={20} onChange={setMinLevel} />
+            <div className="space-y-1.5">
+              <span className="block text-caption text-ash-500">Minimalna rzetelność</span>
+              <div className="grid grid-cols-4 gap-2">
+                {[
+                  { label: 'Brak', value: 0 },
+                  { label: '70%', value: 0.7 },
+                  { label: '80%', value: 0.8 },
+                  { label: '90%', value: 0.9 },
+                ].map((opt) => {
+                  const active = minReliability === opt.value;
+                  return (
+                    <button
+                      key={opt.label}
+                      type="button"
+                      onClick={() => setMinReliability(opt.value)}
+                      className={cn(
+                        'h-10 rounded-xl border text-body-sm font-medium transition',
+                        active
+                          ? 'bg-graphite text-surface border-graphite'
+                          : 'bg-surface text-ash-700 border-ash-200 hover:bg-ash-50',
+                      )}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 

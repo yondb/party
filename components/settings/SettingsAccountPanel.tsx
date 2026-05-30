@@ -146,9 +146,6 @@ export function SettingsAccountPanel({
           <Link href="/legal/terms" className="text-[var(--accent)] hover:text-[var(--accent)]">
             {lang === "pl" ? "Regulamin" : "Terms of use"}
           </Link>
-          <Link href="/premium" className="text-[var(--accent)] hover:text-[var(--accent)]">
-            {t.premiumLink}
-          </Link>
         </div>
       </section>
 

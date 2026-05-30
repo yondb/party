@@ -44,10 +44,20 @@ export default async function NotificationsPage() {
       ) : (
         <ul className="flex flex-col gap-3">
           {rows.map((n) => (
-            <li key={n.id} className="floating-card rounded-lg p-4">
+            <li
+              key={n.id}
+              className={`floating-card rounded-lg p-4 transition ${
+                n.read ? "opacity-60" : "border-l-2 border-l-[var(--accent)]"
+              }`}
+            >
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <p className="font-semibold text-[var(--text-primary)]">{n.title}</p>
+                  <p className="flex items-center gap-2 font-semibold text-[var(--text-primary)]">
+                    {!n.read ? (
+                      <span className="size-2 shrink-0 rounded-full bg-[var(--accent)]" aria-hidden />
+                    ) : null}
+                    {n.title}
+                  </p>
                   {n.body ? <p className="mt-1 text-sm text-[var(--text-secondary)]">{n.body}</p> : null}
                   <p className="mt-2 text-xs text-[var(--text-muted)]">
                     {new Date(n.created_at).toLocaleString(locale)}

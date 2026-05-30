@@ -5,6 +5,12 @@ import { signOut } from "@/app/actions/profile";
 import { normalizeActivityKey, type ActivityKey } from "@/lib/activities";
 import { getServerLang } from "@/lib/i18n-server";
 import { profileUi } from "@/lib/i18n-ui";
+import {
+  getLevelFromExp,
+  getNextLevelRow,
+  getExpToNextLevel,
+  getLevelProgress,
+} from "@/lib/exp";
 
 export const dynamic = "force-dynamic";
 
@@ -72,8 +78,13 @@ export default async function OwnProfilePage() {
   const completionist = completionKeys.every((k) => (activityCounts[k] ?? 0) > 0);
   const reliabilityPct = Math.round((profile.reliability_score ?? 1) * 100);
   const xp = profile.exp ?? 0;
-  const level = profile.level ?? 1;
-  const xpToNext = Math.max(300, level * 300);
+  const levelRow = getLevelFromExp(xp);
+  const level = levelRow.level;
+  const levelName = levelRow.title;
+  const nextLevelName = getNextLevelRow(xp)?.title ?? null;
+  const expToNext = getExpToNextLevel(xp);
+  const progressPct = Math.round(getLevelProgress(xp) * 100);
+  const homeCity = (user.user_metadata?.home_city as string | undefined)?.trim();
 
   const badges = [
     { id: "first-host", name: "Pierwszy host", earned: (profile.total_hosted ?? 0) >= 1, icon: "trophy" as const },
@@ -90,16 +101,18 @@ export default async function OwnProfilePage() {
         name={profile.name}
         gender={profile.gender === "male" ? "M" : "F"}
         level={level}
-        levelName="Newcomer"
+        levelName={levelName}
         xp={xp}
-        xpToNext={xpToNext}
+        progressPct={progressPct}
+        expToNext={expToNext}
+        nextLevelName={nextLevelName}
         reliability={reliabilityPct}
         stats={{
           events: profile.total_activities ?? 0,
           hosted: profile.total_hosted ?? 0,
           rating: avg != null ? avg.toFixed(1) : null,
         }}
-        city={profile.city ?? "Warszawa"}
+        city={homeCity || "Warszawa"}
         badges={badges}
       />
       <form action={signOut} className="pb-12 text-center">

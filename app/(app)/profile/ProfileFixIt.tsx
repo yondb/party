@@ -10,7 +10,9 @@ type ProfileFixItProps = {
   level: number;
   levelName: string;
   xp: number;
-  xpToNext: number;
+  progressPct: number;
+  expToNext: number;
+  nextLevelName: string | null;
   reliability: number;
   stats: { events: number; hosted: number; rating: string | null };
   city: string;
@@ -25,13 +27,15 @@ export function ProfileFixIt({
   level,
   levelName,
   xp,
-  xpToNext,
+  progressPct,
+  expToNext,
+  nextLevelName,
   reliability,
   stats,
   city,
   badges,
 }: ProfileFixItProps) {
-  const xpPct = xpToNext > 0 ? Math.round((xp / xpToNext) * 100) : 0;
+  const xpPct = Math.min(100, Math.max(0, progressPct));
 
   return (
     <div className="relative">
@@ -69,7 +73,7 @@ export function ProfileFixIt({
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-mono text-body-sm text-ash-700">
                     <span className="font-bold text-ash-900">{xp}</span>
-                    <span className="text-ash-400"> / {xpToNext} XP</span>
+                    <span className="text-ash-400"> XP</span>
                   </span>
                   <span className="font-mono text-body-sm font-bold text-honey-700">{xpPct}%</span>
                 </div>
@@ -87,7 +91,13 @@ export function ProfileFixIt({
                   ))}
                 </div>
                 <p className="mt-2 text-caption text-ash-400">
-                  Następny: <span className="text-ash-700 font-semibold">Explorer</span> za {Math.max(0, xpToNext - xp)} XP
+                  {nextLevelName ? (
+                    <>
+                      Następny: <span className="text-ash-700 font-semibold">{nextLevelName}</span> za {expToNext} XP
+                    </>
+                  ) : (
+                    <span className="text-ash-700 font-semibold">Maksymalny poziom</span>
+                  )}
                 </p>
               </div>
 
