@@ -1,5 +1,15 @@
 import type { LucideIcon } from 'lucide-react';
-import { Bike, Dumbbell, Footprints, CircleDot, Mountain } from 'lucide-react';
+import {
+  Bike,
+  Dumbbell,
+  Footprints,
+  CircleDot,
+  Mountain,
+  Baby,
+  PersonStanding,
+  TreePine,
+  LandPlot,
+} from 'lucide-react';
 import { FREE_PLACE_CATEGORIES, type PlaceCategory } from '@/lib/places';
 
 /**
@@ -24,6 +34,10 @@ export const CATEGORIES: Record<CategoryId, Category> = {
   basketball: { id: 'basketball', label: 'Koszykówka',         emoji: '🏀', color: '#EA580C', colorDark: '#9A3412', icon: CircleDot },
   hiking:     { id: 'hiking',     label: 'Wędrówki',           emoji: '⛰️', color: '#16A34A', colorDark: '#15803D', icon: Mountain },
   gym:        { id: 'gym',        label: 'Siłownia plenerowa', emoji: '💪', color: '#7C3AED', colorDark: '#5B21B6', icon: Dumbbell },
+  playground: { id: 'playground', label: 'Plac zabaw',         emoji: '🛝', color: '#EC4899', colorDark: '#BE185D', icon: Baby },
+  walking:    { id: 'walking',    label: 'Spacery',            emoji: '🚶', color: '#22C55E', colorDark: '#15803D', icon: PersonStanding },
+  football:   { id: 'football',   label: 'Piłka nożna',        emoji: '⚽', color: '#2563EB', colorDark: '#1D4ED8', icon: LandPlot },
+  park:       { id: 'park',       label: 'Park',               emoji: '🌳', color: '#059669', colorDark: '#047857', icon: TreePine },
 };
 
 export const CATEGORY_LIST: Category[] = FREE_PLACE_CATEGORIES.map((id) => CATEGORIES[id]);
@@ -35,12 +49,15 @@ const ACTIVITY_TO_CATEGORY: Record<string, CategoryId> = {
   basketball: 'basketball',
   hiking: 'hiking',
   gym: 'gym',
-  walking: 'hiking',
+  playground: 'playground',
+  walking: 'walking',
+  football: 'football',
+  soccer: 'football',
+  park: 'park',
   yoga: 'gym',
   padel: 'basketball',
   tennis: 'basketball',
   volleyball: 'basketball',
-  football: 'basketball',
 };
 
 export function getCategory(id: string): Category {

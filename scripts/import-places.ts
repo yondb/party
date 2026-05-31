@@ -33,7 +33,15 @@ const CITY_BBOX = "52.0978,20.8515,52.3682,21.2711";
  * / fitness stations (leisure=fitness_station), which are free public spots.
  */
 const queries: Record<
-  "running" | "cycling" | "gym" | "basketball" | "hiking",
+  | "running"
+  | "cycling"
+  | "gym"
+  | "basketball"
+  | "hiking"
+  | "playground"
+  | "walking"
+  | "football"
+  | "park",
   string
 > = {
   running: `
@@ -73,6 +81,40 @@ const queries: Record<
       node["leisure"="nature_reserve"](${CITY_BBOX});
     );
     out center 20;
+  `,
+  playground: `
+    [out:json][timeout:60];
+    (
+      node["leisure"="playground"](${CITY_BBOX});
+      way["leisure"="playground"](${CITY_BBOX});
+    );
+    out center 60;
+  `,
+  walking: `
+    [out:json][timeout:60];
+    (
+      way["route"="foot"](${CITY_BBOX});
+      relation["route"="foot"](${CITY_BBOX});
+      way["highway"="pedestrian"]["name"](${CITY_BBOX});
+    );
+    out center 40;
+  `,
+  football: `
+    [out:json][timeout:60];
+    (
+      node["sport"="soccer"](${CITY_BBOX});
+      way["leisure"="pitch"]["sport"="soccer"](${CITY_BBOX});
+      way["leisure"="pitch"]["sport"="football"](${CITY_BBOX});
+    );
+    out center 50;
+  `,
+  park: `
+    [out:json][timeout:60];
+    (
+      node["leisure"="park"]["name"](${CITY_BBOX});
+      way["leisure"="park"]["name"](${CITY_BBOX});
+    );
+    out center 80;
   `,
 };
 
@@ -151,6 +193,19 @@ async function fetchFromOverpass(query: string, attempt = 1): Promise<{ elements
   throw lastError;
 }
 
+const GENERIC_SPOT_NAMES: Record<string, string> = {
+  gym: "outdoor gym",
+  playground: "playground",
+  walking: "walking route",
+  football: "football pitch",
+  park: "park",
+};
+
+function defaultPlaceName(category: string): string {
+  const base = GENERIC_SPOT_NAMES[category] ?? category;
+  return `${base} spot`;
+}
+
 async function savePlaces(
   places: {
     name: string;
@@ -227,7 +282,7 @@ async function importPlaces() {
         const lng = el.lon ?? el.center!.lon;
         const osm_id = String(el.id);
         return {
-          name: el.tags?.name || el.tags?.["name:en"] || `${category === "gym" ? "outdoor gym" : category} spot`,
+          name: el.tags?.name || el.tags?.["name:en"] || defaultPlaceName(category),
           category,
           lat,
           lng,

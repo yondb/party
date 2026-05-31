@@ -11,7 +11,7 @@ export default async function NewSlotPage({ searchParams }: { searchParams: Prom
   const supabase = await createClient();
   const { data: places } = await supabase
     .from("places")
-    .select("id, name, lat, lng, city, district")
+    .select("id, name, lat, lng, city, district, category")
     .eq("is_free", true)
     .in("category", [...FREE_PLACE_CATEGORIES])
     .order("name");
@@ -23,6 +23,7 @@ export default async function NewSlotPage({ searchParams }: { searchParams: Prom
     lng: p.lng,
     city: p.city ?? null,
     district: p.district ?? null,
+    category: p.category,
   }));
 
   return <NewSlotWizard places={options} initialPlaceId={params.place_id?.trim() || undefined} />;

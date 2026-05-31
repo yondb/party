@@ -87,7 +87,17 @@ async function main() {
     counts[row.category] = (counts[row.category] ?? 0) + 1;
   }
   console.log("\nW bazie (wszystkie miejsca):");
-  for (const cat of ["running", "cycling", "gym", "basketball", "hiking"]) {
+  for (const cat of [
+    "running",
+    "cycling",
+    "gym",
+    "basketball",
+    "hiking",
+    "playground",
+    "walking",
+    "football",
+    "park",
+  ]) {
     console.log(`  ${cat}: ${counts[cat] ?? 0}`);
   }
   console.log(`  RAZEM: ${data?.length ?? 0}`);

@@ -70,7 +70,11 @@ const config: Config = {
           gym: '#7C3AED',
           tennis: '#84CC16',
           volleyball: '#0EA5E9',
-          football: '#16A34A',
+          football: '#2563EB',
+          playground: '#EC4899',
+          walking: '#22C55E',
+          park: '#059669',
+          hiking: '#16A34A',
         },
       },
 

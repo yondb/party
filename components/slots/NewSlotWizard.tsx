@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/Button';
 import { Input, Textarea } from '@/components/ui/Input';
 import { Stepper } from '@/components/ui/Stepper';
 import { Card } from '@/components/ui/Card';
-import { CATEGORY_LIST, type CategoryId } from '@/lib/categories';
+import { CATEGORY_LIST, type CategoryId, toCategoryId } from '@/lib/categories';
+import type { PlaceCategory } from '@/lib/places';
 import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
 import { createSlotAction } from '@/app/actions/slots';
@@ -27,9 +28,16 @@ export type PlaceOption = {
   lng: number;
   city: string | null;
   district: string | null;
+  category: PlaceCategory;
 };
 
-type SelectedPlace = { id: string; name: string; lat: number; lng: number };
+type SelectedPlace = {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  category: PlaceCategory;
+};
 
 type NewSlotWizardProps = {
   places: PlaceOption[];
@@ -43,12 +51,20 @@ export function NewSlotWizard({ places, initialPlaceId }: NewSlotWizardProps) {
     : undefined;
 
   const [step, setStep] = useState<Step>(1);
-  const [category, setCategory] = useState<CategoryId | null>(null);
+  const [category, setCategory] = useState<CategoryId | null>(
+    initialPlace ? toCategoryId(initialPlace.category) : null,
+  );
 
   const [placeQuery, setPlaceQuery] = useState(initialPlace?.name ?? '');
   const [selectedPlace, setSelectedPlace] = useState<SelectedPlace | null>(
     initialPlace
-      ? { id: initialPlace.id, name: initialPlace.name, lat: initialPlace.lat, lng: initialPlace.lng }
+      ? {
+          id: initialPlace.id,
+          name: initialPlace.name,
+          lat: initialPlace.lat,
+          lng: initialPlace.lng,
+          category: initialPlace.category,
+        }
       : null,
   );
   const [customPoint, setCustomPoint] = useState<{ lat: number; lng: number; name: string } | null>(null);
@@ -66,19 +82,32 @@ export function NewSlotWizard({ places, initialPlaceId }: NewSlotWizardProps) {
 
   const chosenName = selectedPlace?.name ?? customPoint?.name ?? '';
   const hasPlace = Boolean(selectedPlace || customPoint);
+  const categoryLocked = selectedPlace !== null;
+  const lockedCategory = categoryLocked && category ? CATEGORY_LIST.find((c) => c.id === category) : null;
 
   const suggestions = useMemo(() => {
     const q = placeQuery.trim().toLowerCase();
-    if (!q) return places.slice(0, 8);
-    return places
+    let pool = places;
+    if (category && !categoryLocked) {
+      pool = pool.filter((p) => toCategoryId(p.category) === category);
+    }
+    if (!q) return pool.slice(0, 8);
+    return pool
       .filter((p) =>
         `${p.name} ${p.city ?? ''} ${p.district ?? ''}`.toLowerCase().includes(q),
       )
       .slice(0, 8);
-  }, [places, placeQuery]);
+  }, [places, placeQuery, category, categoryLocked]);
 
   function selectExisting(p: PlaceOption) {
-    setSelectedPlace({ id: p.id, name: p.name, lat: p.lat, lng: p.lng });
+    setSelectedPlace({
+      id: p.id,
+      name: p.name,
+      lat: p.lat,
+      lng: p.lng,
+      category: p.category,
+    });
+    setCategory(toCategoryId(p.category));
     setCustomPoint(null);
     setPlaceQuery(p.name);
     setShowSuggestions(false);
@@ -88,12 +117,14 @@ export function NewSlotWizard({ places, initialPlaceId }: NewSlotWizardProps) {
     setPlaceQuery(value);
     setSelectedPlace(null);
     setCustomPoint(null);
+    setCategory(null);
     setShowSuggestions(true);
   }
 
   function applyCustomPoint(point: { lat: number; lng: number; name: string }) {
     setCustomPoint(point);
     setSelectedPlace(null);
+    setCategory(null);
     setPlaceQuery(point.name);
     setMapOpen(false);
     setShowSuggestions(false);
@@ -101,14 +132,20 @@ export function NewSlotWizard({ places, initialPlaceId }: NewSlotWizardProps) {
 
   function handlePlacePick(pick: PlacePick) {
     if (pick.kind === 'existing') {
-      selectExisting({
-        id: pick.id,
-        name: pick.name,
-        lat: pick.lat,
-        lng: pick.lng,
-        city: null,
-        district: null,
-      });
+      const place = places.find((p) => p.id === pick.id);
+      if (place) {
+        selectExisting(place);
+      } else {
+        selectExisting({
+          id: pick.id,
+          name: pick.name,
+          lat: pick.lat,
+          lng: pick.lng,
+          city: null,
+          district: null,
+          category: 'running',
+        });
+      }
       setMapOpen(false);
       return;
     }
@@ -168,91 +205,139 @@ export function NewSlotWizard({ places, initialPlaceId }: NewSlotWizardProps) {
         <div className="space-y-8 animate-fade-up">
           <header>
             <h1 className="font-display text-display-xl text-ash-900">Co robisz?</h1>
-            <p className="mt-2 text-body-lg text-ash-500">Wybierz aktywność i miejsce.</p>
+            <p className="mt-2 text-body-lg text-ash-500">
+              {categoryLocked
+                ? 'Miejsce ma przypisaną aktywność — wybierz termin w następnym kroku.'
+                : 'Wybierz aktywność i miejsce.'}
+            </p>
           </header>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {CATEGORY_LIST.map((cat) => {
-              const active = category === cat.id;
-              return (
+          {categoryLocked && hasPlace ? (
+            <div className="space-y-2">
+              <span className="block text-caption text-ash-500">Miejsce</span>
+              <div className="flex items-center gap-3 rounded-3xl border border-ash-200 bg-surface p-4 shadow-sm">
+                <MapPin className="size-5 shrink-0 text-honey-600" />
+                <div className="min-w-0">
+                  <p className="truncate font-display text-heading-md text-ash-900">{chosenName}</p>
+                  {lockedCategory ? (
+                    <p className="text-body-sm text-ash-500">
+                      {lockedCategory.emoji} {lockedCategory.label}
+                    </p>
+                  ) : null}
+                </div>
                 <button
-                  key={cat.id}
                   type="button"
-                  onClick={() => setCategory(cat.id)}
-                  className={cn(
-                    'aspect-square rounded-3xl p-4 flex flex-col items-center justify-center gap-2 transition-all duration-200',
-                    'border-2',
-                    active
-                      ? 'border-honey-500 shadow-honey scale-[1.02]'
-                      : 'border-transparent bg-surface shadow-sm hover:shadow-md hover:scale-[1.01]',
-                  )}
-                  style={active ? { backgroundColor: `${cat.color}14` } : undefined}
+                  onClick={() => handlePlaceQueryChange('')}
+                  className="ml-auto shrink-0 text-body-sm font-medium text-ash-600 hover:text-ash-900 hover:underline"
                 >
-                  <span className="text-4xl">{cat.emoji}</span>
-                  <span className="font-display text-display-md text-ash-900">{cat.label}</span>
-                  {active && <Check className="size-4 text-honey-700" />}
+                  Zmień
                 </button>
-              );
-            })}
-          </div>
-
-          <div className="space-y-2">
-            <span className="block text-caption text-ash-500">Miejsce</span>
-            <div className="relative">
-              <Search className="absolute left-3.5 top-1/2 z-10 size-4 -translate-y-1/2 text-ash-400" />
-              <input
-                value={placeQuery}
-                onChange={(e) => handlePlaceQueryChange(e.target.value)}
-                onFocus={() => setShowSuggestions(true)}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-                placeholder="Szukaj miejsca…"
-                className="h-12 w-full rounded-2xl border border-ash-200 bg-surface pl-10 pr-4 text-body text-ash-900 placeholder:text-ash-400 focus:border-honey-500 focus:outline-none focus:ring-2 focus:ring-honey-200"
-              />
-              {showSuggestions && suggestions.length > 0 ? (
-                <ul className="absolute z-20 mt-1 max-h-64 w-full overflow-y-auto rounded-2xl border border-ash-200/70 bg-surface p-1 shadow-lg">
-                  {suggestions.map((p) => (
-                    <li key={p.id}>
-                      <button
-                        type="button"
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => selectExisting(p)}
-                        className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left hover:bg-ash-50"
-                      >
-                        <MapPin className="size-4 shrink-0 text-ash-400" />
-                        <span className="min-w-0">
-                          <span className="block truncate text-body-sm font-medium text-ash-900">
-                            {p.name}
-                          </span>
-                          {(p.district || p.city) && (
-                            <span className="block truncate text-caption text-ash-500">
-                              {[p.district, p.city].filter(Boolean).join(' · ')}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <span className="block text-caption text-ash-500">Miejsce</span>
+              <div className="relative">
+                <Search className="absolute left-3.5 top-1/2 z-10 size-4 -translate-y-1/2 text-ash-400" />
+                <input
+                  value={placeQuery}
+                  onChange={(e) => handlePlaceQueryChange(e.target.value)}
+                  onFocus={() => setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                  placeholder="Szukaj miejsca…"
+                  className="h-12 w-full rounded-2xl border border-ash-200 bg-surface pl-10 pr-4 text-body text-ash-900 placeholder:text-ash-400 focus:border-honey-500 focus:outline-none focus:ring-2 focus:ring-honey-200"
+                />
+                {showSuggestions && suggestions.length > 0 ? (
+                  <ul className="absolute z-20 mt-1 max-h-64 w-full overflow-y-auto rounded-2xl border border-ash-200/70 bg-surface p-1 shadow-lg">
+                    {suggestions.map((p) => {
+                      const cat = CATEGORY_LIST.find((c) => c.id === toCategoryId(p.category));
+                      return (
+                        <li key={p.id}>
+                          <button
+                            type="button"
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => selectExisting(p)}
+                            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left hover:bg-ash-50"
+                          >
+                            <span className="text-lg" aria-hidden>{cat?.emoji}</span>
+                            <span className="min-w-0">
+                              <span className="block truncate text-body-sm font-medium text-ash-900">
+                                {p.name}
+                              </span>
+                              <span className="block truncate text-caption text-ash-500">
+                                {[cat?.label, p.district, p.city].filter(Boolean).join(' · ')}
+                              </span>
                             </span>
-                          )}
-                        </span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : null}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setMapOpen(true)}
+                className="inline-flex items-center gap-1.5 text-body-sm font-medium text-ash-600 hover:text-ash-900"
+              >
+                <MapPin className="size-4" />
+                lub wybierz na mapie →
+              </button>
+
+              {hasPlace ? (
+                <p className="flex items-center gap-1.5 text-body-sm text-success">
+                  <Check className="size-4" />
+                  {customPoint ? 'Punkt na mapie: ' : 'Wybrano: '}
+                  <span className="font-medium text-ash-900">{chosenName}</span>
+                </p>
               ) : null}
             </div>
+          )}
 
-            <button
-              type="button"
-              onClick={() => setMapOpen(true)}
-              className="inline-flex items-center gap-1.5 text-body-sm font-medium text-ash-600 hover:text-ash-900"
+          {categoryLocked && lockedCategory ? (
+            <div
+              className="flex aspect-[2/1] max-w-xs flex-col items-center justify-center gap-2 rounded-3xl border-2 border-honey-500 p-6 shadow-honey"
+              style={{ backgroundColor: `${lockedCategory.color}14` }}
             >
-              <MapPin className="size-4" />
-              lub wybierz na mapie →
-            </button>
-
-            {hasPlace ? (
-              <p className="flex items-center gap-1.5 text-body-sm text-success">
-                <Check className="size-4" />
-                {customPoint ? 'Punkt na mapie: ' : 'Wybrano: '}
-                <span className="font-medium text-ash-900">{chosenName}</span>
+              <span className="text-5xl" aria-hidden>{lockedCategory.emoji}</span>
+              <span className="font-display text-display-md text-ash-900">{lockedCategory.label}</span>
+              <p className="text-center text-caption text-ash-500">
+                Aktywność przypisana do wybranego miejsca
               </p>
-            ) : null}
-          </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <span className="block text-caption text-ash-500">Aktywność</span>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {CATEGORY_LIST.map((cat) => {
+                  const active = category === cat.id;
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => setCategory(cat.id)}
+                      className={cn(
+                        'aspect-square rounded-3xl p-4 flex flex-col items-center justify-center gap-2 transition-all duration-200',
+                        'border-2',
+                        active
+                          ? 'border-honey-500 shadow-honey scale-[1.02]'
+                          : 'border-transparent bg-surface shadow-sm hover:shadow-md hover:scale-[1.01]',
+                      )}
+                      style={active ? { backgroundColor: `${cat.color}14` } : undefined}
+                    >
+                      <span className="text-4xl">{cat.emoji}</span>
+                      <span className="font-display text-display-md text-ash-900">{cat.label}</span>
+                      {active && <Check className="size-4 text-honey-700" />}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-caption text-ash-400">
+                9 darmowych aktywności outdoor — lokale płatne (padel, kawiarnie) wkrótce.
+              </p>
+            </div>
+          )}
 
           <Button
             fullWidth
