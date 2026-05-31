@@ -342,18 +342,18 @@ export function MapPlaces({
     if (!source) return;
 
     const newMarkers: Record<string, MarkerEntry> = {};
-    const features = map.querySourceFeatures(SOURCE_ID);
-
-    // querySourceFeatures can return [] until invisible layers exist — fallback to direct pins.
-    if (features.length === 0) {
-      for (const place of placesByIdRef.current.values()) {
-        features.push({
-          type: "Feature",
-          geometry: { type: "Point", coordinates: [place.lng, place.lat] },
-          properties: { placeId: place.id, cluster: false },
-        } as GeoJSON.Feature);
-      }
-    }
+    const queried = map.querySourceFeatures(SOURCE_ID);
+    const features =
+      queried.length > 0
+        ? queried
+        : Array.from(placesByIdRef.current.values()).map((place) => ({
+            type: "Feature" as const,
+            geometry: {
+              type: "Point" as const,
+              coordinates: [place.lng, place.lat] as [number, number],
+            },
+            properties: { placeId: place.id, cluster: false },
+          }));
 
     for (const feature of features) {
       if (feature.geometry.type !== "Point") continue;
