@@ -342,7 +342,7 @@ export function MapPlaces({
     if (!source) return;
 
     const newMarkers: Record<string, MarkerEntry> = {};
-    let features = map.querySourceFeatures(SOURCE_ID);
+    const features = map.querySourceFeatures(SOURCE_ID);
 
     // querySourceFeatures can return [] until invisible layers exist — fallback to direct pins.
     if (features.length === 0) {
