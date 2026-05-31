@@ -108,8 +108,9 @@ function buildGeoJson(places: PlaceMapPin[]): GeoJSON.FeatureCollection {
     type: "FeatureCollection",
     features: places.map((p) => ({
       type: "Feature",
+      id: p.id,
       properties: {
-        id: p.id,
+        placeId: p.id,
         category: p.category,
         activeSlotCount: p.activeSlotCount,
         color: PLACE_CATEGORY_META[p.category].color,
@@ -341,13 +342,25 @@ export function MapPlaces({
     if (!source) return;
 
     const newMarkers: Record<string, MarkerEntry> = {};
-    const features = map.querySourceFeatures(SOURCE_ID);
+    let features = map.querySourceFeatures(SOURCE_ID);
+
+    // querySourceFeatures can return [] until invisible layers exist — fallback to direct pins.
+    if (features.length === 0) {
+      for (const place of placesByIdRef.current.values()) {
+        features.push({
+          type: "Feature",
+          geometry: { type: "Point", coordinates: [place.lng, place.lat] },
+          properties: { placeId: place.id, cluster: false },
+        } as GeoJSON.Feature);
+      }
+    }
 
     for (const feature of features) {
       if (feature.geometry.type !== "Point") continue;
       const props = feature.properties ?? {};
       const isCluster = Boolean(props.cluster);
-      const id = isCluster ? `cluster-${props.cluster_id}` : `pt-${props.id}`;
+      const placeId = props.placeId as string | undefined;
+      const id = isCluster ? `cluster-${props.cluster_id}` : `pt-${placeId ?? props.id}`;
       if (newMarkers[id]) continue;
 
       const coords = (feature.geometry as GeoJSON.Point).coordinates as [number, number];
@@ -375,7 +388,8 @@ export function MapPlaces({
             />,
           );
         } else {
-          const place = placesByIdRef.current.get(props.id as string);
+          const pid = placeId ?? (props.id as string | undefined);
+          const place = pid ? placesByIdRef.current.get(pid) : undefined;
           if (place) {
             entry.placeId = place.id;
             renderPointMarker(entry, place);
@@ -439,9 +453,29 @@ export function MapPlaces({
       map.addSource(SOURCE_ID, {
         type: "geojson",
         data: geoJsonRef.current,
+        promoteId: "placeId",
         cluster: true,
         clusterMaxZoom: 14,
         clusterRadius: 52,
+      });
+
+      // Invisible layers so querySourceFeatures returns cluster/point features.
+      map.addLayer({
+        id: "places-clusters",
+        type: "circle",
+        source: SOURCE_ID,
+        filter: ["has", "point_count"],
+        paint: {
+          "circle-opacity": 0,
+          "circle-radius": ["step", ["get", "point_count"], 18, 10, 22, 50, 28],
+        },
+      });
+      map.addLayer({
+        id: "places-point",
+        type: "circle",
+        source: SOURCE_ID,
+        filter: ["!", ["has", "point_count"]],
+        paint: { "circle-opacity": 0, "circle-radius": 8 },
       });
 
       // Capsule markers are rendered as DOM elements on every render pass.
