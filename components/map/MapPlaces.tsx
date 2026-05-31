@@ -357,7 +357,7 @@ export function MapPlaces({
 
     for (const feature of features) {
       if (feature.geometry.type !== "Point") continue;
-      const props = feature.properties ?? {};
+      const props = (feature.properties ?? {}) as Record<string, unknown>;
       const isCluster = Boolean(props.cluster);
       const placeId = props.placeId as string | undefined;
       const id = isCluster ? `cluster-${props.cluster_id}` : `pt-${placeId ?? props.id}`;
