@@ -29,6 +29,13 @@ type PlaceRow = {
 
 const BATCH = 50;
 
+/**
+ * Free-only outdoor categories. The bundled JSON predates the free-only model
+ * and contains paid venues (padel, tennis, indoor gyms) — skip those here.
+ * Outdoor gyms come from `npm run import:places` (leisure=fitness_station).
+ */
+const FREE_SEED_CATEGORIES = ["running", "cycling", "basketball", "hiking"];
+
 async function main() {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     console.error("Brak NEXT_PUBLIC_SUPABASE_URL lub SUPABASE_SERVICE_ROLE_KEY w .env.local");
@@ -36,7 +43,9 @@ async function main() {
   }
 
   const jsonPath = resolve(process.cwd(), "data/places-warsaw.json");
-  const raw = JSON.parse(readFileSync(jsonPath, "utf8")) as PlaceRow[];
+  const raw = (JSON.parse(readFileSync(jsonPath, "utf8")) as PlaceRow[]).filter((p) =>
+    FREE_SEED_CATEGORIES.includes(p.category),
+  );
 
   const places = raw.map((p) => ({
     name: p.name,
@@ -78,15 +87,7 @@ async function main() {
     counts[row.category] = (counts[row.category] ?? 0) + 1;
   }
   console.log("\nW bazie (wszystkie miejsca):");
-  for (const cat of [
-    "running",
-    "cycling",
-    "gym",
-    "padel",
-    "tennis",
-    "basketball",
-    "hiking",
-  ]) {
+  for (const cat of ["running", "cycling", "gym", "basketball", "hiking"]) {
     console.log(`  ${cat}: ${counts[cat] ?? 0}`);
   }
   console.log(`  RAZEM: ${data?.length ?? 0}`);
