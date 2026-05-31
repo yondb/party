@@ -10,7 +10,7 @@ import { CATEGORY_LIST, type CategoryId } from '@/lib/categories';
 import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
 import { createSlotAction } from '@/app/actions/slots';
-import type { PickedPoint } from '@/components/slots/PlacePickerModal';
+import type { PlacePick } from '@/components/slots/PlacePickerModal';
 
 const PlacePickerModal = dynamic(
   () => import('@/components/slots/PlacePickerModal').then((m) => m.PlacePickerModal),
@@ -51,7 +51,7 @@ export function NewSlotWizard({ places, initialPlaceId }: NewSlotWizardProps) {
       ? { id: initialPlace.id, name: initialPlace.name, lat: initialPlace.lat, lng: initialPlace.lng }
       : null,
   );
-  const [customPoint, setCustomPoint] = useState<PickedPoint | null>(null);
+  const [customPoint, setCustomPoint] = useState<{ lat: number; lng: number; name: string } | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
 
@@ -69,12 +69,12 @@ export function NewSlotWizard({ places, initialPlaceId }: NewSlotWizardProps) {
 
   const suggestions = useMemo(() => {
     const q = placeQuery.trim().toLowerCase();
-    if (!q) return [];
+    if (!q) return places.slice(0, 8);
     return places
       .filter((p) =>
         `${p.name} ${p.city ?? ''} ${p.district ?? ''}`.toLowerCase().includes(q),
       )
-      .slice(0, 6);
+      .slice(0, 8);
   }, [places, placeQuery]);
 
   function selectExisting(p: PlaceOption) {
@@ -91,12 +91,28 @@ export function NewSlotWizard({ places, initialPlaceId }: NewSlotWizardProps) {
     setShowSuggestions(true);
   }
 
-  function applyCustomPoint(point: PickedPoint) {
+  function applyCustomPoint(point: { lat: number; lng: number; name: string }) {
     setCustomPoint(point);
     setSelectedPlace(null);
     setPlaceQuery(point.name);
     setMapOpen(false);
     setShowSuggestions(false);
+  }
+
+  function handlePlacePick(pick: PlacePick) {
+    if (pick.kind === 'existing') {
+      selectExisting({
+        id: pick.id,
+        name: pick.name,
+        lat: pick.lat,
+        lng: pick.lng,
+        city: null,
+        district: null,
+      });
+      setMapOpen(false);
+      return;
+    }
+    applyCustomPoint(pick);
   }
 
   async function submit() {
@@ -356,8 +372,9 @@ export function NewSlotWizard({ places, initialPlaceId }: NewSlotWizardProps) {
 
       {mapOpen ? (
         <PlacePickerModal
-          initialName={customPoint?.name ?? ''}
-          onPick={applyCustomPoint}
+          places={places}
+          initialName={customPoint?.name ?? placeQuery}
+          onPick={handlePlacePick}
           onClose={() => setMapOpen(false)}
         />
       ) : null}

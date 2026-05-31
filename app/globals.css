@@ -93,6 +93,11 @@
     height: 100%;
   }
 
+  .mapboxgl-marker {
+    pointer-events: auto !important;
+    z-index: 5;
+  }
+
   .map-bottom-sheet {
     position: absolute;
     left: 0;

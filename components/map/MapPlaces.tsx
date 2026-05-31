@@ -18,6 +18,7 @@ import { Chip } from "@/components/ui/Chip";
 import { cn } from "@/lib/utils";
 import { MapMarker, MapClusterMarker } from "@/components/map/MapMarker";
 import { SlotPreviewCard } from "@/components/map/SlotPreviewCard";
+import { PlacePreviewCard } from "@/components/map/PlacePreviewCard";
 import { CATEGORIES, toCategoryId } from "@/lib/categories";
 import { AvatarStack } from "@/components/ui/AvatarStack";
 import {
@@ -58,51 +59,6 @@ type MarkerEntry = {
   placeId?: string;
 };
 
-function buildPopupHtml(
-  p: PlaceMapPin,
-  lang: "en" | "pl",
-  m: ReturnType<typeof mapUi>,
-): string {
-  const meta = PLACE_CATEGORY_META[p.category];
-  const catLabel = placeCategoryLabel(lang, p.category);
-  const districtLine = p.district ? ` · ${escapeHtml(p.district)}` : "";
-  const locale = lang === "pl" ? "pl-PL" : "en-US";
-  const slotsHtml =
-    p.upcomingSlots.length === 0
-      ? `<p class="lfparty-map-popup__meta">${escapeHtml(m.popupNoSlots)}</p>`
-      : p.upcomingSlots
-          .slice(0, 4)
-          .map((s) => {
-            const when = new Date(s.date_time).toLocaleString(locale, {
-              weekday: "short",
-              day: "2-digit",
-              month: "2-digit",
-              hour: "2-digit",
-              minute: "2-digit",
-            });
-            const total = Math.max(2, s.max_spots);
-            const occupied = Math.min(total, 1 + s.spots_taken);
-            return `<a class="lfparty-map-popup__slot-line" href="/slots/${escapeHtml(s.id)}">${escapeHtml(when)} · ${occupied}/${total}</a>`;
-          })
-          .join("");
-  const badge =
-    p.activeSlotCount > 0
-      ? ` <span class="lfparty-map-popup__badge">${p.activeSlotCount}</span>`
-      : "";
-  const displayName = displayPlaceName(p, lang);
-  return `
-    <div class="lfparty-map-popup">
-      <p class="lfparty-map-popup__title">${meta.icon} ${escapeHtml(displayName)}${badge}</p>
-      <p class="lfparty-map-popup__meta">${escapeHtml(catLabel)}${districtLine}</p>
-      <p class="lfparty-map-popup__section">${escapeHtml(m.popupUpcoming)}</p>
-      ${slotsHtml}
-      <div class="lfparty-map-popup__actions">
-        <a class="lfparty-map-popup__link" href="/slots/new?place_id=${encodeURIComponent(p.id)}">${escapeHtml(m.popupCreateSlot)}</a>
-        <a class="lfparty-map-popup__link lfparty-map-popup__link--muted" href="/places/${encodeURIComponent(p.id)}">${escapeHtml(m.popupViewAll)}</a>
-      </div>
-    </div>`;
-}
-
 function buildGeoJson(places: PlaceMapPin[]): GeoJSON.FeatureCollection {
   return {
     type: "FeatureCollection",
@@ -133,7 +89,6 @@ export function MapPlaces({
   const m = mapUi(lang);
   const ref = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
-  const popupRef = useRef<mapboxgl.Popup | null>(null);
   const youMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const placesByIdRef = useRef<Map<string, PlaceMapPin>>(new Map());
   const markersRef = useRef<Record<string, MarkerEntry>>({});
@@ -265,31 +220,45 @@ export function MapPlaces({
     [slots, selectedSlotId],
   );
 
-  const openPlacePopup = useCallback(
-    (place: PlaceMapPin) => {
-      const map = mapRef.current;
-      if (!map) return;
-      popupRef.current?.remove();
-      const html = buildPopupHtml(place, lang, m);
-      const popup = new mapboxgl.Popup({ offset: 16, className: "lfparty-map-popup-wrap" })
-        .setLngLat([place.lng, place.lat])
-        .setHTML(html)
-        .addTo(map);
-      popupRef.current = popup;
-      setActivePlaceId(place.id);
-    },
-    [lang, m],
+  const activePlace = useMemo(
+    () => filteredPlaces.find((p) => p.id === activePlaceId) ?? null,
+    [filteredPlaces, activePlaceId],
   );
 
-  const flyToPlace = useCallback(
-    (place: PlaceMapPin) => {
-      const map = mapRef.current;
-      if (!map) return;
-      map.flyTo({ center: [place.lng, place.lat], zoom: 15, duration: 900 });
-      openPlacePopup(place);
+  const placeDistanceLabel = useCallback(
+    (place: PlaceMapPin): string | null => {
+      if (!locationEnabled || !myPosition) return null;
+      const km = distanceKm(myPosition.lat, myPosition.lng, place.lat, place.lng);
+      return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`;
     },
-    [openPlacePopup],
+    [locationEnabled, myPosition],
   );
+
+  const sidebarPlaces = useMemo(() => {
+    const list = [...filteredPlaces];
+    if (locationEnabled && myPosition) {
+      list.sort(
+        (a, b) =>
+          distanceKm(myPosition.lat, myPosition.lng, a.lat, a.lng) -
+          distanceKm(myPosition.lat, myPosition.lng, b.lat, b.lng),
+      );
+    } else {
+      list.sort((a, b) =>
+        displayPlaceName(a, lang).localeCompare(displayPlaceName(b, lang), lang === "pl" ? "pl" : "en"),
+      );
+    }
+    return list.slice(0, 40);
+  }, [filteredPlaces, locationEnabled, myPosition, lang]);
+
+  const flyToPlace = useCallback((place: PlaceMapPin) => {
+    const map = mapRef.current;
+    setSelectedSlotId(null);
+    setActivePlaceId(place.id);
+    if (map) {
+      map.flyTo({ center: [place.lng, place.lat], zoom: 15, duration: 900 });
+    }
+    setSheetHeight((h) => (h < 50 ? 55 : h));
+  }, []);
 
   useEffect(() => {
     flyToPlaceRef.current = flyToPlace;
@@ -300,7 +269,6 @@ export function MapPlaces({
     setActivePlaceId(slot.placeId);
     const map = mapRef.current;
     if (map) {
-      popupRef.current?.remove();
       map.flyTo({ center: [slot.lng, slot.lat], zoom: 15, duration: 900 });
     }
     setSheetHeight((h) => (h < 50 ? 55 : h));
@@ -369,7 +337,7 @@ export function MapPlaces({
       if (!entry) {
         const el = document.createElement("div");
         const root = createRoot(el);
-        const marker = new mapboxgl.Marker({ element: el }).setLngLat(coords);
+        const marker = new mapboxgl.Marker({ element: el, anchor: "bottom" }).setLngLat(coords);
         entry = { marker, root, type: isCluster ? "cluster" : "point" };
         markersRef.current[id] = entry;
 
@@ -496,7 +464,6 @@ export function MapPlaces({
       resizeObserver.disconnect();
       map.off("render", onRender);
       map.off("moveend", updateMarkers);
-      popupRef.current?.remove();
       youMarkerRef.current?.remove();
       for (const id in markersRef.current) {
         const entry = markersRef.current[id];
@@ -560,12 +527,13 @@ export function MapPlaces({
   }
 
   const categoryChips = (
-    <div className="flex gap-2 overflow-x-auto pb-0.5 scrollbar-hide">
+    <div className="flex flex-wrap gap-2">
       <Chip active={category === "all"} onClick={() => setCategory("all")} className="shrink-0">
         {m.all}
       </Chip>
       {PLACE_CATEGORIES.map((key) => {
         const meta = PLACE_CATEGORY_META[key];
+        const count = places.filter((p) => p.category === key).length;
         return (
           <Chip
             key={key}
@@ -575,6 +543,7 @@ export function MapPlaces({
             className="shrink-0"
           >
             {placeCategoryLabel(lang, key)}
+            <span className="ml-1 font-mono text-[10px] opacity-60">{count}</span>
           </Chip>
         );
       })}
@@ -695,6 +664,71 @@ export function MapPlaces({
     </div>
   );
 
+  const renderPlaceItem = (place: PlaceMapPin) => {
+    const cat = CATEGORIES[toCategoryId(place.category)];
+    const dist = placeDistanceLabel(place);
+    const isActive = activePlaceId === place.id;
+    const displayName = displayPlaceName(place, lang);
+    return (
+      <button
+        key={place.id}
+        type="button"
+        onClick={() => flyToPlace(place)}
+        className={cn(
+          "flex w-full items-start gap-3 rounded-2xl border border-transparent p-2.5 text-left transition hover:bg-ash-50",
+          isActive && "border-ash-200/70 bg-ash-50 ring-2 ring-graphite/10",
+        )}
+      >
+        <span
+          className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-2xl text-lg"
+          style={{ backgroundColor: `${cat.color}1A` }}
+          aria-hidden
+        >
+          {cat.emoji}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-body-sm font-semibold text-ash-900">{displayName}</span>
+          <span className="mt-0.5 block truncate text-caption text-ash-500">
+            {placeCategoryLabel(lang, place.category)}
+            {place.district ? ` · ${place.district}` : ""}
+            {dist ? ` · ${dist}` : ""}
+          </span>
+          {place.activeSlotCount > 0 ? (
+            <span className="mt-1 inline-block rounded-full bg-honey-100 px-2 py-0.5 text-caption font-medium text-honey-800">
+              {place.activeSlotCount} {lang === "pl" ? "slotów" : "slots"}
+            </span>
+          ) : (
+            <span className="mt-1 block text-caption text-ash-400">
+              {lang === "pl" ? "Brak slotów — utwórz pierwszy" : "No slots — create the first"}
+            </span>
+          )}
+        </span>
+      </button>
+    );
+  };
+
+  const placeList = (
+    <div className="space-y-0.5">
+      {sidebarPlaces.map(renderPlaceItem)}
+      {sidebarPlaces.length === 0 ? (
+        <p className="px-2 py-8 text-center text-body-sm text-ash-500">
+          {lang === "pl" ? "Brak miejsc dla filtrów" : "No places match"}
+        </p>
+      ) : null}
+    </div>
+  );
+
+  const sidebarTitle =
+    totalSlots > 0
+      ? lang === "pl"
+        ? "Najbliższe sloty"
+        : "Upcoming slots"
+      : lang === "pl"
+        ? "Miejsca w okolicy"
+        : "Places nearby";
+
+  const sidebarContent = totalSlots > 0 ? slotGroups : placeList;
+
   return (
     <div className="map-root">
       <div ref={ref} className="map-canvas-inner" role="application" aria-label={m.title} />
@@ -759,11 +793,16 @@ export function MapPlaces({
       <aside className="pointer-events-none absolute bottom-4 left-4 top-auto z-10 hidden max-h-[min(460px,60%)] w-[min(380px,90%)] lg:pointer-events-auto lg:block">
         <div className="pointer-events-auto flex h-full max-h-[inherit] flex-col overflow-hidden rounded-3xl border border-ash-200/40 bg-surface shadow-md">
           <div className="border-b border-ash-200/60 px-4 py-3">
-            <p className="font-display text-heading-md text-ash-900">
-              {lang === "pl" ? "Najbliższe sloty" : "Upcoming slots"}
-            </p>
+            <p className="font-display text-heading-md text-ash-900">{sidebarTitle}</p>
+            {totalSlots === 0 ? (
+              <p className="mt-0.5 text-caption text-ash-500">
+                {lang === "pl"
+                  ? `${filteredPlaces.length} miejsc · kliknij, aby zobaczyć na mapie`
+                  : `${filteredPlaces.length} places · click to view on map`}
+              </p>
+            ) : null}
           </div>
-          <div className="flex-1 overflow-y-auto px-2 py-2">{slotGroups}</div>
+          <div className="flex-1 overflow-y-auto px-2 py-2">{sidebarContent}</div>
         </div>
       </aside>
 
@@ -781,11 +820,9 @@ export function MapPlaces({
           aria-label={lang === "pl" ? "Przeciągnij, aby rozwinąć" : "Drag to expand"}
         >
           <span className="mb-2 h-1.5 w-10 rounded-full bg-ash-300" />
-          <span className="px-4 font-display text-heading-md text-ash-900">
-            {lang === "pl" ? "Najbliższe sloty" : "Upcoming slots"}
-          </span>
+          <span className="px-4 font-display text-heading-md text-ash-900">{sidebarTitle}</span>
         </div>
-        <div className="flex-1 overflow-y-auto px-2 pb-4 pt-1">{slotGroups}</div>
+        <div className="flex-1 overflow-y-auto px-2 pb-4 pt-1">{sidebarContent}</div>
       </div>
 
       {selectedSlot ? (
@@ -798,17 +835,17 @@ export function MapPlaces({
             onClose={() => setSelectedSlotId(null)}
           />
         </div>
+      ) : activePlace ? (
+        <div className="pointer-events-none absolute inset-x-0 top-28 z-30 flex justify-center px-4 lg:bottom-4 lg:left-[calc(min(380px,90%)+2.5rem)] lg:right-auto lg:top-auto lg:justify-start lg:px-0">
+          <PlacePreviewCard
+            place={activePlace}
+            lang={lang}
+            onClose={() => setActivePlaceId(null)}
+          />
+        </div>
       ) : null}
     </div>
   );
-}
-
-function escapeHtml(s: string) {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
 }
 
 function distanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {

@@ -16,10 +16,9 @@ export function MapMarker({ category, count, active, joined, onClick }: Props) {
   return (
     <button
       type="button"
-      onClick={onClick}
       aria-label={`${cat.label}, ${count} osób`}
       className={cn(
-        'relative inline-flex items-center gap-1 px-2.5 py-1 rounded-full',
+        'relative inline-flex items-center gap-1 px-2.5 py-1 rounded-full cursor-pointer',
         'transition-all duration-200 ease-spring',
         'hover:scale-110 active:scale-95',
         active && 'scale-110 ring-2 ring-surface',
@@ -28,7 +27,14 @@ export function MapMarker({ category, count, active, joined, onClick }: Props) {
       style={{
         background: `linear-gradient(180deg, ${cat.color} 0%, ${cat.colorDark} 100%)`,
         boxShadow: `0 6px 14px -4px ${cat.color}88, 0 2px 4px -1px ${cat.colorDark}66`,
+        pointerEvents: 'auto',
       } as CSSProperties}
+      onPointerDown={(e) => e.stopPropagation()}
+      onClick={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        onClick?.();
+      }}
     >
       <span className="text-sm leading-none" aria-hidden>{cat.emoji}</span>
       <span className="font-mono text-[11px] font-bold text-white leading-none tabular-nums">
@@ -51,8 +57,15 @@ export function MapClusterMarker({ count, onClick }: { count: number; onClick?: 
   return (
     <button
       type="button"
-      onClick={onClick}
-      className="size-12 rounded-full bg-graphite text-surface font-mono font-bold flex items-center justify-center shadow-md hover:scale-110 transition active:scale-95"
+      aria-label={`Cluster of ${count} places`}
+      className="size-12 rounded-full bg-graphite text-surface font-mono font-bold flex items-center justify-center shadow-md hover:scale-110 transition active:scale-95 cursor-pointer"
+      style={{ pointerEvents: 'auto' }}
+      onPointerDown={(e) => e.stopPropagation()}
+      onClick={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        onClick?.();
+      }}
     >
       {count}
     </button>
