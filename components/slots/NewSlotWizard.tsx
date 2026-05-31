@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/Button';
 import { Input, Textarea } from '@/components/ui/Input';
 import { Stepper } from '@/components/ui/Stepper';
 import { Card } from '@/components/ui/Card';
-import { CATEGORY_LIST, type CategoryId, toCategoryId } from '@/lib/categories';
+import { CATEGORY_LIST, type CategoryId, toCategoryId, categoryLabel } from '@/lib/categories';
 import type { PlaceCategory } from '@/lib/places';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
 import { createSlotAction } from '@/app/actions/slots';
@@ -46,6 +47,7 @@ type NewSlotWizardProps = {
 
 export function NewSlotWizard({ places, initialPlaceId }: NewSlotWizardProps) {
   const router = useRouter();
+  const { lang } = useLanguage();
   const initialPlace = initialPlaceId
     ? places.find((p) => p.id === initialPlaceId)
     : undefined;
@@ -221,7 +223,7 @@ export function NewSlotWizard({ places, initialPlaceId }: NewSlotWizardProps) {
                   <p className="truncate font-display text-heading-md text-ash-900">{chosenName}</p>
                   {lockedCategory ? (
                     <p className="text-body-sm text-ash-500">
-                      {lockedCategory.emoji} {lockedCategory.label}
+                      {lockedCategory.emoji} {categoryLabel(lang, lockedCategory.id)}
                     </p>
                   ) : null}
                 </div>
@@ -265,7 +267,7 @@ export function NewSlotWizard({ places, initialPlaceId }: NewSlotWizardProps) {
                                 {p.name}
                               </span>
                               <span className="block truncate text-caption text-ash-500">
-                                {[cat?.label, p.district, p.city].filter(Boolean).join(' · ')}
+                                {[categoryLabel(lang, toCategoryId(p.category)), p.district, p.city].filter(Boolean).join(' · ')}
                               </span>
                             </span>
                           </button>
@@ -301,7 +303,7 @@ export function NewSlotWizard({ places, initialPlaceId }: NewSlotWizardProps) {
               style={{ backgroundColor: `${lockedCategory.color}14` }}
             >
               <span className="text-5xl" aria-hidden>{lockedCategory.emoji}</span>
-              <span className="font-display text-display-md text-ash-900">{lockedCategory.label}</span>
+              <span className="font-display text-display-md text-ash-900">{categoryLabel(lang, lockedCategory.id)}</span>
               <p className="text-center text-caption text-ash-500">
                 Aktywność przypisana do wybranego miejsca
               </p>
@@ -327,7 +329,7 @@ export function NewSlotWizard({ places, initialPlaceId }: NewSlotWizardProps) {
                       style={active ? { backgroundColor: `${cat.color}14` } : undefined}
                     >
                       <span className="text-4xl">{cat.emoji}</span>
-                      <span className="font-display text-display-md text-ash-900">{cat.label}</span>
+                      <span className="font-display text-display-md text-ash-900">{categoryLabel(lang, cat.id)}</span>
                       {active && <Check className="size-4 text-honey-700" />}
                     </button>
                   );
@@ -362,7 +364,7 @@ export function NewSlotWizard({ places, initialPlaceId }: NewSlotWizardProps) {
               <span className="text-3xl">{CATEGORY_LIST.find((c) => c.id === category)?.emoji}</span>
               <div>
                 <p className="font-display text-heading-md text-ash-900">
-                  {CATEGORY_LIST.find((c) => c.id === category)?.label}
+                  {category ? categoryLabel(lang, category) : ''}
                 </p>
                 <p className="font-mono text-body-sm text-ash-600">{chosenName}</p>
               </div>

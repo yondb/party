@@ -10,7 +10,8 @@ import {
   TreePine,
   LandPlot,
 } from 'lucide-react';
-import { FREE_PLACE_CATEGORIES, type PlaceCategory } from '@/lib/places';
+import { FREE_PLACE_CATEGORIES, placeCategoryLabel, type PlaceCategory } from '@/lib/places';
+import type { Lang } from '@/lib/i18n-lang';
 
 /**
  * Free outdoor activity categories — 1:1 with lib/places PlaceCategory.
@@ -41,6 +42,11 @@ export const CATEGORIES: Record<CategoryId, Category> = {
 };
 
 export const CATEGORY_LIST: Category[] = FREE_PLACE_CATEGORIES.map((id) => CATEGORIES[id]);
+
+/** Localized category name — use this in UI instead of `cat.label`. */
+export function categoryLabel(lang: Lang, id: CategoryId): string {
+  return placeCategoryLabel(lang, id);
+}
 
 /** Map legacy / activity strings → one of the free categories we show. */
 const ACTIVITY_TO_CATEGORY: Record<string, CategoryId> = {

@@ -1,7 +1,8 @@
 'use client';
 import Link from 'next/link';
 import { Calendar, MapPin } from 'lucide-react';
-import { CATEGORIES, type CategoryId } from '@/lib/categories';
+import { CATEGORIES, type CategoryId, categoryLabel } from '@/lib/categories';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 import { Avatar } from '@/components/ui/Avatar';
 import { AvatarStack } from '@/components/ui/AvatarStack';
 import { Badge } from '@/components/ui/Badge';
@@ -27,6 +28,7 @@ interface Props {
 }
 
 export function SlotCard({ slot, compact }: Props) {
+  const { lang } = useLanguage();
   const cat = CATEGORIES[slot.category];
   const taken = slot.participants.length;
   const isFull = taken >= slot.capacity;
@@ -51,7 +53,7 @@ export function SlotCard({ slot, compact }: Props) {
               </div>
               <div className="flex flex-col">
                 <span className="text-caption uppercase tracking-wider text-ash-500">
-                  {cat.label}
+                  {categoryLabel(lang, slot.category)}
                 </span>
                 {slot.featured && <Badge variant="slash">featured</Badge>}
               </div>

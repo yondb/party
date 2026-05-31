@@ -3,7 +3,7 @@ import { Sun, ArrowRight, CalendarPlus } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getServerLang } from '@/lib/i18n-server';
 import { feedUi } from '@/lib/i18n-ui';
-import { toCategoryId, CATEGORY_LIST, CATEGORIES, type CategoryId } from '@/lib/categories';
+import { toCategoryId, CATEGORY_LIST, CATEGORIES, categoryLabel, type CategoryId } from '@/lib/categories';
 import { SlotCard, type SlotData } from '@/components/slot/SlotCard';
 
 export const dynamic = 'force-dynamic';
@@ -189,7 +189,7 @@ export default async function FeedPage({
                 }`}
               >
                 <span className="mr-1.5">{cat.emoji}</span>
-                {cat.label}
+                {categoryLabel(lang, cat.id)}
                 {count > 0 ? <span className={`ml-1.5 ${active ? 'text-surface/70' : 'text-ash-400'}`}>{count}</span> : null}
               </Link>
             );
@@ -199,7 +199,7 @@ export default async function FeedPage({
         <section>
           <div className="mb-3 flex items-center justify-between">
             <h2 className="font-display text-display-md text-ash-900">
-              {activeCategory ? CATEGORIES[activeCategory].label : ui.nearbySection}
+              {activeCategory ? categoryLabel(lang, activeCategory) : ui.nearbySection}
             </h2>
             <Link
               href="/map"
