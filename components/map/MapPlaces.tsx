@@ -5,6 +5,7 @@ import { createRoot, type Root } from "react-dom/client";
 import mapboxgl from "mapbox-gl";
 import type { GeoJSONSource } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import { Navigation } from "lucide-react";
 import {
   PLACE_CATEGORIES,
   PLACE_CATEGORY_META,
@@ -105,7 +106,8 @@ export function MapPlaces({
   const [locationError, setLocationError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [sheetHeight, setSheetHeight] = useState(30);
+  const [sheetHeight, setSheetHeight] = useState(14);
+  const flewToUserRef = useRef(false);
   const [activePlaceId, setActivePlaceId] = useState<string | null>(null);
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
@@ -117,7 +119,7 @@ export function MapPlaces({
     return () => clearInterval(t);
   }, []);
 
-  function requestMyLocation() {
+  const requestMyLocationStable = useCallback(() => {
     if (!navigator.geolocation) {
       setLocationError(m.locationDenied);
       return;
@@ -127,6 +129,15 @@ export function MapPlaces({
       (pos) => {
         setMyPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setLocationEnabled(true);
+        const map = mapRef.current;
+        if (map && !flewToUserRef.current) {
+          flewToUserRef.current = true;
+          map.flyTo({
+            center: [pos.coords.longitude, pos.coords.latitude],
+            zoom: 13,
+            duration: 900,
+          });
+        }
       },
       () => {
         setLocationError(m.locationDenied);
@@ -135,7 +146,12 @@ export function MapPlaces({
       },
       { enableHighAccuracy: true, maximumAge: 60000, timeout: 8000 },
     );
-  }
+  }, [m.locationDenied]);
+
+  useEffect(() => {
+    const t = window.setTimeout(() => requestMyLocationStable(), 600);
+    return () => clearTimeout(t);
+  }, [requestMyLocationStable]);
 
   const filteredPlaces = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -283,13 +299,17 @@ export function MapPlaces({
     if (!dragRef.current) return;
     const dy = dragRef.current.startY - e.clientY;
     const vh = (dy / window.innerHeight) * 100;
-    setSheetHeight(Math.min(80, Math.max(30, dragRef.current.startH + vh)));
+    setSheetHeight(Math.min(80, Math.max(14, dragRef.current.startH + vh)));
   };
   const onSheetPointerUp = () => {
     if (!dragRef.current) return;
     dragRef.current = null;
-    setSheetHeight((h) => (h > 55 ? 80 : 30));
+    setSheetHeight((h) => (h > 28 ? 62 : 14));
   };
+
+  const sheetPeek = sheetHeight < 22;
+  const filtersActive =
+    category !== "all" || dateFilter !== "" || onlyOpenSlots || locationEnabled;
 
   const renderPointMarker = useCallback((entry: MarkerEntry, place: PlaceMapPin) => {
     entry.root.render(
@@ -527,8 +547,8 @@ export function MapPlaces({
   }
 
   const categoryChips = (
-    <div className="flex flex-wrap gap-2">
-      <Chip active={category === "all"} onClick={() => setCategory("all")} className="shrink-0">
+    <div className="flex flex-wrap gap-1.5 lg:gap-2">
+      <Chip active={category === "all"} onClick={() => setCategory("all")} className="shrink-0 h-8 px-2.5 text-xs lg:h-9 lg:px-3.5 lg:text-body-sm">
         {m.all}
       </Chip>
       {PLACE_CATEGORIES.map((key) => {
@@ -540,7 +560,7 @@ export function MapPlaces({
             emoji={meta.icon}
             active={category === key}
             onClick={() => setCategory(key)}
-            className="shrink-0"
+            className="shrink-0 h-8 px-2.5 text-xs lg:h-9 lg:px-3.5 lg:text-body-sm"
           >
             {placeCategoryLabel(lang, key)}
             <span className="ml-1 font-mono text-[10px] opacity-60">{count}</span>
@@ -570,7 +590,7 @@ export function MapPlaces({
       </label>
       <button
         type="button"
-        onClick={requestMyLocation}
+        onClick={requestMyLocationStable}
         className={cn(
           "w-full h-11 rounded-2xl border border-ash-200 bg-surface text-body-sm font-medium text-ash-900 shadow-xs hover:bg-ash-50 transition",
           locationEnabled && "border-honey-300 text-honey-700",
@@ -755,7 +775,7 @@ export function MapPlaces({
         </div>
       ) : null}
 
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex flex-col gap-2 p-3 lg:left-3 lg:max-w-sm lg:p-4">
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex flex-col gap-1.5 p-2 lg:left-3 lg:max-w-sm lg:gap-2 lg:p-4">
         <div className="pointer-events-auto flex items-center gap-2 rounded-2xl border border-ash-200/60 bg-surface-2/95 px-3 py-2 shadow-sm backdrop-blur-md">
           <span className="text-ash-400" aria-hidden>
             ⌕
@@ -771,24 +791,42 @@ export function MapPlaces({
             type="button"
             onClick={() => setFiltersOpen((o) => !o)}
             className={cn(
-              "shrink-0 rounded-full px-2.5 py-1 text-xs font-medium text-ash-600 hover:bg-ash-100 transition",
+              "relative shrink-0 rounded-full px-2.5 py-1 text-xs font-medium text-ash-600 hover:bg-ash-100 transition lg:text-body-sm",
               filtersOpen && "bg-graphite text-surface",
             )}
           >
             {m.filters}
+            {filtersActive && !filtersOpen ? (
+              <span className="absolute -right-0.5 -top-0.5 size-2 rounded-full bg-honey-500" aria-hidden />
+            ) : null}
           </button>
         </div>
 
-        <div className="pointer-events-auto rounded-2xl border border-ash-200/60 bg-surface-2/95 p-2 shadow-sm backdrop-blur-md">
+        {/* Desktop: category chips always visible */}
+        <div className="pointer-events-auto hidden rounded-2xl border border-ash-200/60 bg-surface-2/95 p-2 shadow-sm backdrop-blur-md lg:block">
           {categoryChips}
         </div>
 
         {filtersOpen ? (
-          <div className="pointer-events-auto rounded-2xl border border-ash-200/60 bg-surface-2/95 p-3 shadow-sm backdrop-blur-md lg:block">
+          <div className="pointer-events-auto rounded-2xl border border-ash-200/60 bg-surface-2/95 p-3 shadow-sm backdrop-blur-md max-h-[min(50vh,360px)] overflow-y-auto">
+            <div className="mb-3 lg:hidden">{categoryChips}</div>
             {advancedFilters}
           </div>
         ) : null}
       </div>
+
+      <button
+        type="button"
+        onClick={requestMyLocationStable}
+        className="pointer-events-auto absolute right-3 z-20 flex size-11 items-center justify-center rounded-full border border-ash-200/70 bg-surface text-graphite shadow-md transition hover:bg-ash-50 active:scale-95 lg:right-4"
+        style={{ bottom: `calc(${sheetHeight}dvh + 4.5rem + env(safe-area-inset-bottom, 0px))` }}
+        aria-label={m.useMyLocation}
+      >
+        <Navigation
+          className={cn("size-5", locationEnabled && "text-honey-600")}
+          strokeWidth={2.25}
+        />
+      </button>
 
       <aside className="pointer-events-none absolute bottom-4 left-4 top-auto z-10 hidden max-h-[min(460px,60%)] w-[min(380px,90%)] lg:pointer-events-auto lg:block">
         <div className="pointer-events-auto flex h-full max-h-[inherit] flex-col overflow-hidden rounded-3xl border border-ash-200/40 bg-surface shadow-md">
@@ -822,7 +860,9 @@ export function MapPlaces({
           <span className="mb-2 h-1.5 w-10 rounded-full bg-ash-300" />
           <span className="px-4 font-display text-heading-md text-ash-900">{sidebarTitle}</span>
         </div>
-        <div className="flex-1 overflow-y-auto px-2 pb-4 pt-1">{sidebarContent}</div>
+        <div className="flex-1 overflow-y-auto px-2 pb-4 pt-1 lg:hidden">
+          {!sheetPeek ? sidebarContent : null}
+        </div>
       </div>
 
       {selectedSlot ? (

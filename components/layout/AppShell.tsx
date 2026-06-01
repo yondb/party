@@ -6,7 +6,20 @@ import { BottomNav } from './BottomNav';
 import { Sidebar } from './Sidebar';
 import { FAB } from './FAB';
 
-const PUBLIC_PREFIXES = ['/', '/auth', '/landing', '/legal', '/setup', '/onboarding', '/banned'];
+const PUBLIC_EXACT = new Set([
+  "/",
+  "/auth",
+  "/landing",
+  "/setup",
+  "/onboarding",
+  "/banned",
+]);
+const PUBLIC_PREFIXES = ["/legal", "/dev"];
+
+function isPublicPath(pathname: string) {
+  if (PUBLIC_EXACT.has(pathname)) return true;
+  return PUBLIC_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+}
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -26,7 +39,7 @@ export function AppShell({
   unreadCount = 0,
 }: AppShellProps) {
   const pathname = usePathname();
-  const isPublic = PUBLIC_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  const isPublic = isPublicPath(pathname);
   const showFAB = pathname.startsWith('/map') && !isGuest;
 
   if (isPublic) {

@@ -8,6 +8,7 @@ import { AvatarStack } from '@/components/ui/AvatarStack';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { formatDate, formatTime, formatDistance } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 export interface SlotData {
   id: string;
@@ -42,8 +43,8 @@ export function SlotCard({ slot, compact }: Props) {
           aria-hidden
         />
 
-        <div className="p-5 pl-7">
-          <div className="flex items-start justify-between gap-3 mb-3">
+        <div className="p-4 pl-6">
+          <div className="flex items-start justify-between gap-3 mb-2">
             <div className="flex items-center gap-2.5">
               <div
                 className="size-10 rounded-2xl flex items-center justify-center text-lg"
@@ -61,7 +62,10 @@ export function SlotCard({ slot, compact }: Props) {
             {isFull && <Badge variant="default">Pełne</Badge>}
           </div>
 
-          <h3 className="font-display text-display-md text-ash-900 mb-3 line-clamp-2">
+          <h3 className={cn(
+            'font-display text-ash-900 line-clamp-2',
+            compact ? 'text-heading-md mb-2' : 'text-display-md mb-3',
+          )}>
             {slot.title}
           </h3>
 
@@ -85,6 +89,17 @@ export function SlotCard({ slot, compact }: Props) {
             </div>
           )}
 
+          {compact ? (
+            <div className="flex items-center justify-between gap-2 border-t border-ash-100 pt-2">
+              <span className="font-mono text-caption text-ash-600">
+                {formatDate(slot.startAt)} · {formatTime(slot.startAt)}
+              </span>
+              <Button size="sm" variant={isFull ? 'secondary' : 'primary'} disabled={isFull}>
+                {isFull ? 'Pełne' : 'Dołącz'}
+              </Button>
+            </div>
+          ) : (
+            <>
           <div className="flex items-center gap-2 mb-4">
             <Avatar src={slot.host.avatarUrl} name={slot.host.name} size="xs" />
             <span className="text-body-sm text-ash-700 font-medium">{slot.host.name}</span>
@@ -106,6 +121,8 @@ export function SlotCard({ slot, compact }: Props) {
               {isFull ? 'Pełne' : 'Dołącz'}
             </Button>
           </div>
+            </>
+          )}
         </div>
       </div>
     </Link>

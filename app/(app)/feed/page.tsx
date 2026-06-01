@@ -167,7 +167,7 @@ export default async function FeedPage({
         <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-wrap lg:px-0">
           <Link
             href="/feed"
-            className={`shrink-0 rounded-full border px-4 py-2 text-body-sm font-medium transition ${
+            className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition sm:px-4 sm:py-2 sm:text-body-sm ${
               activeCategory === null
                 ? 'border-graphite bg-graphite text-surface'
                 : 'border-ash-200 bg-surface text-ash-700 hover:bg-ash-50'
@@ -182,7 +182,7 @@ export default async function FeedPage({
               <Link
                 key={cat.id}
                 href={`/feed?category=${cat.id}`}
-                className={`shrink-0 rounded-full border px-4 py-2 text-body-sm font-medium transition ${
+                className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition sm:px-4 sm:py-2 sm:text-body-sm ${
                   active
                     ? 'border-graphite bg-graphite text-surface'
                     : 'border-ash-200 bg-surface text-ash-700 hover:bg-ash-50'
@@ -212,7 +212,7 @@ export default async function FeedPage({
           {cards.length > 0 ? (
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
               {cards.map((slot) => (
-                <SlotCard key={slot.id} slot={slot} />
+                <SlotCard key={slot.id} slot={slot} compact />
               ))}
             </div>
           ) : (

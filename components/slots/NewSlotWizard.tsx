@@ -299,11 +299,11 @@ export function NewSlotWizard({ places, initialPlaceId }: NewSlotWizardProps) {
 
           {categoryLocked && lockedCategory ? (
             <div
-              className="flex aspect-[2/1] max-w-xs flex-col items-center justify-center gap-2 rounded-3xl border-2 border-honey-500 p-6 shadow-honey"
+              className="flex max-w-xs flex-col items-center justify-center gap-2 rounded-2xl border-2 border-honey-500 p-4 shadow-honey"
               style={{ backgroundColor: `${lockedCategory.color}14` }}
             >
-              <span className="text-5xl" aria-hidden>{lockedCategory.emoji}</span>
-              <span className="font-display text-display-md text-ash-900">{categoryLabel(lang, lockedCategory.id)}</span>
+              <span className="text-4xl" aria-hidden>{lockedCategory.emoji}</span>
+              <span className="font-display text-heading-md text-ash-900">{categoryLabel(lang, lockedCategory.id)}</span>
               <p className="text-center text-caption text-ash-500">
                 Aktywność przypisana do wybranego miejsca
               </p>
@@ -311,7 +311,7 @@ export function NewSlotWizard({ places, initialPlaceId }: NewSlotWizardProps) {
           ) : (
             <div className="space-y-2">
               <span className="block text-caption text-ash-500">Aktywność</span>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-2">
                 {CATEGORY_LIST.map((cat) => {
                   const active = category === cat.id;
                   return (
@@ -320,24 +320,23 @@ export function NewSlotWizard({ places, initialPlaceId }: NewSlotWizardProps) {
                       type="button"
                       onClick={() => setCategory(cat.id)}
                       className={cn(
-                        'aspect-square rounded-3xl p-4 flex flex-col items-center justify-center gap-2 transition-all duration-200',
-                        'border-2',
+                        'rounded-2xl py-2.5 px-1 flex flex-col items-center justify-center gap-1 transition-all duration-200',
+                        'border-2 min-h-[72px]',
                         active
-                          ? 'border-honey-500 shadow-honey scale-[1.02]'
-                          : 'border-transparent bg-surface shadow-sm hover:shadow-md hover:scale-[1.01]',
+                          ? 'border-honey-500 shadow-honey'
+                          : 'border-transparent bg-surface shadow-sm hover:shadow-md',
                       )}
                       style={active ? { backgroundColor: `${cat.color}14` } : undefined}
                     >
-                      <span className="text-4xl">{cat.emoji}</span>
-                      <span className="font-display text-display-md text-ash-900">{categoryLabel(lang, cat.id)}</span>
-                      {active && <Check className="size-4 text-honey-700" />}
+                      <span className="text-2xl leading-none">{cat.emoji}</span>
+                      <span className="text-[11px] font-medium text-ash-900 text-center leading-tight px-0.5">
+                        {categoryLabel(lang, cat.id)}
+                      </span>
+                      {active && <Check className="size-3.5 text-honey-700" />}
                     </button>
                   );
                 })}
               </div>
-              <p className="text-caption text-ash-400">
-                9 darmowych aktywności outdoor — lokale płatne (padel, kawiarnie) wkrótce.
-              </p>
             </div>
           )}
 

@@ -1,16 +1,6 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 
-export default async function RootPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/map");
-
-  const setupDone = user.user_metadata?.setup_done === true;
-  if (!setupDone) redirect("/setup");
-
+/** Home always opens the map; auth/setup handled in middleware. */
+export default function RootPage() {
   redirect("/map");
 }
