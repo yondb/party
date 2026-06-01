@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Bell, Plus, Search } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
+import { Logo } from '@/components/ui/Logo';
 
 type TopBarProps = {
   userName?: string;
@@ -26,10 +27,12 @@ export function TopBar({ userName = 'BRE', userLevel = 1, avatarUrl, isGuest, un
   return (
     <header className="sticky top-0 z-40 border-b border-ash-200/70 bg-surface/95 backdrop-blur-md shadow-xs">
       <div className="mx-auto max-w-7xl h-14 lg:h-16 px-4 lg:px-6 flex items-center justify-between gap-4">
-        <Link href="/map" className="flex items-baseline gap-0 select-none">
-          <span className="font-display text-xl lg:text-2xl font-extrabold text-graphite leading-none">lf</span>
-          <span className="font-sans text-xl lg:text-2xl font-medium text-ash-500 leading-none">party</span>
-        </Link>
+        <div className="shrink-0 lg:hidden">
+          <Logo size="sm" href="/map" />
+        </div>
+        <div className="hidden shrink-0 lg:block">
+          <Logo size="md" href="/map" />
+        </div>
 
         <form onSubmit={submitSearch} className="hidden lg:flex flex-1 max-w-md">
           <div className="relative w-full">

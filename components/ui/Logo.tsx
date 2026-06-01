@@ -1,49 +1,89 @@
 import Link from "next/link";
+import { useId } from "react";
 
 type LogoSize = "sm" | "md" | "lg";
 
-const sizes: Record<LogoSize, { box: number; lf: string; party: string; gap: string }> = {
-  sm: { box: 28, lf: "text-base", party: "text-base", gap: "gap-1.5" },
-  md: { box: 34, lf: "text-xl", party: "text-xl", gap: "gap-2" },
-  lg: { box: 42, lf: "text-2xl", party: "text-2xl", gap: "gap-2.5" },
+const config: Record<
+  LogoSize,
+  { mark: number; text: string; gap: string; showWord: boolean }
+> = {
+  sm: { mark: 26, text: "text-[15px]", gap: "gap-2", showWord: true },
+  md: { mark: 32, text: "text-lg", gap: "gap-2.5", showWord: true },
+  lg: { mark: 44, text: "text-2xl", gap: "gap-3", showWord: true },
 };
 
-function LogoMark({ size }: { size: number }) {
+/** Honey badge — two soft circles = people meeting up */
+function LogoMark({ size, gradId }: { size: number; gradId: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 40 40"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      className="shrink-0 drop-shadow-[0_2px_6px_rgba(245,184,0,0.35)]"
+    >
+      <rect width="40" height="40" rx="11" fill={`url(#${gradId})`} />
+      <circle cx="15.5" cy="20" r="7.25" fill="white" fillOpacity="0.95" />
+      <circle cx="24.5" cy="20" r="7.25" fill="white" fillOpacity="0.72" />
+      <circle cx="20" cy="13" r="2" fill="white" fillOpacity="0.9" />
+      <defs>
+        <linearGradient
+          id={gradId}
+          x1="6"
+          y1="4"
+          x2="34"
+          y2="36"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop stopColor="#FDE68A" />
+          <stop offset="0.45" stopColor="#F5B800" />
+          <stop offset="1" stopColor="#D4A017" />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
+function LogoWordmark({ className }: { className: string }) {
   return (
     <span
-      className="relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-[22%] bg-graphite shadow-[0_2px_8px_rgba(15,15,17,0.18)]"
-      style={{ width: size, height: size }}
-      aria-hidden
+      className={`font-display font-extrabold tracking-[-0.045em] text-graphite ${className}`}
     >
-      <span className="absolute inset-0 bg-gradient-to-br from-graphite-soft to-graphite" />
-      <span className="absolute -right-1 -top-1 size-[45%] rounded-full bg-honey-400/25 blur-sm" />
-      <svg
-        viewBox="0 0 24 24"
-        className="relative text-honey-500"
-        style={{ width: size * 0.52, height: size * 0.52 }}
-        fill="currentColor"
-      >
-        <path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z" />
-      </svg>
+      lf
+      <span className="text-honey-600">party</span>
     </span>
   );
 }
 
-export function Logo({ size = "md", href = "/" }: { size?: LogoSize; href?: string }) {
-  const s = sizes[size];
+export function Logo({
+  size = "md",
+  href = "/map",
+  showWordmark = true,
+}: {
+  size?: LogoSize;
+  href?: string;
+  /** Pass empty string to render without link wrapper */
+  showWordmark?: boolean;
+}) {
+  const gradId = useId().replace(/:/g, "");
+  const c = config[size];
+
   const inner = (
-    <span className={`inline-flex items-center ${s.gap} leading-none`}>
-      <LogoMark size={s.box} />
-      <span className="inline-flex items-baseline tracking-tight">
-        <span className={`font-display font-extrabold text-graphite ${s.lf}`}>lf</span>
-        <span className={`font-display font-extrabold text-honey-600 ${s.party}`}>party</span>
-      </span>
+    <span className={`inline-flex items-center ${c.gap} leading-none`}>
+      <LogoMark size={c.mark} gradId={gradId} />
+      {showWordmark && c.showWord ? <LogoWordmark className={c.text} /> : null}
     </span>
   );
 
-  if (!href) return inner;
+  if (href === "") return inner;
+
   return (
-    <Link href={href} className="no-underline transition-opacity hover:opacity-90">
+    <Link
+      href={href}
+      className="inline-flex no-underline transition-opacity hover:opacity-[0.88] active:opacity-80"
+    >
       {inner}
     </Link>
   );
