@@ -18,7 +18,9 @@
     "import:places": "node --experimental-strip-types scripts/import-places.ts",
     "purge:legacy-places": "node --experimental-strip-types scripts/purge-legacy-places.ts",
     "purge:demo": "node --experimental-strip-types scripts/purge-demo.ts",
-    "purge:paid-places": "node --experimental-strip-types scripts/purge-paid-places.ts"
+    "purge:paid-places": "node --experimental-strip-types scripts/purge-paid-places.ts",
+    "seed:marketing-slots": "node --experimental-strip-types scripts/seed-marketing-slots.ts",
+    "austin:setup": "npm run purge:legacy-places && npm run import:places && npm run seed:marketing-slots"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",

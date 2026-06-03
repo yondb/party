@@ -2,70 +2,81 @@
 
 **Position:** Dog walks & outdoor crews in Austin — English-only UI.
 
-## A. Code & CI
+---
 
-- [x] English-only UI (no PL toggle)
-- [x] Austin market filter (`MARKET_CITY=austin`)
-- [x] `dog_walk` category + migration `20250601_austin_dog_walk.sql`
-- [x] Growth loop: share panel, UTM URLs, OG metadata, CI (`npm run test`)
-- [x] Map nearby panel with location consent
+## ✅ Done in repo (dev — shipped on `master`)
 
-**Deploy:** push `master` → Vercel auto-build.
+| Item | Status |
+|------|--------|
+| English-only UI | ✅ |
+| Austin filter (`MARKET_CITY=austin`) | ✅ |
+| `dog_walk` category + migrations | ✅ |
+| Share panel, UTM URLs, OG metadata | ✅ |
+| Feed empty-state CTA | ✅ |
+| Map **Nearby** + location consent | ✅ |
+| CI (`npm run test`) | ✅ |
+| One-shot SQL: `supabase/scripts/austin-launch-all.sql` | ✅ |
+| Scripts: `npm run austin:setup` (purge → import → seed slots) | ✅ |
+| `npm run seed:marketing-slots` (6 dog_walk launch slots) | ✅ |
 
-## B. Supabase (run in SQL editor, in order)
+---
 
-1. `20250530_nine_free_categories.sql` (if not applied)
-2. `20250530_consolidate_patches.sql`
-3. `20250601_austin_dog_walk.sql` — **drop constraint → update → add constraint**
+## 📋 Your tasks (cannot be done from code alone)
 
-Verify:
+### 1. Supabase SQL (5 min)
+
+1. Open [Supabase Dashboard](https://supabase.com/dashboard) → your project → **SQL Editor**
+2. Paste & run entire file: **`supabase/scripts/austin-launch-all.sql`**
+3. Verify:
 
 ```sql
 select city, category, count(*) from places group by 1,2 order by 1,2;
-select conname from pg_constraint where conname like '%places_category%';
 ```
 
-## C. Places data (local terminal)
+### 2. Austin places + marketing slots (terminal, ~15–30 min)
+
+In `.env.local`: `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, **`MARKETING_HOST_EMAIL`** (your login email).
 
 ```powershell
-$env:IMPORT_PLACES_INSECURE_TLS="1"   # Windows TLS workaround
-npm run purge:legacy-places           # remove non-Austin rows
-npm run import:places                 # all 9 categories from Overpass
+$env:IMPORT_PLACES_INSECURE_TLS="1"
+npm run austin:setup
 ```
 
-Or manual cleanup:
+Or step by step: `purge:legacy-places` → `import:places` → `seed:marketing-slots`
 
-```sql
-delete from places where city != 'austin';
-```
+### 3. Smoke test production (5 min)
 
-## D. Seed marketing slots
+After Vercel deploy from latest `master`:
 
-Create 5–10 `dog_walk` slots manually at: Zilker, Auditorium Shores, Red Bud Isle, Mueller Lake Park, Shoal Creek.
+1. `/landing` — English hero
+2. `/map` — **Nearby** → allow location → sorted places
+3. `/feed` — slots or empty CTA
+4. `/slots/[id]` — **Share** copies link with `utm_source=share`
+5. Create one new `dog_walk` slot yourself
 
-## E. Marketing (week 1)
+### 4. Marketing week 1 (manual)
 
 | Channel | Action |
 |---------|--------|
-| Reddit | r/Austin, r/AustinPets, r/dogs — link with `?utm_source=reddit` |
-| Facebook | Austin Dog Owners / ATX Dogs groups |
-| TikTok/Reels | Map pin → create crew → share button |
+| Reddit | r/Austin, r/AustinPets, r/dogs — link `?utm_source=reddit` |
+| Facebook | Austin Dog Owners / ATX Dogs — link to a seeded slot |
+| TikTok/Reels | Screen record: map → create slot → Share button |
 | Nextdoor | One neighborhood dog-park invite |
 
-## F. Copy (EN)
+**Post copy hook:** *Sunday Zilker loop — friendly dogs welcome. Join on ifparty.com*
 
-- Hero: *Find your crew for dog walks, runs, and parks in Austin.*
-- CTA: *Create a meetup → share the link → fill your party.*
-- Dog hook: *Sunday Zilker loop — friendly dogs welcome.*
+### 5. Metrics (optional but recommended)
 
-## G. Metrics
+- Watch Vercel analytics / add GA4 or Plausible when ready
+- Target: **1 share per 5 slots** in 30 days
+- UTM params already on share links (`utm_source`, `utm_medium`, `utm_campaign`)
 
-Track: UTM share clicks, signups, slots created. Target: **1 share / 5 slots** in 30 days.
+---
 
-## H. Post-launch smoke test
+## Quick reference
 
-1. `/landing` — English hero
-2. `/map` — Nearby → allow location → sorted places
-3. `/slots/new` — create dog_walk slot at Austin place
-4. `/slots/[id]` — Share panel copies link with UTM
-5. `/feed` — empty state CTA to map
+| Command | Purpose |
+|---------|---------|
+| `npm run austin:setup` | Purge non-Austin → OSM import → 6 marketing slots |
+| `npm run seed:marketing-slots` | Re-seed slots only (skips duplicates) |
+| `npm run import:places -- --category=dog_walk` | Import one category |

@@ -409,7 +409,7 @@ export function onboardingNavUi() {
 
 export function cookieBannerUi() {
   return {
-    text: "We use essential cookies for sign-in and language. We do not run optional marketing analytics without your consent.",
+    text: "We use essential cookies for sign-in and session. We do not run optional marketing analytics without your consent.",
     accept: "OK",
     learnMore: "Privacy policy",
   };
