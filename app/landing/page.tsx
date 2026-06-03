@@ -4,15 +4,13 @@ import { getActivity } from "@/lib/activities";
 import { ActivityIcon } from "@/components/slots/ActivityIcon";
 import { SplashGate } from "@/components/landing/SplashGate";
 import { LandingTopBar } from "@/components/landing/LandingTopBar";
-import { getServerLang } from "@/lib/i18n-server";
 import { landingUi } from "@/lib/i18n-ui";
 
 export const dynamic = "force-dynamic";
 
 export default async function LandingPage() {
-  const lang = await getServerLang();
-  const t = landingUi(lang);
-  const locale = lang === "pl" ? "pl-PL" : "en-GB";
+  const t = landingUi();
+  const locale = "en-US";
 
   const supabase = await createClient();
   const { data: slots } = await supabase
@@ -27,8 +25,7 @@ export default async function LandingPage() {
     .select("id", { count: "exact", head: true });
   const activeCount = playerCount ?? 0;
 
-  return (
-    <SplashGate>
+  return (<SplashGate>
       <LandingTopBar />
       <div className="min-h-dvh bg-[var(--bg-page)] pb-10">
         <section className="flex min-h-[72dvh] flex-col items-center justify-center px-5 text-center sm:px-6">
@@ -60,8 +57,7 @@ export default async function LandingPage() {
           <div className="space-y-4">
             {(slots ?? []).map((s) => {
               const act = getActivity(s.activity_type);
-              return (
-                <Link
+              return (<Link
                   key={s.id}
                   href="/auth"
                   className="floating-card-hover block rounded-2xl p-4 sm:p-5"
@@ -90,8 +86,7 @@ export default async function LandingPage() {
                 </Link>
               );
             })}
-            {!(slots?.length) ? (
-              <p className="text-base text-[var(--text-muted)] sm:text-lg">{t.noSlots}</p>
+            {!(slots?.length) ? (<p className="text-base text-[var(--text-muted)] sm:text-lg">{t.noSlots}</p>
             ) : null}
           </div>
         </section>

@@ -18,8 +18,7 @@ if (process.env.IMPORT_PLACES_INSECURE_TLS === "1") {
   console.warn("WARNING: TLS verification disabled (IMPORT_PLACES_INSECURE_TLS=1)");
 }
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
@@ -46,8 +45,7 @@ const queries: Record<
 > = {
   running: `
     [out:json][timeout:60];
-    (
-      way["leisure"="track"]["sport"="running"](${CITY_BBOX});
+    (way["leisure"="track"]["sport"="running"](${CITY_BBOX});
       way["route"="running"](${CITY_BBOX});
       node["leisure"="park"](${CITY_BBOX});
     );
@@ -55,8 +53,7 @@ const queries: Record<
   `,
   cycling: `
     [out:json][timeout:60];
-    (
-      way["highway"="cycleway"](${CITY_BBOX});
+    (way["highway"="cycleway"](${CITY_BBOX});
       node["amenity"="bicycle_parking"](${CITY_BBOX});
     );
     out center 30;
@@ -68,32 +65,28 @@ const queries: Record<
   `,
   basketball: `
     [out:json][timeout:60];
-    (
-      node["sport"="basketball"](${CITY_BBOX});
+    (node["sport"="basketball"](${CITY_BBOX});
       way["leisure"="pitch"]["sport"="basketball"](${CITY_BBOX});
     );
     out center 40;
   `,
   hiking: `
     [out:json][timeout:60];
-    (
-      way["route"="hiking"](${CITY_BBOX});
+    (way["route"="hiking"](${CITY_BBOX});
       node["leisure"="nature_reserve"](${CITY_BBOX});
     );
     out center 20;
   `,
   playground: `
     [out:json][timeout:60];
-    (
-      node["leisure"="playground"](${CITY_BBOX});
+    (node["leisure"="playground"](${CITY_BBOX});
       way["leisure"="playground"](${CITY_BBOX});
     );
     out center 60;
   `,
   dog_walk: `
     [out:json][timeout:60];
-    (
-      node["leisure"="dog_park"](${CITY_BBOX});
+    (node["leisure"="dog_park"](${CITY_BBOX});
       way["leisure"="dog_park"](${CITY_BBOX});
       node["leisure"="park"]["dog"="yes"](${CITY_BBOX});
       way["leisure"="park"]["dog"="yes"](${CITY_BBOX});
@@ -102,8 +95,7 @@ const queries: Record<
   `,
   football: `
     [out:json][timeout:60];
-    (
-      node["sport"="soccer"](${CITY_BBOX});
+    (node["sport"="soccer"](${CITY_BBOX});
       way["leisure"="pitch"]["sport"="soccer"](${CITY_BBOX});
       way["leisure"="pitch"]["sport"="football"](${CITY_BBOX});
     );
@@ -111,8 +103,7 @@ const queries: Record<
   `,
   park: `
     [out:json][timeout:60];
-    (
-      node["leisure"="park"]["name"](${CITY_BBOX});
+    (node["leisure"="park"]["name"](${CITY_BBOX});
       way["leisure"="park"]["name"](${CITY_BBOX});
     );
     out center 80;
@@ -207,8 +198,7 @@ function defaultPlaceName(category: string): string {
   return `${base} spot`;
 }
 
-async function savePlaces(
-  places: {
+async function savePlaces(places: {
     name: string;
     category: string;
     lat: number;
@@ -225,8 +215,7 @@ async function savePlaces(
     if (error) {
       console.error(`  DB error (batch ${i / BATCH_SIZE + 1}):`, error.message);
       if (error.message.includes("ON CONFLICT") || error.message.includes("unique")) {
-        console.error(
-          "  → Uruchom w Supabase SQL: supabase/migrations/20250519_places_osm_id_constraint.sql",
+        console.error("  → Uruchom w Supabase SQL: supabase/migrations/20250519_places_osm_id_constraint.sql",
         );
       }
       return saved;

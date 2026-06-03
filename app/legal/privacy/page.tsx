@@ -6,8 +6,7 @@ export const metadata: Metadata = {
 };
 
 export default function PrivacyPage() {
-  return (
-    <article className="space-y-8 text-base leading-relaxed text-[var(--text-secondary)]">
+  return (<article className="space-y-8 text-base leading-relaxed text-[var(--text-secondary)]">
       <header>
         <h1 className="text-3xl font-bold text-[var(--accent)]">Privacy policy</h1>
         <p className="mt-2 text-sm text-[var(--text-muted)]">Last updated: 2026-05-10 · Draft for review</p>
@@ -54,37 +53,6 @@ export default function PrivacyPage() {
           You may request access, rectification, erasure, restriction, portability, and object to processing where
           applicable. Contact the operator email you publish in the app. You may lodge a complaint with your
           supervisory authority.
-        </p>
-      </section>
-
-      <hr className="divider-gold my-8" />
-
-      <header>
-        <h2 className="text-2xl font-bold text-[var(--accent)]">Polityka prywatności (PL)</h2>
-        <p className="mt-2 text-sm text-[var(--text-muted)]">Szkic do akceptacji prawnika · 2026-05-10</p>
-      </header>
-
-      <section className="space-y-3">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)]">1. Administrator</h3>
-        <p>
-          Administratorem danych jest podmiot prowadzący wdrożenie lfparty (np. Twój podmiot / osoba fizyczna
-          prowadząca działalność). W treści publicznej podaj nazwę, adres i e-mail kontaktowy.
-        </p>
-      </section>
-
-      <section className="space-y-3">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)]">2. Zakres danych</h3>
-        <p>
-          Dane konta (e-mail, profil), treści związane z questami (aplikacje, czat, oceny), dane techniczne logowania
-          oraz lokalizacja wskazana przy tworzeniu wydarzenia lub na mapie.
-        </p>
-      </section>
-
-      <section className="space-y-3">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)]">3. Prawa osoby, której dane dotyczą</h3>
-        <p>
-          Przysługują Ci m.in. prawo dostępu, sprostowania, usunięcia, ograniczenia, przenoszenia danych oraz
-          wniesienia skargi do Prezesa UODO.
         </p>
       </section>
 

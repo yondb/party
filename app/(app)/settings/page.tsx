@@ -1,6 +1,5 @@
 import { PageHeader } from "@/components/layout/PageHeader";
 import { createClient } from "@/lib/supabase/server";
-import { getServerLang } from "@/lib/i18n-server";
 import { pageHeaderUi, settingsUi } from "@/lib/i18n-ui";
 import { SettingsAccountPanel } from "@/components/settings/SettingsAccountPanel";
 
@@ -12,16 +11,14 @@ export default async function SettingsPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const lang = await getServerLang();
-  const t = settingsUi(lang);
-  const back = pageHeaderUi(lang);
+  const t = settingsUi();
+  const back = pageHeaderUi();
 
   const prefs = (user?.user_metadata?.preferred_activities as string[] | undefined) ?? [];
   const emailOn = user?.user_metadata?.notify_email_transactional !== false;
   const marketing = user?.user_metadata?.marketing_opt_in === true;
 
-  return (
-    <div className="pb-6">
+  return (<div className="pb-6">
       <PageHeader title={t.title} backHref="/profile" backLabel={back.back} />
       <div className="floating-card rounded-lg p-4">
         <h2 className="text-xs font-medium text-[var(--text-secondary)]">
@@ -32,7 +29,7 @@ export default async function SettingsPage() {
           {t.prefsLabel} {prefs.length ? prefs.join(", ") : t.prefsNone}
         </p>
       </div>
-      <SettingsAccountPanel lang={lang} initialEmailTransactional={emailOn} initialMarketing={marketing} />
+      <SettingsAccountPanel initialEmailTransactional={emailOn} initialMarketing={marketing} />
     </div>
   );
 }

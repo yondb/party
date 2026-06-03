@@ -46,38 +46,34 @@ export function ProfileFixIt({
 }: ProfileFixItProps) {
   const xpPct = Math.min(100, Math.max(0, progressPct));
 
-  return (
-    <div className="relative">
+  return (<div className="relative">
       <div className="absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-ash-100 via-bg to-transparent pointer-events-none" />
       <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-br from-honey-50/25 via-transparent to-transparent pointer-events-none" />
 
       <div className="relative mx-auto max-w-6xl px-4 lg:px-8 py-6 lg:py-10">
         <div className="mb-4 flex items-center justify-between gap-2">
           <div>
-            {backHref ? (
-              <Link href={backHref}>
+            {backHref ? (<Link href={backHref}>
                 <Button size="sm" variant="ghost" icon={<ArrowLeft className="size-4" />}>
-                  Wróć
+                  Back
                 </Button>
               </Link>
             ) : null}
           </div>
           <div className="flex gap-2">
-            {isOwn ? (
-              <>
+            {isOwn ? (<>
                 <Link href="/settings">
                   <Button size="sm" variant="ghost" icon={<Settings className="size-4" />}>
-                    Ustawienia
+                    Settings
                   </Button>
                 </Link>
                 <Link href="/profile/edit">
                   <Button size="sm" variant="primary" icon={<Pencil className="size-4" />}>
-                    Edytuj
+                    Edit
                   </Button>
                 </Link>
               </>
-            ) : (
-              actionSlot
+            ) : (actionSlot
             )}
           </div>
         </div>
@@ -94,8 +90,7 @@ export function ProfileFixIt({
               <p className="mt-1 text-caption uppercase tracking-wider text-ash-500">
                 {levelName} · {city}
               </p>
-              {bio ? (
-                <p className="mt-3 max-w-sm text-body-sm text-ash-600 whitespace-pre-line">{bio}</p>
+              {bio ? (<p className="mt-3 max-w-sm text-body-sm text-ash-600 whitespace-pre-line">{bio}</p>
               ) : null}
 
               <div className="mt-8 w-full max-w-sm">
@@ -111,8 +106,7 @@ export function ProfileFixIt({
                     className="absolute inset-y-0 left-0 bg-gradient-to-r from-honey-400 via-honey-500 to-honey-600 rounded-full transition-all duration-1000 ease-out-soft"
                     style={{ width: `${xpPct}%` }}
                   />
-                  {[25, 50, 75].map((t) => (
-                    <span
+                  {[25, 50, 75].map((t) => (<span
                       key={t}
                       className="absolute top-1/2 -translate-y-1/2 size-1 rounded-full bg-bg/70"
                       style={{ left: `${t}%` }}
@@ -120,12 +114,10 @@ export function ProfileFixIt({
                   ))}
                 </div>
                 <p className="mt-2 text-caption text-ash-400">
-                  {nextLevelName ? (
-                    <>
-                      Następny: <span className="text-ash-700 font-semibold">{nextLevelName}</span> za {expToNext} XP
+                  {nextLevelName ? (<>
+                      Next: <span className="text-ash-700 font-semibold">{nextLevelName}</span> in {expToNext} XP
                     </>
-                  ) : (
-                    <span className="text-ash-700 font-semibold">Maksymalny poziom</span>
+                  ) : (<span className="text-ash-700 font-semibold">Max level</span>
                   )}
                 </p>
               </div>
@@ -151,21 +143,21 @@ export function ProfileFixIt({
             <div className="grid grid-cols-3 gap-3 lg:gap-4">
               <Card className="!p-5 text-center">
                 <p className="font-display text-display-xl text-ash-900">{stats.events}</p>
-                <p className="text-caption uppercase tracking-wider text-ash-500 mt-1">Wydarzeń</p>
+                <p className="text-caption uppercase tracking-wider text-ash-500 mt-1">Events</p>
               </Card>
               <Card className="!p-5 text-center">
                 <p className="font-display text-display-xl text-honey-700">{stats.hosted}</p>
-                <p className="text-caption uppercase tracking-wider text-ash-500 mt-1">Host</p>
+                <p className="text-caption uppercase tracking-wider text-ash-500 mt-1">Hosted</p>
               </Card>
               <Card className="!p-5 text-center">
-                <p className="font-display text-display-md text-ash-400">{stats.rating ?? 'Brak ocen'}</p>
-                <p className="text-caption uppercase tracking-wider text-ash-500 mt-1">Ocena</p>
+                <p className="font-display text-display-md text-ash-400">{stats.rating ?? 'No ratings'}</p>
+                <p className="text-caption uppercase tracking-wider text-ash-500 mt-1">Rating</p>
               </Card>
             </div>
 
             <Card>
               <div className="flex items-center justify-between mb-5">
-                <h2 className="font-display text-heading-md text-ash-900">Odznaki</h2>
+                <h2 className="font-display text-heading-md text-ash-900">Badges</h2>
                 <span className="font-mono text-body-sm text-ash-500">
                   <span className="text-ash-900 font-bold">{badges.filter((b) => b.earned).length}</span> / {badges.length}
                 </span>
@@ -173,11 +165,10 @@ export function ProfileFixIt({
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
                 {badges.map((b) => {
                   const Icon = ICONS[b.icon];
-                  return (
-                    <div
+                  return (<div
                       key={b.id}
                       className="flex flex-col items-center gap-2 text-center"
-                      title={b.earned ? b.name : `Jak zdobyć: ${b.name}`}
+                      title={b.earned ? b.name : `How to earn: ${b.name}`}
                     >
                       <div
                         className={`size-16 rounded-2xl grid place-items-center transition ${
@@ -196,17 +187,15 @@ export function ProfileFixIt({
             </Card>
 
             <Card>
-              <h2 className="mb-4 font-display text-heading-md text-ash-900">Ostatnie wydarzenia</h2>
-              {stats.events > 0 ? (
-                <p className="text-body-sm text-ash-500">
-                  Wziąłeś udział w <span className="font-semibold text-ash-900">{stats.events}</span> wydarzeniach.
+              <h2 className="mb-4 font-display text-heading-md text-ash-900">Recent events</h2>
+              {stats.events > 0 ? (<p className="text-body-sm text-ash-500">
+                  You joined <span className="font-semibold text-ash-900">{stats.events}</span> events.
                 </p>
-              ) : (
-                <div className="rounded-2xl border border-dashed border-ash-200 bg-surface-2/60 px-4 py-8 text-center">
-                  <p className="text-body-sm text-ash-500">Brak wydarzeń — dołącz do pierwszego slota!</p>
+              ) : (<div className="rounded-2xl border border-dashed border-ash-200 bg-surface-2/60 px-4 py-8 text-center">
+                  <p className="text-body-sm text-ash-500">No events yet — join your first slot!</p>
                   <Link href="/map" className="mt-3 inline-block">
                     <Button size="sm" variant="dark">
-                      Znajdź slot
+                      Find a slot
                     </Button>
                   </Link>
                 </div>

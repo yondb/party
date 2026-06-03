@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { deleteSlotAction, updateSlotStatus } from "@/app/actions/slots";
 import { Button } from "@/components/ui/Button";
-import { useLanguage } from "@/components/i18n/LanguageProvider";
 import { slotManageUi } from "@/lib/i18n-ui";
 
 type HostManageToolbarProps = {
@@ -15,8 +14,7 @@ type HostManageToolbarProps = {
 };
 
 export function HostManageToolbar({ slotId, canMutate }: HostManageToolbarProps) {
-  const { lang } = useLanguage();
-  const m = slotManageUi(lang);
+  const m = slotManageUi();
   const router = useRouter();
   const [busy, setBusy] = useState<null | "cancel" | "delete">(null);
 
@@ -46,8 +44,7 @@ export function HostManageToolbar({ slotId, canMutate }: HostManageToolbarProps)
     }
   }
 
-  return (
-    <section className="mb-6 rounded-xl border border-[var(--border-medium)] bg-[var(--bg-card)] p-4">
+  return (<section className="mb-6 rounded-xl border border-[var(--border-medium)] bg-[var(--bg-card)] p-4">
       <p className="mb-3 text-xs leading-snug text-[var(--text-muted)]">{m.toolbarHint}</p>
       <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
         <Link

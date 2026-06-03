@@ -9,8 +9,7 @@ export function LevelBadge({ level, className = "", size = "sm" }: LevelBadgePro
     size === "lg"
       ? "min-w-[2.5rem] px-2 py-1 text-base"
       : "min-w-[2rem] px-1.5 py-0.5 text-xs";
-  return (
-    <div
+  return (<div
       className={`inline-flex items-center justify-center font-bold text-white ${sizing} ${className}`}
       style={{
         background: "var(--accent)",

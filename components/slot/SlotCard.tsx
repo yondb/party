@@ -2,7 +2,6 @@
 import Link from 'next/link';
 import { Calendar, MapPin } from 'lucide-react';
 import { CATEGORIES, type CategoryId, categoryLabel } from '@/lib/categories';
-import { useLanguage } from '@/components/i18n/LanguageProvider';
 import { Avatar } from '@/components/ui/Avatar';
 import { AvatarStack } from '@/components/ui/AvatarStack';
 import { Badge } from '@/components/ui/Badge';
@@ -29,13 +28,11 @@ interface Props {
 }
 
 export function SlotCard({ slot, compact }: Props) {
-  const { lang } = useLanguage();
   const cat = CATEGORIES[slot.category];
   const taken = slot.participants.length;
   const isFull = taken >= slot.capacity;
 
-  return (
-    <Link href={`/slots/${slot.id}`} className="block group">
+  return (<Link href={`/slots/${slot.id}`} className="block group">
       <div className="relative overflow-hidden rounded-3xl border border-ash-200/50 bg-surface shadow-sm transition-all duration-200 ease-out-soft hover:-translate-y-0.5 hover:border-ash-300/60 hover:shadow-md">
         <span
           className="absolute left-0 top-0 h-full w-1.5 group-hover:w-2 transition-all duration-200"
@@ -54,23 +51,21 @@ export function SlotCard({ slot, compact }: Props) {
               </div>
               <div className="flex flex-col">
                 <span className="text-caption uppercase tracking-wider text-ash-500">
-                  {categoryLabel(lang, slot.category)}
+                  {categoryLabel(slot.category)}
                 </span>
                 {slot.featured && <Badge variant="slash">featured</Badge>}
               </div>
             </div>
-            {isFull && <Badge variant="default">Pełne</Badge>}
+            {isFull && <Badge variant="default">Full</Badge>}
           </div>
 
-          <h3 className={cn(
-            'font-display text-ash-900 line-clamp-2',
+          <h3 className={cn('font-display text-ash-900 line-clamp-2',
             compact ? 'text-heading-md mb-2' : 'text-display-md mb-3',
           )}>
             {slot.title}
           </h3>
 
-          {!compact && (
-            <div className="space-y-1.5 mb-4">
+          {!compact && (<div className="space-y-1.5 mb-4">
               <div className="flex items-center gap-2 text-ash-600">
                 <Calendar className="size-4 shrink-0" />
                 <span className="font-mono text-body-sm">
@@ -89,17 +84,15 @@ export function SlotCard({ slot, compact }: Props) {
             </div>
           )}
 
-          {compact ? (
-            <div className="flex items-center justify-between gap-2 border-t border-ash-100 pt-2">
+          {compact ? (<div className="flex items-center justify-between gap-2 border-t border-ash-100 pt-2">
               <span className="font-mono text-caption text-ash-600">
                 {formatDate(slot.startAt)} · {formatTime(slot.startAt)}
               </span>
               <Button size="sm" variant={isFull ? 'secondary' : 'primary'} disabled={isFull}>
-                {isFull ? 'Pełne' : 'Dołącz'}
+                {isFull ? 'Full' : 'Join'}
               </Button>
             </div>
-          ) : (
-            <>
+          ) : (<>
           <div className="flex items-center gap-2 mb-4">
             <Avatar src={slot.host.avatarUrl} name={slot.host.name} size="xs" />
             <span className="text-body-sm text-ash-700 font-medium">{slot.host.name}</span>
@@ -114,11 +107,11 @@ export function SlotCard({ slot, compact }: Props) {
               <AvatarStack avatars={slot.participants} size="xs" max={3} />
               <span className="text-body-sm text-ash-500">
                 <span className="font-mono font-semibold text-ash-900">{taken}</span>
-                <span className="font-mono">/{slot.capacity}</span> miejsc
+                <span className="font-mono">/{slot.capacity}</span> spots
               </span>
             </div>
             <Button size="sm" variant={isFull ? 'secondary' : 'primary'} disabled={isFull}>
-              {isFull ? 'Pełne' : 'Dołącz'}
+              {isFull ? 'Full' : 'Join'}
             </Button>
           </div>
             </>

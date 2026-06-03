@@ -8,17 +8,13 @@ import { Button } from "@/components/ui/Button";
 import { updateProfile } from "@/app/actions/profile";
 import { createClient } from "@/lib/supabase/client";
 import { ICON_FEMALE, ICON_MALE, commonErrors, profileEditUi } from "@/lib/i18n-ui";
-import type { Lang } from "@/lib/i18n-lang";
-
 export function ProfileEditForm({
-  lang,
   initialName,
   initialBio,
   initialGender,
   initialBirthDate,
   initialAvatarUrl,
 }: {
-  lang: Lang;
   initialName: string;
   initialBio: string | null;
   initialGender: "male" | "female";
@@ -26,8 +22,8 @@ export function ProfileEditForm({
   initialAvatarUrl: string | null;
 }) {
   const router = useRouter();
-  const t = profileEditUi(lang);
-  const errs = commonErrors(lang);
+  const t = profileEditUi();
+  const errs = commonErrors();
   const [name, setName] = useState(initialName);
   const [bio, setBio] = useState(initialBio ?? "");
   const [gender, setGender] = useState(initialGender);
@@ -97,8 +93,7 @@ export function ProfileEditForm({
     }
   }
 
-  return (
-    <form onSubmit={onSubmit} className="space-y-4">
+  return (<form onSubmit={onSubmit} className="space-y-4">
       <Input label={t.name} value={name} onChange={(e) => setName(e.target.value)} required />
       <Textarea
         label={t.bio}

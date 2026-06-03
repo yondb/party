@@ -3,7 +3,6 @@ import { Bricolage_Grotesque, Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
 import { LanguageProvider } from '@/components/i18n/LanguageProvider';
-import { DocumentLang } from '@/components/i18n/DocumentLang';
 import { ToastProvider } from '@/components/ui/ToastProvider';
 import { CookieConsent } from '@/components/layout/CookieConsent';
 import { getSiteUrl, SITE_NAME, SITE_TAGLINE } from '@/lib/site';
@@ -64,10 +63,9 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pl" className={`${bricolage.variable} ${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="en" className={`${bricolage.variable} ${geistSans.variable} ${geistMono.variable}`}>
       <body className="bg-bg text-ash-900 font-sans antialiased min-h-screen">
         <LanguageProvider>
-          <DocumentLang />
           <ToastProvider>
             {children}
             <ServiceWorkerRegister />

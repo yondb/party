@@ -62,7 +62,7 @@ export function placeCategoryToActivityType(category: string): string {
   return category;
 }
 
-export function placeCategoryLabel(lang: "en" | "pl", category: PlaceCategory): string {
+export function placeCategoryLabel(category: PlaceCategory): string {
   const en: Record<PlaceCategory, string> = {
     running: "Running",
     cycling: "Cycling",
@@ -74,18 +74,7 @@ export function placeCategoryLabel(lang: "en" | "pl", category: PlaceCategory): 
     football: "Football",
     park: "Park meetup",
   };
-  const pl: Record<PlaceCategory, string> = {
-    running: "Bieganie",
-    cycling: "Rower",
-    basketball: "Koszykówka",
-    hiking: "Wędrówki",
-    gym: "Siłownia plenerowa",
-    playground: "Plac zabaw",
-    dog_walk: "Spacer z psem",
-    football: "Piłka nożna",
-    park: "Park",
-  };
-  return (lang === "pl" ? pl : en)[category] ?? category;
+  return en[category] ?? category;
 }
 
 export function isPlaceCategory(raw: string): raw is PlaceCategory {
@@ -96,12 +85,12 @@ export function isFreePlaceCategory(raw: string): raw is PlaceCategory {
   return isPlaceCategory(raw);
 }
 
-const GENERIC_SPOT_LABELS: Partial<Record<PlaceCategory, { en: string; pl: string }>> = {
-  gym: { en: "outdoor gym", pl: "siłownia plenerowa" },
-  playground: { en: "playground", pl: "plac zabaw" },
-  dog_walk: { en: "dog park", pl: "park dla psów" },
-  football: { en: "football pitch", pl: "boisko piłkarskie" },
-  park: { en: "park", pl: "park" },
+const GENERIC_SPOT_LABELS: Partial<Record<PlaceCategory, string>> = {
+  gym: "outdoor gym",
+  playground: "playground",
+  dog_walk: "dog park",
+  football: "football pitch",
+  park: "park",
 };
 
 const GENERIC_PLACE_NAMES = new Set([
@@ -117,22 +106,19 @@ const GENERIC_PLACE_NAMES = new Set([
   "dog park spot",
   "football spot",
   "park spot",
-  ...Object.values(GENERIC_SPOT_LABELS).flatMap((l) => [l.en, l.pl]),
+  ...Object.values(GENERIC_SPOT_LABELS),
 ]);
 
 /** OSM imports often use generic English names — show category + district instead. */
-export function displayPlaceName(
-  place: { name: string; category: PlaceCategory; district: string | null },
-  lang: "en" | "pl",
+export function displayPlaceName(place: { name: string; category: PlaceCategory; district: string | null },
 ): string {
   const normalized = place.name.toLowerCase().trim();
-  const genericLabel = GENERIC_SPOT_LABELS[place.category]?.[lang === "pl" ? "pl" : "en"];
-  if (
-    GENERIC_PLACE_NAMES.has(normalized) ||
+  const genericLabel = GENERIC_SPOT_LABELS[place.category];
+  if (GENERIC_PLACE_NAMES.has(normalized) ||
     (genericLabel && normalized === genericLabel) ||
     normalized === `${place.category} spot`
   ) {
-    const catLabel = placeCategoryLabel(lang, place.category);
+    const catLabel = placeCategoryLabel(place.category);
     return place.district ? `${catLabel} · ${place.district}` : catLabel;
   }
   return place.name;

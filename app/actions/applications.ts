@@ -2,7 +2,6 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getServerLang } from "@/lib/i18n-server";
 import { commonErrors, genderApplyBlocked } from "@/lib/i18n-ui";
 import { isOverRateLimit } from "@/lib/action-rate-limit";
 import { sendTransactionalEmail } from "@/lib/email";
@@ -11,8 +10,7 @@ import { SITE_NAME } from "@/lib/site";
 
 export async function applyToSlot(slotId: string, message?: string) {
   const supabase = await createClient();
-  const lang = await getServerLang();
-  const errs = commonErrors(lang);
+  const errs = commonErrors();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -36,10 +34,10 @@ export async function applyToSlot(slotId: string, message?: string) {
   const userGender = applicant?.gender === "male" || applicant?.gender === "female" ? applicant.gender : null;
 
   if (scope === "female" && userGender !== "female") {
-    return { error: genderApplyBlocked(lang, "female") };
+    return { error: genderApplyBlocked("female") };
   }
   if (scope === "male" && userGender !== "male") {
-    return { error: genderApplyBlocked(lang, "male") };
+    return { error: genderApplyBlocked("male") };
   }
 
   const minReliability = Number(slot?.min_reliability ?? 0);
@@ -50,18 +48,12 @@ export async function applyToSlot(slotId: string, message?: string) {
   if (minReliability > 0 && myReliability < minReliability) {
     const pct = Math.round(minReliability * 100);
     return {
-      error:
-        lang === "pl"
-          ? `Ten slot wymaga rzetelności min. ${pct}%.`
-          : `This slot requires at least ${pct}% reliability.`,
+      error: `This slot requires at least ${pct}% reliability.`,
     };
   }
   if (minLevel > 0 && myLevel < minLevel) {
     return {
-      error:
-        lang === "pl"
-          ? `Ten slot wymaga min. poziomu ${minLevel}.`
-          : `This slot requires at least level ${minLevel}.`,
+      error: `This slot requires at least level ${minLevel}.`,
     };
   }
 
@@ -113,13 +105,11 @@ function escapeHtml(s: string) {
     .replace(/"/g, "&quot;");
 }
 
-export async function respondToApplication(
-  applicationId: string,
+export async function respondToApplication(applicationId: string,
   decision: "accepted" | "rejected" | "pending",
 ) {
   const supabase = await createClient();
-  const lang = await getServerLang();
-  const errs = commonErrors(lang);
+  const errs = commonErrors();
   const {
     data: { user },
   } = await supabase.auth.getUser();

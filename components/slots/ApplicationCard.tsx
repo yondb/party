@@ -41,8 +41,7 @@ function actionFormClass() {
 export function ApplicationCard({ row, index = 0, copy, hostControls = false }: ApplicationCardProps) {
   const dim = row.status === "rejected";
 
-  return (
-    <motion.div
+  return (<motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04 }}
@@ -59,16 +58,14 @@ export function ApplicationCard({ row, index = 0, copy, hostControls = false }: 
           <p className="text-sm text-[var(--text-muted)]">
             {copy.exp} {row.exp}
           </p>
-          {row.message ? (
-            <p className="mt-2 break-words rounded border border-[var(--border-medium)] bg-[var(--bg-input)] p-2 text-sm leading-relaxed text-[var(--text-secondary)]">
+          {row.message ? (<p className="mt-2 break-words rounded border border-[var(--border-medium)] bg-[var(--bg-input)] p-2 text-sm leading-relaxed text-[var(--text-secondary)]">
               {row.message}
             </p>
           ) : null}
         </div>
       </div>
 
-      {row.status === "pending" ? (
-        <div className={actionBarClass()}>
+      {row.status === "pending" ? (<div className={actionBarClass()}>
           <form
             className={actionFormClass()}
             action={async () => {
@@ -90,8 +87,7 @@ export function ApplicationCard({ row, index = 0, copy, hostControls = false }: 
             </Button>
           </form>
         </div>
-      ) : hostControls && row.status === "accepted" ? (
-        <div className={actionBarClass()}>
+      ) : hostControls && row.status === "accepted" ? (<div className={actionBarClass()}>
           <form
             className={actionFormClass()}
             action={async () => {
@@ -113,8 +109,7 @@ export function ApplicationCard({ row, index = 0, copy, hostControls = false }: 
             </Button>
           </form>
         </div>
-      ) : hostControls && row.status === "rejected" ? (
-        <div className={actionBarClass()}>
+      ) : hostControls && row.status === "rejected" ? (<div className={actionBarClass()}>
           <form
             className={actionFormClass()}
             action={async () => {
@@ -136,8 +131,7 @@ export function ApplicationCard({ row, index = 0, copy, hostControls = false }: 
             </Button>
           </form>
         </div>
-      ) : (
-        <p className="text-center text-sm font-medium text-[var(--text-muted)]">
+      ) : (<p className="text-center text-sm font-medium text-[var(--text-muted)]">
           {row.status === "accepted" ? copy.inParty : copy.rejected}
         </p>
       )}

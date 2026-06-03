@@ -2,14 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useLanguage } from "@/components/i18n/LanguageProvider";
 import { cookieBannerUi } from "@/lib/i18n-ui";
 
 const CONSENT_KEY = "pf_cookie_consent_v1";
 
 export function CookieConsent() {
-  const { lang } = useLanguage();
-  const t = cookieBannerUi(lang);
+  const t = cookieBannerUi();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -34,8 +32,7 @@ export function CookieConsent() {
 
   if (!visible) return null;
 
-  return (
-    <div
+  return (<div
       role="dialog"
       aria-label="Cookies"
       className="fixed inset-x-0 bottom-0 z-[90] border-t border-[var(--border-medium)] bg-[var(--bg-page)]/98 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] shadow-[0_-8px_24px_rgba(0,0,0,0.45)] backdrop-blur-sm sm:px-6"

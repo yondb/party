@@ -55,8 +55,7 @@ async function main() {
 
   const after = await countByCategory();
   console.log("\nPo:", after);
-  console.log(
-    "Gotowe. Siłownie plenerowe można dociągnąć: npm run import:places -- --category=gym",
+  console.log("Gotowe. Siłownie plenerowe można dociągnąć: npm run import:places -- --category=gym",
   );
 }
 

@@ -16,10 +16,8 @@ export function Badge({ variant = 'default', className, children, ...props }: Ba
     slash: 'bg-transparent text-ash-500 font-mono lowercase normal-case tracking-normal',
   };
 
-  return (
-    <span
-      className={cn(
-        'inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold uppercase tracking-wider',
+  return (<span
+      className={cn('inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold uppercase tracking-wider',
         variants[variant],
         className
       )}

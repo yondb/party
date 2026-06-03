@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test.describe("Public pages", () => {
   test("landing shows hero", async ({ page }) => {
     await page.goto("/landing", { waitUntil: "domcontentloaded" });
-    await expect(page.getByRole("heading", { name: /FIND YOUR PARTY|ZNAJDŹ SWOJE PARTY/i })).toBeVisible({
+    await expect(page.getByRole("heading", { name: /FIND YOUR PARTY/i })).toBeVisible({
       timeout: 20_000,
     });
   });

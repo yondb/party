@@ -1,5 +1,4 @@
 import { isPlaceCategory, type PlaceCategory } from "@/lib/places";
-import type { Lang } from "@/lib/i18n-lang";
 
 export type MapSlotParticipant = { src: string | null; name: string };
 
@@ -40,8 +39,7 @@ type SlotRow = {
 
 type UserRow = { id: string; name: string; avatar_url: string | null };
 
-export function buildMapSlots(
-  places: PlaceRow[],
+export function buildMapSlots(places: PlaceRow[],
   slots: SlotRow[],
   usersById: Map<string, UserRow>,
   acceptedBySlot: Map<string, string[]>,
@@ -104,21 +102,21 @@ export function bucketForSlot(dateTime: string, now: number): SlotBucket {
 }
 
 /** e.g. "za 2 godz", "za 30 min", "teraz". */
-export function relativeStart(dateTime: string, now: number, lang: Lang): string {
+export function relativeStart(dateTime: string, now: number): string {
   const diffMs = new Date(dateTime).getTime() - now;
   const mins = Math.round(diffMs / 60_000);
-  if (mins <= 0) return lang === "pl" ? "teraz" : "now";
-  if (mins < 60) return lang === "pl" ? `za ${mins} min` : `in ${mins} min`;
+  if (mins <= 0) return "now";
+  if (mins < 60) return `in ${mins} min`;
   const hrs = Math.round(mins / 60);
-  if (hrs < 24) return lang === "pl" ? `za ${hrs} godz` : `in ${hrs}h`;
+  if (hrs < 24) return `in ${hrs}h`;
   const days = Math.round(hrs / 24);
-  return lang === "pl" ? `za ${days} dni` : `in ${days}d`;
+  return `in ${days}d`;
 }
 
-export function formatStartTime(dateTime: string, lang: Lang): string {
+export function formatStartTime(dateTime: string): string {
   const d = new Date(dateTime);
   if (Number.isNaN(d.getTime())) return "--:--";
-  return new Intl.DateTimeFormat(lang === "pl" ? "pl-PL" : "en-US", {
+  return new Intl.DateTimeFormat("en-US", {
     hour: "2-digit",
     minute: "2-digit",
   }).format(d);

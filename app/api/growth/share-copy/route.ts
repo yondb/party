@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { generateSlotShareCopy } from "@/lib/growth/share-copy";
-import { getServerLang } from "@/lib/i18n-server";
 import { createClient } from "@/lib/supabase/server";
 
 export async function POST(req: Request) {
@@ -31,8 +30,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Slot not shareable" }, { status: 400 });
   }
 
-  const lang = await getServerLang();
-  const copy = await generateSlotShareCopy(slot, lang);
+  const copy = await generateSlotShareCopy(slot);
 
   return NextResponse.json(copy);
 }

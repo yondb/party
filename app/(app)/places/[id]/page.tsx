@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { getServerLang } from "@/lib/i18n-server";
 import { pageHeaderUi } from "@/lib/i18n-ui";
 import {
   PLACE_CATEGORY_META,
@@ -15,8 +14,7 @@ export const dynamic = "force-dynamic";
 
 export default async function PlacePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const lang = await getServerLang();
-  const back = pageHeaderUi(lang);
+  const back = pageHeaderUi();
   const supabase = await createClient();
 
   const { data: place } = await supabase
@@ -39,8 +37,7 @@ export default async function PlacePage({ params }: { params: Promise<{ id: stri
     ? await supabase.from("users").select("id, name, avatar_url, reliability_score, gender").in("id", hostIds)
     : { data: [] as SlotCardHost[] };
 
-  const hostMap = new Map<string, SlotCardHost>(
-    (hosts ?? []).map((h) => [
+  const hostMap = new Map<string, SlotCardHost>((hosts ?? []).map((h) => [
       h.id,
       {
         id: h.id,
@@ -72,26 +69,23 @@ export default async function PlacePage({ params }: { params: Promise<{ id: stri
 
   const meta = PLACE_CATEGORY_META[place.category as PlaceCategory];
 
-  return (
-    <div className="pb-6">
+  return (<div className="pb-6">
       <PageHeader title={place.name} backHref="/map" backLabel={back.back} />
       <p className="mb-2 text-sm text-[var(--text-muted)]">
-        {meta.icon} {placeCategoryLabel(lang, place.category as PlaceCategory)}
+        {meta.icon} {placeCategoryLabel(place.category as PlaceCategory)}
         {place.district ? ` · ${place.district}` : ""}
       </p>
       <Link
         href={`/slots/new?place_id=${place.id}`}
         className="btn-primary mb-6 inline-flex min-h-[44px] px-4 text-sm"
       >
-        {lang === "pl" ? "+ Stwórz slot" : "+ Create slot"}
+        + Create slot
       </Link>
       <div className="space-y-4">
-        {cards.length === 0 ? (
-          <p className="text-center text-sm text-[var(--text-muted)]">
-            {lang === "pl" ? "Brak aktywnych slotów w tym miejscu." : "No active slots at this place."}
+        {cards.length === 0 ? (<p className="text-center text-sm text-[var(--text-muted)]">
+            {"No active slots at this place."}
           </p>
-        ) : (
-          cards.map((slot, i) => <SlotCard key={slot.id} slot={slot} index={i} />)
+        ) : (cards.map((slot, i) => <SlotCard key={slot.id} slot={slot} index={i} />)
         )}
       </div>
     </div>

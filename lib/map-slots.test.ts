@@ -38,21 +38,20 @@ describe("bucketForSlot", () => {
 });
 
 describe("relativeStart", () => {
-  it("says now/teraz for past or immediate slots", () => {
-    expect(relativeStart(iso(-HOUR), NOW, "pl")).toBe("teraz");
-    expect(relativeStart(iso(-HOUR), NOW, "en")).toBe("now");
+  it("says now for past or immediate slots", () => {
+    expect(relativeStart(iso(-HOUR), NOW)).toBe("now");
   });
 
-  it("formats minutes, hours and days (pl)", () => {
-    expect(relativeStart(iso(30 * 60_000), NOW, "pl")).toBe("za 30 min");
-    expect(relativeStart(iso(2 * HOUR), NOW, "pl")).toBe("za 2 godz");
-    expect(relativeStart(iso(48 * HOUR), NOW, "pl")).toBe("za 2 dni");
+  it("formats minutes, hours and days", () => {
+    expect(relativeStart(iso(30 * 60_000), NOW)).toBe("in 30 min");
+    expect(relativeStart(iso(2 * HOUR), NOW)).toBe("in 2h");
+    expect(relativeStart(iso(48 * HOUR), NOW)).toBe("in 2d");
   });
 });
 
 describe("formatStartTime", () => {
   it("returns placeholder for invalid input", () => {
-    expect(formatStartTime("not-a-date", "pl")).toBe("--:--");
+    expect(formatStartTime("not-a-date")).toBe("--:--");
   });
 });
 

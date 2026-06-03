@@ -6,13 +6,10 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
   hero?: boolean;
 }
 
-export const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ interactive, hero, className, children, ...props }, ref) => {
-    return (
-      <div
+export const Card = forwardRef<HTMLDivElement, CardProps>(({ interactive, hero, className, children, ...props }, ref) => {
+    return (<div
         ref={ref}
-        className={cn(
-          'bg-surface rounded-3xl border border-ash-200/40 shadow-sm',
+        className={cn('bg-surface rounded-3xl border border-ash-200/40 shadow-sm',
           hero ? 'p-8' : 'p-6',
           interactive &&
             'cursor-pointer transition-all duration-200 ease-out-soft ' +

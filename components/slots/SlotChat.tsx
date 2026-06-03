@@ -8,8 +8,6 @@ import { sendSlotMessage } from "@/app/actions/messages";
 import { Button } from "@/components/ui/Button";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Avatar } from "@/components/ui/Avatar";
-import { useLanguage } from "@/components/i18n/LanguageProvider";
-import type { Lang } from "@/lib/i18n-lang";
 import { pageHeaderUi, slotChatUi } from "@/lib/i18n-ui";
 
 type Msg = {
@@ -30,17 +28,17 @@ function dayKey(iso: string) {
   return new Date(iso).toISOString().slice(0, 10);
 }
 
-function dayDividerLabel(iso: string, lang: Lang) {
+function dayDividerLabel(iso: string) {
   const d = new Date(iso);
-  return d.toLocaleDateString(lang === "pl" ? "pl-PL" : "en-GB", {
+  return d.toLocaleDateString("en-US", {
     weekday: "long",
     day: "numeric",
     month: "short",
   });
 }
 
-function timeLabel(iso: string, lang: Lang) {
-  return new Date(iso).toLocaleTimeString(lang === "pl" ? "pl-PL" : "en-GB", {
+function timeLabel(iso: string) {
+  return new Date(iso).toLocaleTimeString("en-US", {
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -61,9 +59,8 @@ export function SlotChat({
   currentUserId: string;
   senderMap: Record<string, SenderInfo>;
 }) {
-  const { lang } = useLanguage();
-  const back = pageHeaderUi(lang);
-  const ui = slotChatUi(lang);
+  const back = pageHeaderUi();
+  const ui = slotChatUi();
   const [items, setItems] = useState<Msg[]>(initial);
   const [senderMap, setSenderMap] = useState<Record<string, SenderInfo>>(initialSenderMap);
   const [text, setText] = useState("");
@@ -167,8 +164,7 @@ export function SlotChat({
   const focusRing =
     "outline-none transition focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-page)]";
 
-  return (
-    <div className="flex min-h-0 flex-col">
+  return (<div className="flex min-h-0 flex-col">
       <PageHeader
         title={title}
         subtitle={ui.subtitle}
@@ -185,37 +181,29 @@ export function SlotChat({
       />
       <div className="flex min-h-[min(520px,calc(100dvh-14rem))] flex-col rounded-lg border border-[var(--border-medium)] bg-[var(--bg-panel)]/40">
         <div className="flex-1 space-y-3 overflow-y-auto px-2 py-3 sm:px-3">
-          {otherTyping ? (
-            <p className="text-center text-xs italic text-[var(--accent)]">{ui.typing}</p>
+          {otherTyping ? (<p className="text-center text-xs italic text-[var(--accent)]">{ui.typing}</p>
           ) : null}
-          {items.length === 0 ? (
-            <p className="text-center text-sm text-[var(--text-muted)]">{ui.empty}</p>
-          ) : (
-            items.map((m, i) => {
+          {items.length === 0 ? (<p className="text-center text-sm text-[var(--text-muted)]">{ui.empty}</p>
+          ) : (items.map((m, i) => {
               const own = m.sender_id === currentUserId;
               const prev = i > 0 ? items[i - 1] : null;
               const showDay = !prev || dayKey(prev.created_at) !== dayKey(m.created_at);
               const who = senderMap[m.sender_id] ?? { name: "?", avatar_url: null };
-              return (
-                <Fragment key={m.id}>
-                  {showDay ? (
-                    <div className="flex justify-center py-1">
+              return (<Fragment key={m.id}>
+                  {showDay ? (<div className="flex justify-center py-1">
                       <span className="rounded-full border border-[var(--border-medium)] bg-[var(--bg-input)] px-3 py-1 text-xs font-medium text-[var(--text-muted)]">
-                        {dayDividerLabel(m.created_at, lang)}
+                        {dayDividerLabel(m.created_at)}
                       </span>
                     </div>
                   ) : null}
                   <div className={`flex gap-2 ${own ? "flex-row-reverse" : "flex-row"}`}>
-                    {!own ? (
-                      <Link href={`/profile/${m.sender_id}`} className={`${focusRing} shrink-0 rounded-full`}>
+                    {!own ? (<Link href={`/profile/${m.sender_id}`} className={`${focusRing} shrink-0 rounded-full`}>
                         <Avatar src={who.avatar_url} name={who.name} size={36} />
                       </Link>
-                    ) : (
-                      <div className="w-9 shrink-0" aria-hidden />
+                    ) : (<div className="w-9 shrink-0" aria-hidden />
                     )}
                     <div className={`min-w-0 max-w-[85%] ${own ? "items-end" : "items-start"} flex flex-col`}>
-                      {!own ? (
-                        <span className="mb-0.5 text-xs text-[var(--text-muted)]">{who.name}</span>
+                      {!own ? (<span className="mb-0.5 text-xs text-[var(--text-muted)]">{who.name}</span>
                       ) : null}
                       <div
                         className={`rounded-lg px-3 py-2 text-sm ${
@@ -231,7 +219,7 @@ export function SlotChat({
                         dateTime={m.created_at}
                         title={new Date(m.created_at).toISOString()}
                       >
-                        {timeLabel(m.created_at, lang)}
+                        {timeLabel(m.created_at)}
                       </time>
                     </div>
                   </div>
@@ -259,8 +247,7 @@ export function SlotChat({
             {loading ? ui.sending : ui.send}
           </Button>
         </form>
-        {sendError ? (
-          <p className="border-t border-[var(--status-full)]/40 bg-[var(--status-full)]/10 px-3 py-2 text-center text-sm text-[var(--status-full)]">
+        {sendError ? (<p className="border-t border-[var(--status-full)]/40 bg-[var(--status-full)]/10 px-3 py-2 text-center text-sm text-[var(--status-full)]">
             {ui.sendFailed}
             <span className="mt-1 block font-mono text-xs opacity-80">{sendError}</span>
           </p>

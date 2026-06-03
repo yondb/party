@@ -11,7 +11,6 @@ import {
   LandPlot,
 } from 'lucide-react';
 import { FREE_PLACE_CATEGORIES, placeCategoryLabel, type PlaceCategory } from '@/lib/places';
-import type { Lang } from '@/lib/i18n-lang';
 
 /**
  * Free outdoor activity categories — 1:1 with lib/places PlaceCategory.
@@ -30,22 +29,22 @@ export interface Category {
 }
 
 export const CATEGORIES: Record<CategoryId, Category> = {
-  running:    { id: 'running',    label: 'Bieganie',           emoji: '🏃', color: '#F97316', colorDark: '#C2410C', icon: Footprints },
-  cycling:    { id: 'cycling',    label: 'Rower',              emoji: '🚴', color: '#14B8A6', colorDark: '#0F766E', icon: Bike },
-  basketball: { id: 'basketball', label: 'Koszykówka',         emoji: '🏀', color: '#EA580C', colorDark: '#9A3412', icon: CircleDot },
-  hiking:     { id: 'hiking',     label: 'Wędrówki',           emoji: '⛰️', color: '#16A34A', colorDark: '#15803D', icon: Mountain },
-  gym:        { id: 'gym',        label: 'Siłownia plenerowa', emoji: '💪', color: '#7C3AED', colorDark: '#5B21B6', icon: Dumbbell },
-  playground: { id: 'playground', label: 'Plac zabaw',         emoji: '🛝', color: '#EC4899', colorDark: '#BE185D', icon: Baby },
+  running:    { id: 'running',    label: 'Running',            emoji: '🏃', color: '#F97316', colorDark: '#C2410C', icon: Footprints },
+  cycling:    { id: 'cycling',    label: 'Cycling',            emoji: '🚴', color: '#14B8A6', colorDark: '#0F766E', icon: Bike },
+  basketball: { id: 'basketball', label: 'Basketball',         emoji: '🏀', color: '#EA580C', colorDark: '#9A3412', icon: CircleDot },
+  hiking:     { id: 'hiking',     label: 'Hiking',             emoji: '⛰️', color: '#16A34A', colorDark: '#15803D', icon: Mountain },
+  gym:        { id: 'gym',        label: 'Outdoor gym',        emoji: '💪', color: '#7C3AED', colorDark: '#5B21B6', icon: Dumbbell },
+  playground: { id: 'playground', label: 'Playground',         emoji: '🛝', color: '#EC4899', colorDark: '#BE185D', icon: Baby },
   dog_walk:   { id: 'dog_walk',   label: 'Dog walk',           emoji: '🐕', color: '#D97706', colorDark: '#B45309', icon: Dog },
-  football:   { id: 'football',   label: 'Piłka nożna',        emoji: '⚽', color: '#2563EB', colorDark: '#1D4ED8', icon: LandPlot },
+  football:   { id: 'football',   label: 'Football',           emoji: '⚽', color: '#2563EB', colorDark: '#1D4ED8', icon: LandPlot },
   park:       { id: 'park',       label: 'Park',               emoji: '🌳', color: '#059669', colorDark: '#047857', icon: TreePine },
 };
 
 export const CATEGORY_LIST: Category[] = FREE_PLACE_CATEGORIES.map((id) => CATEGORIES[id]);
 
 /** Localized category name — use this in UI instead of `cat.label`. */
-export function categoryLabel(lang: Lang, id: CategoryId): string {
-  return placeCategoryLabel(lang, id);
+export function categoryLabel(id: CategoryId): string {
+  return placeCategoryLabel(id);
 }
 
 /** Map legacy / activity strings → one of the free categories we show. */

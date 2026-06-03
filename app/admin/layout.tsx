@@ -13,8 +13,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!user) redirect("/auth");
   if (!isAdminUser(user)) redirect("/feed");
 
-  return (
-    <div className="min-h-dvh bg-[var(--bg-page)] px-4 pb-12 pt-6">
+  return (<div className="min-h-dvh bg-[var(--bg-page)] px-4 pb-12 pt-6">
       <div className="mx-auto max-w-3xl">
         <div className="mb-6 flex items-center justify-between border-b border-[var(--border-medium)] pb-4">
           <h1 className="text-xl font-bold text-[var(--text-primary)]">Admin console</h1>

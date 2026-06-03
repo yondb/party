@@ -9,7 +9,7 @@ export function formatDate(date: Date | string): string {
   try {
     const d = typeof date === 'string' ? new Date(date) : date;
     if (Number.isNaN(d.getTime())) return '—';
-    return new Intl.DateTimeFormat('pl-PL', {
+    return new Intl.DateTimeFormat('en-US', {
       weekday: 'short',
       day: 'numeric',
       month: 'short',
@@ -23,7 +23,7 @@ export function formatTime(date: Date | string): string {
   try {
     const d = typeof date === 'string' ? new Date(date) : date;
     if (Number.isNaN(d.getTime())) return '—';
-    return new Intl.DateTimeFormat('pl-PL', {
+    return new Intl.DateTimeFormat('en-US', {
       hour: '2-digit',
       minute: '2-digit',
     }).format(d);

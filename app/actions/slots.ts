@@ -2,7 +2,6 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getServerLang } from "@/lib/i18n-server";
 import { normalizeActivityKey } from "@/lib/activities";
 import { placeCategoryToActivityType, isFreePlaceCategory } from "@/lib/places";
 import { isOverRateLimit } from "@/lib/action-rate-limit";
@@ -110,14 +109,11 @@ function parseSlotInput(input: CreateSlotInput): { error: string } | SlotRowValu
   };
 }
 
-function slotEditCapacityError(lang: "pl" | "en"): string {
-  return lang === "pl"
-    ? "Za mało miejsc: masz już tylu zaakceptowanych gości. Zwiększ limit albo cofnij akceptacje."
-    : "Party size too small: you already have that many accepted guests. Raise the limit or revoke an acceptance.";
+function slotEditCapacityError(): string {
+  return "Party size too small: you already have that many accepted guests. Raise the limit or revoke an acceptance.";
 }
 
 export async function createSlotAction(input: CreateSlotInput) {
-  const lang = await getServerLang();
   const supabase = await createClient();
   const {
     data: { user },
@@ -141,10 +137,7 @@ export async function createSlotAction(input: CreateSlotInput) {
     if (placeErr || !place) return { error: "Place not found" };
     if (!place.is_free || !isFreePlaceCategory(place.category)) {
       return {
-        error:
-          lang === "pl"
-            ? "To miejsce nie jest dostępne — tylko darmowe, plenerowe lokalizacje."
-            : "This place is not available — only free outdoor venues are allowed.",
+        error: "This place is not available — only free outdoor venues are allowed.",
       };
     }
     place_id = place.id;
@@ -175,7 +168,6 @@ export async function createSlotAction(input: CreateSlotInput) {
 }
 
 export async function updateSlotAction(slotId: string, input: CreateSlotInput) {
-  const lang = await getServerLang();
   const supabase = await createClient();
   const {
     data: { user },
@@ -190,7 +182,7 @@ export async function updateSlotAction(slotId: string, input: CreateSlotInput) {
   if (selErr || !slotRow) return { error: "Not found" };
   if (slotRow.host_id !== user.id) return { error: "Forbidden" };
   if (slotRow.status !== "open" && slotRow.status !== "full") {
-    return { error: lang === "pl" ? "Nie można edytować zamkniętego questa." : "Cannot edit a closed quest." };
+    return { error: "Cannot edit a closed quest." };
   }
 
   const parsed = parseSlotInput(input);
@@ -198,7 +190,7 @@ export async function updateSlotAction(slotId: string, input: CreateSlotInput) {
 
   const guestCap = parsed.max_spots - 1;
   if (guestCap < slotRow.spots_taken) {
-    return { error: slotEditCapacityError(lang) };
+    return { error: slotEditCapacityError() };
   }
 
   let nextStatus = slotRow.status as string;

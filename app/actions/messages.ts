@@ -2,7 +2,6 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getServerLang } from "@/lib/i18n-server";
 import { commonErrors } from "@/lib/i18n-ui";
 import { isOverRateLimit } from "@/lib/action-rate-limit";
 import { getPusherServer } from "@/lib/pusher-server";
@@ -10,8 +9,7 @@ import { slotChannelName } from "@/lib/realtime-channels";
 
 export async function sendSlotMessage(slotId: string, content: string) {
   const supabase = await createClient();
-  const lang = await getServerLang();
-  const errs = commonErrors(lang);
+  const errs = commonErrors();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -24,7 +22,7 @@ export async function sendSlotMessage(slotId: string, content: string) {
   const trimmed = content.trim();
   if (!trimmed) return { error: errs.generic };
   if (trimmed.length > 4000) {
-    return { error: lang === "pl" ? "Wiadomość jest za długa (max 4000 znaków)." : "Message is too long (max 4000 characters)." };
+    return { error: "Message is too long (max 4000 characters)." };
   }
 
   const { data, error } = await supabase

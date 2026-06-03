@@ -26,8 +26,7 @@ export function ActivityIcon({ activityType, size = "md", className = "" }: Acti
   const w = boxPx[size];
   const g = glyphPx[size];
 
-  return (
-    <div
+  return (<div
       className={`relative flex shrink-0 items-center justify-center ${className}`}
       style={{
         width: w,

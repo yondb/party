@@ -5,7 +5,7 @@ import { createRoot, type Root } from "react-dom/client";
 import mapboxgl from "mapbox-gl";
 import type { GeoJSONSource } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { Navigation } from "lucide-react";
+import { Navigation, MapPin, X } from "lucide-react";
 import {
   PLACE_CATEGORIES,
   PLACE_CATEGORY_META,
@@ -13,7 +13,6 @@ import {
   displayPlaceName,
   type PlaceCategory,
 } from "@/lib/places";
-import { useLanguage } from "@/components/i18n/LanguageProvider";
 import { mapUi } from "@/lib/i18n-ui";
 import { Chip } from "@/components/ui/Chip";
 import { MARKET_CENTER } from "@/lib/market";
@@ -78,6 +77,8 @@ function buildGeoJson(places: PlaceMapPin[]): GeoJSON.FeatureCollection {
   };
 }
 
+type NearbyMode = "closed" | "prompt" | "list";
+
 export function MapPlaces({
   places,
   slots,
@@ -87,8 +88,7 @@ export function MapPlaces({
   slots: MapSlot[];
   initialQuery?: string;
 }) {
-  const { lang } = useLanguage();
-  const m = mapUi(lang);
+  const m = mapUi();
   const ref = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const youMarkerRef = useRef<mapboxgl.Marker | null>(null);
@@ -105,9 +105,11 @@ export function MapPlaces({
   const [onlyOpenSlots, setOnlyOpenSlots] = useState(false);
   const [locationEnabled, setLocationEnabled] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [nearbyMode, setNearbyMode] = useState<NearbyMode>("closed");
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [sheetHeight, setSheetHeight] = useState(14);
+  const [sheetHeight, setSheetHeight] = useState(58);
   const flewToUserRef = useRef(false);
   const [activePlaceId, setActivePlaceId] = useState<string | null>(null);
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
@@ -120,38 +122,63 @@ export function MapPlaces({
     return () => clearInterval(t);
   }, []);
 
-  const requestMyLocationStable = useCallback(() => {
-    if (!navigator.geolocation) {
-      setLocationError(m.locationDenied);
-      return;
-    }
-    setLocationError(null);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setMyPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setLocationEnabled(true);
-        const map = mapRef.current;
-        if (map && !flewToUserRef.current) {
-          flewToUserRef.current = true;
-          map.flyTo({
-            center: [pos.coords.longitude, pos.coords.latitude],
-            zoom: 13,
-            duration: 900,
-          });
-        }
-      },
-      () => {
+  const requestMyLocationStable = useCallback((opts?: { fly?: boolean; onSuccess?: () => void }) => {
+      if (!navigator.geolocation) {
         setLocationError(m.locationDenied);
-        setLocationEnabled(false);
-        setMyPosition(null);
-      },
-      { enableHighAccuracy: true, maximumAge: 60000, timeout: 8000 },
-    );
-  }, [m.locationDenied]);
+        setLocationLoading(false);
+        return;
+      }
+      setLocationError(null);
+      setLocationLoading(true);
+      navigator.geolocation.getCurrentPosition((pos) => {
+          setMyPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+          setLocationEnabled(true);
+          setLocationLoading(false);
+          const map = mapRef.current;
+          if (map && opts?.fly !== false && !flewToUserRef.current) {
+            flewToUserRef.current = true;
+            map.flyTo({
+              center: [pos.coords.longitude, pos.coords.latitude],
+              zoom: 13,
+              duration: 900,
+            });
+          }
+          opts?.onSuccess?.();
+        },
+        () => {
+          setLocationError(m.locationDenied);
+          setLocationEnabled(false);
+          setMyPosition(null);
+          setLocationLoading(false);
+        },
+        { enableHighAccuracy: true, maximumAge: 60000, timeout: 10000 },
+      );
+    },
+    [m.locationDenied],
+  );
 
-  useEffect(() => {
-    const t = window.setTimeout(() => requestMyLocationStable(), 600);
-    return () => clearTimeout(t);
+  const openNearby = useCallback(() => {
+    if (locationEnabled && myPosition) {
+      setNearbyMode("list");
+      setSheetHeight(58);
+    } else {
+      setNearbyMode("prompt");
+    }
+  }, [locationEnabled, myPosition]);
+
+  const closeNearby = useCallback(() => {
+    setNearbyMode("closed");
+    setLocationError(null);
+  }, []);
+
+  const allowNearbyLocation = useCallback(() => {
+    requestMyLocationStable({
+      fly: true,
+      onSuccess: () => {
+        setNearbyMode("list");
+        setSheetHeight(58);
+      },
+    });
   }, [requestMyLocationStable]);
 
   const filteredPlaces = useMemo(() => {
@@ -159,7 +186,7 @@ export function MapPlaces({
     return places.filter((place) => {
       if (category !== "all" && place.category !== category) return false;
       if (q) {
-        const name = displayPlaceName(place, lang).toLowerCase();
+        const name = displayPlaceName(place).toLowerCase();
         if (!name.includes(q) && !(place.district?.toLowerCase().includes(q) ?? false)) return false;
       }
       if (onlyOpenSlots) {
@@ -182,7 +209,7 @@ export function MapPlaces({
       }
       return true;
     });
-  }, [places, category, searchQuery, dateFilter, onlyOpenSlots, locationEnabled, myPosition, radiusKm, lang]);
+  }, [places, category, searchQuery, dateFilter, onlyOpenSlots, locationEnabled, myPosition, radiusKm]);
 
   const geoJson = useMemo(() => buildGeoJson(filteredPlaces), [filteredPlaces]);
   const geoJsonRef = useRef(geoJson);
@@ -192,8 +219,7 @@ export function MapPlaces({
     placesByIdRef.current = new Map(filteredPlaces.map((p) => [p.id, p]));
   }, [filteredPlaces]);
 
-  const slotDistanceLabel = useCallback(
-    (slot: MapSlot): string | null => {
+  const slotDistanceLabel = useCallback((slot: MapSlot): string | null => {
       if (!locationEnabled || !myPosition) return null;
       const km = distanceKm(myPosition.lat, myPosition.lng, slot.lat, slot.lng);
       return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`;
@@ -232,18 +258,15 @@ export function MapPlaces({
   const totalSlots =
     groupedSlots.now.length + groupedSlots.today.length + groupedSlots.week.length;
 
-  const selectedSlot = useMemo(
-    () => slots.find((s) => s.id === selectedSlotId) ?? null,
+  const selectedSlot = useMemo(() => slots.find((s) => s.id === selectedSlotId) ?? null,
     [slots, selectedSlotId],
   );
 
-  const activePlace = useMemo(
-    () => filteredPlaces.find((p) => p.id === activePlaceId) ?? null,
+  const activePlace = useMemo(() => filteredPlaces.find((p) => p.id === activePlaceId) ?? null,
     [filteredPlaces, activePlaceId],
   );
 
-  const placeDistanceLabel = useCallback(
-    (place: PlaceMapPin): string | null => {
+  const placeDistanceLabel = useCallback((place: PlaceMapPin): string | null => {
       if (!locationEnabled || !myPosition) return null;
       const km = distanceKm(myPosition.lat, myPosition.lng, place.lat, place.lng);
       return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`;
@@ -251,21 +274,24 @@ export function MapPlaces({
     [locationEnabled, myPosition],
   );
 
-  const sidebarPlaces = useMemo(() => {
-    const list = [...filteredPlaces];
-    if (locationEnabled && myPosition) {
-      list.sort(
-        (a, b) =>
-          distanceKm(myPosition.lat, myPosition.lng, a.lat, a.lng) -
-          distanceKm(myPosition.lat, myPosition.lng, b.lat, b.lng),
-      );
-    } else {
-      list.sort((a, b) =>
-        displayPlaceName(a, lang).localeCompare(displayPlaceName(b, lang), lang === "pl" ? "pl" : "en"),
-      );
+  const nearbyPlaces = useMemo(() => {
+    if (!locationEnabled || !myPosition) {
+      return [...filteredPlaces]
+        .sort((a, b) =>
+          displayPlaceName(a).localeCompare(displayPlaceName(b), "en"),
+        )
+        .slice(0, 20);
     }
-    return list.slice(0, 40);
-  }, [filteredPlaces, locationEnabled, myPosition, lang]);
+    return [...filteredPlaces]
+      .map((p) => ({
+        place: p,
+        km: distanceKm(myPosition.lat, myPosition.lng, p.lat, p.lng),
+      }))
+      .filter(({ km }) => km <= radiusKm)
+      .sort((a, b) => a.km - b.km)
+      .slice(0, 20)
+      .map(({ place }) => place);
+  }, [filteredPlaces, locationEnabled, myPosition, radiusKm]);
 
   const flyToPlace = useCallback((place: PlaceMapPin) => {
     const map = mapRef.current;
@@ -274,7 +300,6 @@ export function MapPlaces({
     if (map) {
       map.flyTo({ center: [place.lng, place.lat], zoom: 15, duration: 900 });
     }
-    setSheetHeight((h) => (h < 50 ? 55 : h));
   }, []);
 
   useEffect(() => {
@@ -288,7 +313,6 @@ export function MapPlaces({
     if (map) {
       map.flyTo({ center: [slot.lng, slot.lat], zoom: 15, duration: 900 });
     }
-    setSheetHeight((h) => (h < 50 ? 55 : h));
   }, []);
 
   const dragRef = useRef<{ startY: number; startH: number } | null>(null);
@@ -300,21 +324,20 @@ export function MapPlaces({
     if (!dragRef.current) return;
     const dy = dragRef.current.startY - e.clientY;
     const vh = (dy / window.innerHeight) * 100;
-    setSheetHeight(Math.min(80, Math.max(14, dragRef.current.startH + vh)));
+    setSheetHeight(Math.min(75, Math.max(38, dragRef.current.startH + vh)));
   };
   const onSheetPointerUp = () => {
     if (!dragRef.current) return;
     dragRef.current = null;
-    setSheetHeight((h) => (h > 28 ? 62 : 14));
+    setSheetHeight((h) => (h > 48 ? 68 : h > 32 ? 58 : 38));
   };
 
-  const sheetPeek = sheetHeight < 22;
+  const nearbyOpen = nearbyMode !== "closed";
   const filtersActive =
     category !== "all" || dateFilter !== "" || onlyOpenSlots || locationEnabled;
 
   const renderPointMarker = useCallback((entry: MarkerEntry, place: PlaceMapPin) => {
-    entry.root.render(
-      <MapMarker
+    entry.root.render(<MapMarker
         category={toCategoryId(place.category)}
         count={place.activeSlotCount}
         active={activePlaceIdRef.current === place.id}
@@ -365,8 +388,7 @@ export function MapPlaces({
         if (isCluster) {
           const clusterId = props.cluster_id as number;
           const count = props.point_count as number;
-          root.render(
-            <MapClusterMarker
+          root.render(<MapClusterMarker
               count={count}
               onClick={() => {
                 source.getClusterExpansionZoom(clusterId, (err, zoom) => {
@@ -430,7 +452,7 @@ export function MapPlaces({
 
     map.on("error", (e) => {
       console.error("Mapbox error:", e.error);
-      setMapError(lang === "pl" ? "Nie udało się załadować mapy." : "Failed to load map.");
+      setMapError("Failed to load map.");
     });
 
     const onRender = () => {
@@ -499,7 +521,7 @@ export function MapPlaces({
       mapReadyRef.current = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- map init once per token
-  }, [token, lang]);
+  }, [token]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -538,32 +560,29 @@ export function MapPlaces({
   }, [myPosition]);
 
   if (!token) {
-    return (
-      <div className="map-root flex h-full items-center justify-center p-8 text-center">
+    return (<div className="map-root flex h-full items-center justify-center p-8 text-center">
         <p className="text-sm text-ash-600">
-          Ustaw <code className="text-honey-700">NEXT_PUBLIC_MAPBOX_TOKEN</code> w .env.local
+          Set <code className="text-honey-700">NEXT_PUBLIC_MAPBOX_TOKEN</code> in .env.local
         </p>
       </div>
     );
   }
 
-  const categoryChips = (
-    <div className="flex flex-wrap gap-1.5 lg:gap-2">
+  const categoryChips = (<div className="flex flex-wrap gap-1.5 lg:gap-2">
       <Chip active={category === "all"} onClick={() => setCategory("all")} className="shrink-0 h-8 px-2.5 text-xs lg:h-9 lg:px-3.5 lg:text-body-sm">
         {m.all}
       </Chip>
       {PLACE_CATEGORIES.map((key) => {
         const meta = PLACE_CATEGORY_META[key];
         const count = places.filter((p) => p.category === key).length;
-        return (
-          <Chip
+        return (<Chip
             key={key}
             emoji={meta.icon}
             active={category === key}
             onClick={() => setCategory(key)}
             className="shrink-0 h-8 px-2.5 text-xs lg:h-9 lg:px-3.5 lg:text-body-sm"
           >
-            {placeCategoryLabel(lang, key)}
+            {placeCategoryLabel(key)}
             <span className="ml-1 font-mono text-[10px] opacity-60">{count}</span>
           </Chip>
         );
@@ -571,8 +590,7 @@ export function MapPlaces({
     </div>
   );
 
-  const advancedFilters = (
-    <div className="mt-3 space-y-3 border-t border-ash-200/60 pt-3">
+  const advancedFilters = (<div className="mt-3 space-y-3 border-t border-ash-200/60 pt-3">
       <input
         type="date"
         value={dateFilter}
@@ -591,9 +609,8 @@ export function MapPlaces({
       </label>
       <button
         type="button"
-        onClick={requestMyLocationStable}
-        className={cn(
-          "w-full h-11 rounded-2xl border border-ash-200 bg-surface text-body-sm font-medium text-ash-900 shadow-xs hover:bg-ash-50 transition",
+        onClick={() => requestMyLocationStable({ fly: true })}
+        className={cn("w-full h-11 rounded-2xl border border-ash-200 bg-surface text-body-sm font-medium text-ash-900 shadow-xs hover:bg-ash-50 transition",
           locationEnabled && "border-honey-300 text-honey-700",
         )}
       >
@@ -614,22 +631,20 @@ export function MapPlaces({
   );
 
   const sectionLabels: Record<SlotBucket, string> = {
-    now: lang === "pl" ? "Teraz" : "Now",
-    today: lang === "pl" ? "Dziś" : "Today",
-    week: lang === "pl" ? "W tym tygodniu" : "This week",
+    now: "Now",
+    today: "Today",
+    week: "This week",
   };
 
   const renderSlotItem = (slot: MapSlot) => {
     const cat = CATEGORIES[toCategoryId(slot.category)];
     const dist = slotDistanceLabel(slot);
     const isActive = selectedSlotId === slot.id;
-    return (
-      <button
+    return (<button
         key={slot.id}
         type="button"
         onClick={() => selectSlot(slot)}
-        className={cn(
-          "flex w-full items-start gap-3 rounded-2xl border border-transparent p-2.5 text-left transition hover:bg-ash-50",
+        className={cn("flex w-full items-start gap-3 rounded-2xl border border-transparent p-2.5 text-left transition hover:bg-ash-50",
           isActive && "border-ash-200/70 bg-ash-50 ring-2 ring-graphite/10",
         )}
       >
@@ -646,18 +661,16 @@ export function MapPlaces({
           </span>
           <span className="mt-0.5 block truncate text-caption text-ash-500">
             {slot.placeName}
-            {dist ? ` · ${dist}` : ""} · {relativeStart(slot.dateTime, now, lang)}
+            {dist ? ` · ${dist}` : ""} · {relativeStart(slot.dateTime, now)}
           </span>
           <span className="mt-1.5 flex items-center justify-between gap-2">
-            {slot.participantCount > 0 ? (
-              <AvatarStack avatars={slot.participants} size="xs" max={3} />
-            ) : (
-              <span className="text-caption text-ash-400">
-                {lang === "pl" ? "Brak zapisów" : "No one yet"}
+            {slot.participantCount > 0 ? (<AvatarStack avatars={slot.participants} size="xs" max={3} />
+            ) : (<span className="text-caption text-ash-400">
+                {"No one yet"}
               </span>
             )}
             <span className="shrink-0 font-mono text-body-sm font-semibold text-ash-700 tabular-nums">
-              {formatStartTime(slot.dateTime, lang)}
+              {formatStartTime(slot.dateTime)}
             </span>
           </span>
         </span>
@@ -665,11 +678,9 @@ export function MapPlaces({
     );
   };
 
-  const slotGroups = (
-    <div className="space-y-1">
+  const slotGroups = (<div className="space-y-1">
       {(["now", "today", "week"] as SlotBucket[]).map((bucket) =>
-        groupedSlots[bucket].length === 0 ? null : (
-          <section key={bucket}>
+        groupedSlots[bucket].length === 0 ? null : (<section key={bucket}>
             <h3 className="sticky top-0 z-10 bg-surface/95 px-2 py-1.5 text-caption font-semibold uppercase tracking-wider text-ash-500 backdrop-blur-sm">
               {sectionLabels[bucket]}
             </h3>
@@ -677,9 +688,8 @@ export function MapPlaces({
           </section>
         ),
       )}
-      {totalSlots === 0 ? (
-        <p className="px-2 py-8 text-center text-body-sm text-ash-500">
-          {lang === "pl" ? "Brak slotów dla filtrów" : "No slots match"}
+      {totalSlots === 0 ? (<p className="px-2 py-8 text-center text-body-sm text-ash-500">
+          {"No slots match"}
         </p>
       ) : null}
     </div>
@@ -689,14 +699,12 @@ export function MapPlaces({
     const cat = CATEGORIES[toCategoryId(place.category)];
     const dist = placeDistanceLabel(place);
     const isActive = activePlaceId === place.id;
-    const displayName = displayPlaceName(place, lang);
-    return (
-      <button
+    const displayName = displayPlaceName(place);
+    return (<button
         key={place.id}
         type="button"
         onClick={() => flyToPlace(place)}
-        className={cn(
-          "flex w-full items-start gap-3 rounded-2xl border border-transparent p-2.5 text-left transition hover:bg-ash-50",
+        className={cn("flex w-full items-start gap-3 rounded-2xl border border-transparent p-2.5 text-left transition hover:bg-ash-50",
           isActive && "border-ash-200/70 bg-ash-50 ring-2 ring-graphite/10",
         )}
       >
@@ -710,17 +718,15 @@ export function MapPlaces({
         <span className="min-w-0 flex-1">
           <span className="block truncate text-body-sm font-semibold text-ash-900">{displayName}</span>
           <span className="mt-0.5 block truncate text-caption text-ash-500">
-            {placeCategoryLabel(lang, place.category)}
+            {placeCategoryLabel(place.category)}
             {place.district ? ` · ${place.district}` : ""}
             {dist ? ` · ${dist}` : ""}
           </span>
-          {place.activeSlotCount > 0 ? (
-            <span className="mt-1 inline-block rounded-full bg-honey-100 px-2 py-0.5 text-caption font-medium text-honey-800">
-              {place.activeSlotCount} {lang === "pl" ? "slotów" : "slots"}
+          {place.activeSlotCount > 0 ? (<span className="mt-1 inline-block rounded-full bg-honey-100 px-2 py-0.5 text-caption font-medium text-honey-800">
+              {place.activeSlotCount} slots
             </span>
-          ) : (
-            <span className="mt-1 block text-caption text-ash-400">
-              {lang === "pl" ? "Brak slotów — utwórz pierwszy" : "No slots — create the first"}
+          ) : (<span className="mt-1 block text-caption text-ash-400">
+              {"No slots — create the first"}
             </span>
           )}
         </span>
@@ -728,49 +734,36 @@ export function MapPlaces({
     );
   };
 
-  const placeList = (
-    <div className="space-y-0.5">
-      {sidebarPlaces.map(renderPlaceItem)}
-      {sidebarPlaces.length === 0 ? (
-        <p className="px-2 py-8 text-center text-body-sm text-ash-500">
-          {lang === "pl" ? "Brak miejsc dla filtrów" : "No places match"}
+  const placeList = (<div className="space-y-0.5">
+      {nearbyPlaces.map(renderPlaceItem)}
+      {nearbyPlaces.length === 0 ? (<p className="px-2 py-8 text-center text-body-sm text-ash-500">
+          {locationEnabled && myPosition
+            ? m.nearbyEmpty(radiusKm)
+            : "No places match"}
         </p>
       ) : null}
     </div>
   );
 
-  const sidebarTitle =
-    totalSlots > 0
-      ? lang === "pl"
-        ? "Najbliższe sloty"
-        : "Upcoming slots"
-      : lang === "pl"
-        ? "Miejsca w okolicy"
-        : "Places nearby";
+  const listTitle = totalSlots > 0 ? m.nearbySlotsTitle : m.nearbyTitle;
+  const listContent = totalSlots > 0 ? slotGroups : placeList;
 
-  const sidebarContent = totalSlots > 0 ? slotGroups : placeList;
-
-  return (
-    <div className="map-root">
+  return (<div className="map-root">
       <div ref={ref} className="map-canvas-inner" role="application" aria-label={m.title} />
 
-      {mapError ? (
-        <div className="pointer-events-none absolute inset-x-4 top-20 z-20 rounded-2xl border border-danger/30 bg-danger-soft px-4 py-3 text-center text-sm text-danger">
+      {mapError ? (<div className="pointer-events-none absolute inset-x-4 top-20 z-20 rounded-2xl border border-danger/30 bg-danger-soft px-4 py-3 text-center text-sm text-danger">
           {mapError}
         </div>
       ) : null}
 
-      {!mapError && filteredPlaces.length === 0 ? (
-        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center p-6">
+      {!mapError && filteredPlaces.length === 0 ? (<div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center p-6">
           <div className="pointer-events-auto max-w-xs rounded-3xl border border-ash-200/60 bg-surface/95 px-6 py-5 text-center shadow-lg backdrop-blur-md">
             <p className="text-2xl" aria-hidden>🔍</p>
             <p className="mt-2 font-display text-heading-md text-ash-900">
-              {lang === "pl" ? "Brak miejsc dla filtrów" : "No places match your filters"}
+              {"No places match your filters"}
             </p>
             <p className="mt-1 text-body-sm text-ash-500">
-              {lang === "pl"
-                ? "Zmień kategorię, datę lub powiększ promień."
-                : "Try another category, date, or a wider radius."}
+              {"Try another category, date, or a wider radius."}
             </p>
           </div>
         </div>
@@ -791,14 +784,12 @@ export function MapPlaces({
           <button
             type="button"
             onClick={() => setFiltersOpen((o) => !o)}
-            className={cn(
-              "relative shrink-0 rounded-full px-2.5 py-1 text-xs font-medium text-ash-600 hover:bg-ash-100 transition lg:text-body-sm",
+            className={cn("relative shrink-0 rounded-full px-2.5 py-1 text-xs font-medium text-ash-600 hover:bg-ash-100 transition lg:text-body-sm",
               filtersOpen && "bg-graphite text-surface",
             )}
           >
             {m.filters}
-            {filtersActive && !filtersOpen ? (
-              <span className="absolute -right-0.5 -top-0.5 size-2 rounded-full bg-honey-500" aria-hidden />
+            {filtersActive && !filtersOpen ? (<span className="absolute -right-0.5 -top-0.5 size-2 rounded-full bg-honey-500" aria-hidden />
             ) : null}
           </button>
         </div>
@@ -808,8 +799,7 @@ export function MapPlaces({
           {categoryChips}
         </div>
 
-        {filtersOpen ? (
-          <div className="pointer-events-auto rounded-2xl border border-ash-200/60 bg-surface-2/95 p-3 shadow-sm backdrop-blur-md max-h-[min(50vh,360px)] overflow-y-auto">
+        {filtersOpen ? (<div className="pointer-events-auto rounded-2xl border border-ash-200/60 bg-surface-2/95 p-3 shadow-sm backdrop-blur-md max-h-[min(50vh,360px)] overflow-y-auto">
             <div className="mb-3 lg:hidden">{categoryChips}</div>
             {advancedFilters}
           </div>
@@ -818,9 +808,14 @@ export function MapPlaces({
 
       <button
         type="button"
-        onClick={requestMyLocationStable}
-        className="pointer-events-auto absolute right-3 z-20 flex size-11 items-center justify-center rounded-full border border-ash-200/70 bg-surface text-graphite shadow-md transition hover:bg-ash-50 active:scale-95 lg:right-4"
-        style={{ bottom: `calc(${sheetHeight}dvh + 4.5rem + env(safe-area-inset-bottom, 0px))` }}
+        onClick={() => {
+          if (locationEnabled && myPosition) {
+            requestMyLocationStable({ fly: true });
+          } else {
+            openNearby();
+          }
+        }}
+        className="pointer-events-auto absolute right-3 z-20 flex size-11 items-center justify-center rounded-full border border-ash-200/70 bg-surface text-graphite shadow-md transition hover:bg-ash-50 active:scale-95 lg:right-4 bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:bottom-8"
         aria-label={m.useMyLocation}
       >
         <Navigation
@@ -829,58 +824,130 @@ export function MapPlaces({
         />
       </button>
 
-      <aside className="pointer-events-none absolute bottom-4 left-4 top-auto z-10 hidden max-h-[min(460px,60%)] w-[min(380px,90%)] lg:pointer-events-auto lg:block">
-        <div className="pointer-events-auto flex h-full max-h-[inherit] flex-col overflow-hidden rounded-3xl border border-ash-200/40 bg-surface shadow-md">
-          <div className="border-b border-ash-200/60 px-4 py-3">
-            <p className="font-display text-heading-md text-ash-900">{sidebarTitle}</p>
-            {totalSlots === 0 ? (
-              <p className="mt-0.5 text-caption text-ash-500">
-                {lang === "pl"
-                  ? `${filteredPlaces.length} miejsc · kliknij, aby zobaczyć na mapie`
-                  : `${filteredPlaces.length} places · click to view on map`}
-              </p>
-            ) : null}
-          </div>
-          <div className="flex-1 overflow-y-auto px-2 py-2">{sidebarContent}</div>
-        </div>
-      </aside>
-
-      <div
-        className="map-bottom-sheet pointer-events-auto lg:hidden"
-        style={{ height: `${sheetHeight}dvh` }}
-      >
-        <div
-          className="flex w-full cursor-grab touch-none flex-col items-center pt-2 pb-1 active:cursor-grabbing"
-          onPointerDown={onSheetPointerDown}
-          onPointerMove={onSheetPointerMove}
-          onPointerUp={onSheetPointerUp}
-          onPointerCancel={onSheetPointerUp}
-          role="separator"
-          aria-label={lang === "pl" ? "Przeciągnij, aby rozwinąć" : "Drag to expand"}
+      {nearbyMode === "closed" ? (<button
+          type="button"
+          onClick={openNearby}
+          className="pointer-events-auto absolute left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full border border-ash-200/70 bg-surface px-5 py-3 text-body-sm font-semibold text-ash-900 shadow-lg transition hover:bg-ash-50 active:scale-[0.98] bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:bottom-8"
         >
-          <span className="mb-2 h-1.5 w-10 rounded-full bg-ash-300" />
-          <span className="px-4 font-display text-heading-md text-ash-900">{sidebarTitle}</span>
-        </div>
-        <div className="flex-1 overflow-y-auto px-2 pb-4 pt-1 lg:hidden">
-          {!sheetPeek ? sidebarContent : null}
-        </div>
-      </div>
+          <MapPin className="size-4 text-honey-600" strokeWidth={2.25} />
+          {m.nearbyFab}
+        </button>
+      ) : null}
 
-      {selectedSlot ? (
-        <div className="pointer-events-none absolute inset-x-0 top-28 z-30 flex justify-center px-4 lg:bottom-4 lg:left-[calc(min(380px,90%)+2.5rem)] lg:right-auto lg:top-auto lg:justify-start lg:px-0">
+      {nearbyOpen ? (<>
+          <button
+            type="button"
+            aria-label="Close"
+            className="pointer-events-auto absolute inset-0 z-[25] bg-graphite/30 backdrop-blur-[2px]"
+            onClick={closeNearby}
+          />
+          <div
+            className="map-bottom-sheet pointer-events-auto"
+            style={{
+              height: nearbyMode === "prompt" ? "auto" : `${sheetHeight}dvh`,
+              maxHeight: nearbyMode === "prompt" ? "none" : "75dvh",
+            }}
+          >
+            {nearbyMode === "prompt" ? (<div className="flex flex-col p-5 pb-6">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-honey-100 text-2xl">
+                    📍
+                  </div>
+                  <button
+                    type="button"
+                    onClick={closeNearby}
+                    className="rounded-full p-1.5 text-ash-400 hover:bg-ash-100 hover:text-ash-700"
+                    aria-label="Close"
+                  >
+                    <X className="size-5" />
+                  </button>
+                </div>
+                <h2 className="mt-4 font-display text-heading-md text-ash-900">{m.nearbyPromptTitle}</h2>
+                <p className="mt-2 text-body-sm leading-relaxed text-ash-500">{m.nearbyPromptBody}</p>
+                {locationError ? (<p className="mt-3 text-sm text-danger">{locationError}</p>
+                ) : null}
+                <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+                  <button
+                    type="button"
+                    disabled={locationLoading}
+                    onClick={allowNearbyLocation}
+                    className="flex h-12 flex-1 items-center justify-center rounded-2xl bg-graphite text-body-sm font-semibold text-surface transition hover:opacity-90 disabled:opacity-60"
+                  >
+                    {locationLoading ? m.nearbyLoading : m.nearbyAllow}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={locationLoading}
+                    onClick={closeNearby}
+                    className="flex h-12 flex-1 items-center justify-center rounded-2xl border border-ash-200 bg-surface text-body-sm font-medium text-ash-700 transition hover:bg-ash-50"
+                  >
+                    {m.nearbyNotNow}
+                  </button>
+                </div>
+              </div>
+            ) : (<>
+                <div
+                  className="flex w-full cursor-grab touch-none flex-col items-center pt-2 pb-1 active:cursor-grabbing lg:cursor-default"
+                  onPointerDown={onSheetPointerDown}
+                  onPointerMove={onSheetPointerMove}
+                  onPointerUp={onSheetPointerUp}
+                  onPointerCancel={onSheetPointerUp}
+                  role="separator"
+                  aria-label="Drag to resize"
+                >
+                  <span className="mb-2 h-1.5 w-10 rounded-full bg-ash-300 lg:hidden" />
+                  <div className="flex w-full items-start justify-between gap-2 px-4">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-display text-heading-md text-ash-900">{listTitle}</p>
+                      <p className="mt-0.5 text-caption text-ash-500">
+                        {locationEnabled && myPosition
+                          ? m.nearbyWithin(radiusKm)
+                          : m.nearbyTapHint}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={closeNearby}
+                      className="shrink-0 rounded-full p-1.5 text-ash-400 hover:bg-ash-100 hover:text-ash-700"
+                      aria-label="Close"
+                    >
+                      <X className="size-5" />
+                    </button>
+                  </div>
+                  {locationEnabled ? (<div className="mt-3 w-full px-4">
+                      <input
+                        type="range"
+                        min={1}
+                        max={25}
+                        value={radiusKm}
+                        onChange={(e) => setRadiusKm(Number(e.target.value))}
+                        className="h-2 w-full accent-honey-500"
+                        aria-label={m.radius}
+                      />
+                      <p className="mt-1 text-center text-caption text-ash-400">
+                        {m.nearbyCount(nearbyPlaces.length)} · {radiusKm} {m.km}
+                      </p>
+                    </div>
+                  ) : null}
+                </div>
+                <div className="flex-1 overflow-y-auto px-2 pb-4 pt-1">{listContent}</div>
+              </>
+            )}
+          </div>
+        </>
+      ) : null}
+
+      {selectedSlot ? (<div className="pointer-events-none absolute inset-x-0 top-28 z-30 flex justify-center px-4 lg:top-auto lg:bottom-[calc(22rem+env(safe-area-inset-bottom,0px))] lg:justify-start lg:px-6">
           <SlotPreviewCard
             slot={selectedSlot}
             now={now}
-            lang={lang}
             distanceLabel={slotDistanceLabel(selectedSlot)}
             onClose={() => setSelectedSlotId(null)}
           />
         </div>
-      ) : activePlace ? (
-        <div className="pointer-events-none absolute inset-x-0 top-28 z-30 flex justify-center px-4 lg:bottom-4 lg:left-[calc(min(380px,90%)+2.5rem)] lg:right-auto lg:top-auto lg:justify-start lg:px-0">
+      ) : activePlace ? (<div className="pointer-events-none absolute inset-x-0 top-28 z-30 flex justify-center px-4 lg:top-auto lg:bottom-[calc(22rem+env(safe-area-inset-bottom,0px))] lg:justify-start lg:px-6">
           <PlacePreviewCard
             place={activePlace}
-            lang={lang}
             onClose={() => setActivePlaceId(null)}
           />
         </div>

@@ -50,42 +50,33 @@ export function Avatar({ src, alt, name, size = 'md', level, ringColor, classNam
   const resolved = resolveSize(size);
   const cfg = sizeMap[resolved];
 
-  const circle = (
-    <div
-      className={cn(
-        cfg.box,
+  const circle = (<div
+      className={cn(cfg.box,
         'rounded-full overflow-hidden bg-gradient-to-br from-ash-200 to-ash-300 flex items-center justify-center',
       )}
     >
-      {src ? (
-        <Image
+      {src ? (<Image
           src={src}
           alt={alt || name || 'avatar'}
           width={cfg.px}
           height={cfg.px}
           className="size-full object-cover"
         />
-      ) : (
-        <span className={cn('font-display font-semibold text-ash-700', cfg.text)}>
+      ) : (<span className={cn('font-display font-semibold text-ash-700', cfg.text)}>
           {initialsFrom(name)}
         </span>
       )}
     </div>
   );
 
-  return (
-    <div className={cn('relative inline-flex shrink-0', className)}>
-      {ringColor ? (
-        <div className="rounded-full p-1" style={{ backgroundColor: ringColor }}>
+  return (<div className={cn('relative inline-flex shrink-0', className)}>
+      {ringColor ? (<div className="rounded-full p-1" style={{ backgroundColor: ringColor }}>
           <div className="rounded-full bg-bg p-1">{circle}</div>
         </div>
-      ) : (
-        circle
+      ) : (circle
       )}
-      {level !== undefined && (
-        <span
-          className={cn(
-            'absolute font-mono font-bold rounded-full bg-honey-500 text-graphite',
+      {level !== undefined && (<span
+          className={cn('absolute font-mono font-bold rounded-full bg-honey-500 text-graphite',
             'flex items-center justify-center border-2 border-bg',
             cfg.level,
           )}

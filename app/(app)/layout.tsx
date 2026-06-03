@@ -41,10 +41,8 @@ export default async function MainAppLayout({
     unreadCount = count ?? 0;
   }
 
-  return (
-    <AppShell isGuest={!user} userName={userName} userLevel={userLevel} avatarUrl={avatarUrl} unreadCount={unreadCount}>
-      {!user || pendingRatings.length === 0 ? null : (
-        <div className="mx-auto max-w-5xl px-4 lg:px-8 pt-4">
+  return (<AppShell isGuest={!user} userName={userName} userLevel={userLevel} avatarUrl={avatarUrl} unreadCount={unreadCount}>
+      {!user || pendingRatings.length === 0 ? null : (<div className="mx-auto max-w-5xl px-4 lg:px-8 pt-4">
           <PendingRatingsBanner items={pendingRatings} />
         </div>
       )}

@@ -9,14 +9,12 @@ import { Input } from "@/components/ui/Input";
 import { createClient } from "@/lib/supabase/client";
 import { ICON_FEMALE, ICON_MALE, activityLabel } from "@/lib/i18n-ui";
 import { ActivityIcon } from "@/components/slots/ActivityIcon";
-import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 const STORAGE_GOALS = "pf_onboarding_goals";
 const STORAGE_CITY = "pf_onboarding_city";
 
 export default function SetupPage() {
   const router = useRouter();
-  const { lang } = useLanguage();
   const [name, setName] = useState("");
   const [gender, setGender] = useState<"male" | "female">("female");
   const [birthDate, setBirthDate] = useState("");
@@ -39,50 +37,27 @@ export default function SetupPage() {
     }
   }, []);
 
-  const copy =
-    lang === "pl"
-      ? {
-          title: "Stwórz postać",
-          subtitle: "Imię, awatar i ulubione aktywności.",
-          name: "Imię",
-          gender: "Płeć",
-          birth: "Data urodzenia",
-          avatar: "Awatar (z dysku)",
-          uploadBusy: "Przesyłanie awatara…",
-          avatarOk: "Awatar przesłany.",
-          avatarHint: "Opcjonalnie (max 5 MB).",
-          activities: "Wybierz aktywności",
-          cityLabel: "Miasto / okolica (opcjonalnie)",
-          goalsLabel: "Cele (opcjonalnie)",
-          cityPh: "Np. Kraków",
-          goalsPh: "Np. regularne bieganie",
-          submit: "Wejdź do gry",
-          saving: "Zapisywanie…",
-          imgErr: "Awatar musi być obrazem.",
-          bigErr: "Plik za duży (max 5 MB).",
-          unauth: "Brak autoryzacji",
-        }
-      : {
-          title: "Create your character",
-          subtitle: "Name, avatar and favorite activities.",
-          name: "Name",
-          gender: "Gender",
-          birth: "Date of birth",
-          avatar: "Avatar (upload from disk)",
-          uploadBusy: "Uploading avatar…",
-          avatarOk: "Avatar uploaded.",
-          avatarHint: "Optional (max 5MB).",
-          activities: "Choose activities",
-          cityLabel: "City / area (optional)",
-          goalsLabel: "Goals (optional)",
-          cityPh: "E.g. Berlin",
-          goalsPh: "E.g. weekly volleyball",
-          submit: "Enter the game",
-          saving: "Saving…",
-          imgErr: "Avatar must be an image file.",
-          bigErr: "Avatar file is too large (max 5MB).",
-          unauth: "Unauthorized",
-        };
+  const copy = {
+    title: "Create your character",
+    subtitle: "Name, avatar and favorite activities.",
+    name: "Name",
+    gender: "Gender",
+    birth: "Date of birth",
+    avatar: "Avatar (upload from disk)",
+    uploadBusy: "Uploading avatar…",
+    avatarOk: "Avatar uploaded.",
+    avatarHint: "Optional (max 5MB).",
+    activities: "Choose activities",
+    cityLabel: "City / area (optional)",
+    goalsLabel: "Goals (optional)",
+    cityPh: "E.g. Austin",
+    goalsPh: "E.g. weekly dog walks",
+    submit: "Enter the game",
+    saving: "Saving…",
+    imgErr: "Avatar must be an image file.",
+    bigErr: "Avatar file is too large (max 5MB).",
+    unauth: "Unauthorized",
+  };
 
   async function onAvatarSelected(file: File | null) {
     if (!file) return;
@@ -158,8 +133,7 @@ export default function SetupPage() {
     setSelected((prev) => (prev.includes(key) ? prev.filter((x) => x !== key) : [...prev, key]));
   }
 
-  return (
-    <div className="mx-auto max-w-lg px-4 py-8">
+  return (<div className="mx-auto max-w-lg px-4 py-8">
       <h1 className="text-2xl font-bold text-[var(--text-primary)]">{copy.title}</h1>
       <p className="mt-1 text-sm text-[var(--text-muted)]">{copy.subtitle}</p>
 
@@ -237,8 +211,7 @@ export default function SetupPage() {
           <div className="grid grid-cols-2 gap-2">
             {ACTIVITY_KEYS.map((k) => {
               const on = selected.includes(k);
-              return (
-                <button
+              return (<button
                   key={k}
                   type="button"
                   onClick={() => toggle(k)}
@@ -247,7 +220,7 @@ export default function SetupPage() {
                   }`}
                 >
                   <ActivityIcon activityType={k} size="sm" />
-                  <span className="min-w-0 flex-1 leading-snug text-[var(--text-primary)]">{activityLabel(lang, k)}</span>
+                  <span className="min-w-0 flex-1 leading-snug text-[var(--text-primary)]">{activityLabel(k)}</span>
                 </button>
               );
             })}

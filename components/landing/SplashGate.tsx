@@ -23,11 +23,9 @@ export function SplashGate({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  return (
-    <>
+  return (<>
       <AnimatePresence>
-        {showSplash ? (
-          <motion.div
+        {showSplash ? (<motion.div
             key="splash"
             className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--bg-page)]"
             initial={{ opacity: 0 }}

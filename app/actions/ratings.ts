@@ -13,8 +13,7 @@ export type RatingInput = {
   showed_up: boolean;
 };
 
-async function applyRatingEffects(
-  supabase: Awaited<ReturnType<typeof createClient>>,
+async function applyRatingEffects(supabase: Awaited<ReturnType<typeof createClient>>,
   params: { slotId: string; raterId: string; ratedId: string; score: number; showed_up: boolean },
 ) {
   const { raterId, ratedId, score, showed_up } = params;

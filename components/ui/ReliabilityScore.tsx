@@ -6,8 +6,7 @@ type ReliabilityScoreProps = {
 export function ReliabilityScore({ score, size = 32 }: ReliabilityScoreProps) {
   const pct = Math.round(Math.min(1, Math.max(0, score)) * 100);
   const fontSize = size >= 52 ? "1rem" : size >= 44 ? "0.875rem" : "0.75rem";
-  return (
-    <div
+  return (<div
       className="flex items-center justify-center rounded-full font-bold"
       style={{
         width: size,

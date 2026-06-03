@@ -3,7 +3,6 @@ import { createClient } from "@/lib/supabase/server";
 import { ProfileFixIt } from "./ProfileFixIt";
 import { signOut } from "@/app/actions/profile";
 import { normalizeActivityKey, type ActivityKey } from "@/lib/activities";
-import { getServerLang } from "@/lib/i18n-server";
 import { profileUi } from "@/lib/i18n-ui";
 import {
   getLevelFromExp,
@@ -15,8 +14,7 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function OwnProfilePage() {
-  const lang = await getServerLang();
-  const p = profileUi(lang);
+  const p = profileUi();
   const supabase = await createClient();
   const {
     data: { user },
@@ -87,16 +85,15 @@ export default async function OwnProfilePage() {
   const homeCity = (user.user_metadata?.home_city as string | undefined)?.trim();
 
   const badges = [
-    { id: "first-host", name: "Pierwszy host", earned: (profile.total_hosted ?? 0) >= 1, icon: "trophy" as const },
-    { id: "reliable", name: "Niezawodny", earned: reliabilityPct >= 90, icon: "shield" as const },
-    { id: "streak", name: "5 z rzędu", earned: samePersonRuns >= 5, icon: "zap" as const },
-    { id: "social", name: "Społecznik", earned: socialButterfly, icon: "award" as const },
-    { id: "explorer", name: "Odkrywca", earned: completionist, icon: "award" as const },
-    { id: "morning", name: "Ranny ptaszek", earned: false, icon: "award" as const },
+    { id: "first-host", name: "First host", earned: (profile.total_hosted ?? 0) >= 1, icon: "trophy" as const },
+    { id: "reliable", name: "Reliable", earned: reliabilityPct >= 90, icon: "shield" as const },
+    { id: "streak", name: "5 in a row", earned: samePersonRuns >= 5, icon: "zap" as const },
+    { id: "social", name: "Social butterfly", earned: socialButterfly, icon: "award" as const },
+    { id: "explorer", name: "Explorer", earned: completionist, icon: "award" as const },
+    { id: "morning", name: "Early bird", earned: false, icon: "award" as const },
   ];
 
-  return (
-    <>
+  return (<>
       <ProfileFixIt
         name={profile.name}
         gender={profile.gender === "male" ? "M" : "F"}

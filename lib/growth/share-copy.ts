@@ -1,6 +1,5 @@
 import { buildSlotShareUrl } from "@/lib/growth/share-url";
 import { activityLabel } from "@/lib/i18n-ui";
-import type { Lang } from "@/lib/i18n-lang";
 import { MARKET_CITY_LABEL } from "@/lib/market";
 
 export type SlotShareInput = {
@@ -19,9 +18,8 @@ export type ShareCopyResult = {
   aiGenerated: boolean;
 };
 
-function formatWhen(iso: string, lang: Lang): string {
-  const locale = lang === "pl" ? "pl-PL" : "en-GB";
-  return new Date(iso).toLocaleString(locale, {
+function formatWhen(iso: string): string {
+  return new Date(iso).toLocaleString("en-US", {
     weekday: "short",
     day: "numeric",
     month: "short",
@@ -30,42 +28,30 @@ function formatWhen(iso: string, lang: Lang): string {
   });
 }
 
-function templateShareCopy(slot: SlotShareInput, lang: Lang): string {
+function templateShareCopy(slot: SlotShareInput): string {
   const url = buildSlotShareUrl(slot.id);
-  const when = formatWhen(slot.date_time, lang);
-  const activity = activityLabel(lang, slot.activity_type);
+  const when = formatWhen(slot.date_time);
+  const activity = activityLabel(slot.activity_type);
   const guestCap = Math.max(1, slot.max_spots - 1);
   const open = Math.max(0, guestCap - slot.spots_taken);
 
-  if (lang === "pl") {
-    return open > 0
-      ? `${activity} · ${slot.title}\n📍 ${slot.location_name} · ${when}\n👋 ${open} wolnych miejsc — dołącz:\n${url}`
-      : `${activity} · ${slot.title}\n📍 ${slot.location_name} · ${when}\nZobacz na lfparty:\n${url}`;
-  }
   return open > 0
     ? `${activity} · ${slot.title}\n📍 ${slot.location_name} · ${when}\n👋 ${open} spots left — join:\n${url}`
     : `${activity} · ${slot.title}\n📍 ${slot.location_name} · ${when}\nSee on lfparty:\n${url}`;
 }
 
-async function aiShareCopy(slot: SlotShareInput, lang: Lang): Promise<string | null> {
+async function aiShareCopy(slot: SlotShareInput): Promise<string | null> {
   const key = process.env.OPENAI_API_KEY?.trim();
   if (!key) return null;
 
-  const when = formatWhen(slot.date_time, lang);
-  const activity = activityLabel(lang, slot.activity_type);
+  const when = formatWhen(slot.date_time);
+  const activity = activityLabel(slot.activity_type);
   const url = buildSlotShareUrl(slot.id);
   const guestCap = Math.max(1, slot.max_spots - 1);
   const open = Math.max(0, guestCap - slot.spots_taken);
 
-  const system =
-    lang === "pl"
-      ? `Piszesz krótkie zaproszenia outdoor w ${MARKET_CITY_LABEL} (lfparty). Max 280 znaków. Bez hashtagów spamowych. Zakończ dokładnie podanym linkiem.`
-      : `Write short outdoor meetup invites in ${MARKET_CITY_LABEL} (lfparty). Max 280 chars. No spam hashtags. End with the exact link provided.`;
-
-  const user =
-    lang === "pl"
-      ? `Aktywność: ${activity}\nTytuł: ${slot.title}\nMiejsce: ${slot.location_name}\nKiedy: ${when}\nWolne miejsca: ${open}\nLink: ${url}`
-      : `Activity: ${activity}\nTitle: ${slot.title}\nPlace: ${slot.location_name}\nWhen: ${when}\nOpen spots: ${open}\nLink: ${url}`;
+  const system = `Write short outdoor meetup invites in ${MARKET_CITY_LABEL} (lfparty). Max 280 chars. No spam hashtags. End with the exact link provided.`;
+  const user = `Activity: ${activity}\nTitle: ${slot.title}\nPlace: ${slot.location_name}\nWhen: ${when}\nOpen spots: ${open}\nLink: ${url}`;
 
   try {
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -97,14 +83,11 @@ async function aiShareCopy(slot: SlotShareInput, lang: Lang): Promise<string | n
   }
 }
 
-export async function generateSlotShareCopy(
-  slot: SlotShareInput,
-  lang: Lang,
-): Promise<ShareCopyResult> {
+export async function generateSlotShareCopy(slot: SlotShareInput): Promise<ShareCopyResult> {
   const url = buildSlotShareUrl(slot.id);
-  const ai = await aiShareCopy(slot, lang);
+  const ai = await aiShareCopy(slot);
   if (ai) {
     return { text: ai, url, aiGenerated: true };
   }
-  return { text: templateShareCopy(slot, lang), url, aiGenerated: false };
+  return { text: templateShareCopy(slot), url, aiGenerated: false };
 }

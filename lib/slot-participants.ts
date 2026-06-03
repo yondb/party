@@ -1,6 +1,5 @@
 /** Everyone in a slot party except `excludeUserId` (typically the rater). */
-export function peersForSlot(
-  hostId: string,
+export function peersForSlot(hostId: string,
   acceptedApplicantIds: string[],
   excludeUserId: string,
 ): string[] {
@@ -9,8 +8,7 @@ export function peersForSlot(
   return Array.from(ids);
 }
 
-export function isSlotParticipant(
-  userId: string,
+export function isSlotParticipant(userId: string,
   hostId: string,
   acceptedApplicantIds: string[],
 ): boolean {

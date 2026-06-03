@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { getActivity } from "@/lib/activities";
-import { getServerLang } from "@/lib/i18n-server";
 import { activityLabel, pageHeaderUi, slotAudienceBadge, slotDetailUi } from "@/lib/i18n-ui";
 import { ActivityIcon } from "@/components/slots/ActivityIcon";
 import { ApplyToPartyForm } from "@/components/slots/ApplyToPartyForm";
@@ -21,8 +20,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const lang = await getServerLang();
-  const locale = lang === "pl" ? "pl-PL" : "en-GB";
+  const locale = "en-US";
   const supabase = await createClient();
   const { data: slot } = await supabase
     .from("slots")
@@ -34,7 +32,7 @@ export async function generateMetadata({
     return { title: "Quest" };
   }
 
-  const activity = activityLabel(lang, slot.activity_type);
+  const activity = activityLabel(slot.activity_type);
   const when = new Date(slot.date_time).toLocaleString(locale, {
     weekday: "short",
     month: "short",
@@ -64,10 +62,9 @@ export async function generateMetadata({
 
 export default async function SlotDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const lang = await getServerLang();
-  const d = slotDetailUi(lang);
-  const back = pageHeaderUi(lang);
-  const locale = lang === "pl" ? "pl-PL" : "en-GB";
+  const d = slotDetailUi();
+  const back = pageHeaderUi();
+  const locale = "en-US";
   const supabase = await createClient();
   const {
     data: { user },
@@ -123,10 +120,9 @@ export default async function SlotDetailPage({ params }: { params: Promise<{ id:
     (isHost || inParty) && (slot.status === "open" || slot.status === "full");
 
   const act = getActivity(slot.activity_type);
-  const audienceLine = slotAudienceBadge(lang, (slot as { gender_scope?: string | null }).gender_scope);
+  const audienceLine = slotAudienceBadge((slot as { gender_scope?: string | null }).gender_scope);
 
-  return (
-    <div className="page-shell pb-6">
+  return (<div className="page-shell pb-6">
       <PageHeader title={d.quest} backHref="/feed" backLabel={back.back} />
       <div
         className="floating-card relative overflow-hidden rounded-lg p-0"
@@ -152,13 +148,11 @@ export default async function SlotDetailPage({ params }: { params: Promise<{ id:
           </div>
         </div>
         <div className="space-y-5 p-5 sm:p-6">
-          {audienceLine ? (
-            <p className="rounded border border-[var(--border-medium)] bg-[var(--bg-input)] px-3 py-2.5 text-center text-sm font-medium text-[var(--accent)]">
+          {audienceLine ? (<p className="rounded border border-[var(--border-medium)] bg-[var(--bg-input)] px-3 py-2.5 text-center text-sm font-medium text-[var(--accent)]">
               {audienceLine}
             </p>
           ) : null}
-          {host ? (
-            <section>
+          {host ? (<section>
               <h2 className="text-xs font-medium text-[var(--text-muted)]">
                 {d.host}
               </h2>
@@ -175,8 +169,7 @@ export default async function SlotDetailPage({ params }: { params: Promise<{ id:
             </section>
           ) : null}
 
-          {slot.description ? (
-            <p className="text-base leading-relaxed text-[var(--text-secondary)]">{slot.description}</p>
+          {slot.description ? (<p className="text-base leading-relaxed text-[var(--text-secondary)]">{slot.description}</p>
           ) : null}
 
           <section>
@@ -184,8 +177,7 @@ export default async function SlotDetailPage({ params }: { params: Promise<{ id:
               {d.partyMembers}
             </h2>
             <div className="mt-3 flex flex-wrap gap-2">
-              {host ? (
-                <Link
+              {host ? (<Link
                   href={`/profile/${host.id}`}
                   className="flex items-center gap-1 rounded-full border border-[var(--border-medium)] px-2.5 py-1.5 text-sm transition hover:border-[var(--border-strong)] hover:bg-[var(--bg-card-hover)]"
                 >
@@ -193,8 +185,7 @@ export default async function SlotDetailPage({ params }: { params: Promise<{ id:
                   {host.name} ({d.hostTag})
                 </Link>
               ) : null}
-              {cleanMembers.map((m) => (
-                <Link
+              {cleanMembers.map((m) => (<Link
                   key={m.id}
                   href={`/profile/${m.id}`}
                   className="flex items-center gap-1 rounded-full border border-[var(--border-medium)] px-2.5 py-1.5 text-sm transition hover:border-[var(--border-strong)] hover:bg-[var(--bg-card-hover)]"
@@ -210,24 +201,21 @@ export default async function SlotDetailPage({ params }: { params: Promise<{ id:
           </section>
 
           <div className="flex flex-wrap gap-2">
-            {isHost ? (
-              <Link
+            {isHost ? (<Link
                 href={`/slots/${slot.id}/manage`}
                 className="btn-primary inline-flex min-h-[3rem] flex-1 min-w-[10rem] items-center justify-center px-4 py-3 text-center text-base font-bold"
               >
                 {d.manage}
               </Link>
             ) : null}
-            {canHostEdit ? (
-              <Link
+            {canHostEdit ? (<Link
                 href={`/slots/${slot.id}/edit`}
                 className="btn-secondary inline-flex min-h-[3rem] flex-1 min-w-[10rem] items-center justify-center px-4 py-3 text-center text-base font-semibold"
               >
                 {d.editQuest}
               </Link>
             ) : null}
-            {inParty ? (
-              <Link
+            {inParty ? (<Link
                 href={`/slots/${slot.id}/chat`}
                 className="btn-secondary inline-flex min-h-[3rem] flex-1 min-w-[10rem] items-center justify-center px-4 py-3 text-center text-base font-semibold"
               >
@@ -236,17 +224,14 @@ export default async function SlotDetailPage({ params }: { params: Promise<{ id:
             ) : null}
           </div>
 
-          {canShare ? <ShareSlotPanel slotId={slot.id} lang={lang} /> : null}
+          {canShare ? <ShareSlotPanel slotId={slot.id} /> : null}
 
           {!isHost && !full && myApp === "none" ? <ApplyToPartyForm slotId={slot.id} /> : null}
-          {!isHost && myApp === "pending" ? (
-            <p className="text-center text-sm text-[var(--status-pending)]">{d.waiting}</p>
+          {!isHost && myApp === "pending" ? (<p className="text-center text-sm text-[var(--status-pending)]">{d.waiting}</p>
           ) : null}
-          {!isHost && myApp === "rejected" ? (
-            <p className="text-center text-sm text-[var(--text-muted)]">{d.rejected}</p>
+          {!isHost && myApp === "rejected" ? (<p className="text-center text-sm text-[var(--text-muted)]">{d.rejected}</p>
           ) : null}
-          {full && !isHost && myApp !== "accepted" ? (
-            <p className="text-center text-sm text-[var(--status-full)]">{d.full}</p>
+          {full && !isHost && myApp !== "accepted" ? (<p className="text-center text-sm text-[var(--status-full)]">{d.full}</p>
           ) : null}
         </div>
       </div>

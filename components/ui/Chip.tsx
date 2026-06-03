@@ -8,13 +8,10 @@ interface ChipProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   icon?: React.ReactNode;
 }
 
-export const Chip = forwardRef<HTMLButtonElement, ChipProps>(
-  ({ active, emoji, icon, className, children, ...props }, ref) => {
-    return (
-      <button
+export const Chip = forwardRef<HTMLButtonElement, ChipProps>(({ active, emoji, icon, className, children, ...props }, ref) => {
+    return (<button
         ref={ref}
-        className={cn(
-          'inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full text-body-sm font-medium',
+        className={cn('inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full text-body-sm font-medium',
           'transition-all duration-150 ease-out-soft whitespace-nowrap',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-honey-500 focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
           active

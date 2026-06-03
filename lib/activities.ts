@@ -182,8 +182,7 @@ export function normalizeActivityKey(raw: string): ActivityKey {
 
 export function getActivity(key: string): ActivityDef {
   const k = key as ActivityKey;
-  return (
-    ACTIVITIES[k] ?? {
+  return (ACTIVITIES[k] ?? {
       label: key,
       icon: "✨",
       color: "#64748B",

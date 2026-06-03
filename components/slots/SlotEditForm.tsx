@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Button } from "@/components/ui/Button";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { useLanguage } from "@/components/i18n/LanguageProvider";
 import { ICON_ANY, ICON_FEMALE, ICON_MALE } from "@/lib/i18n-ui";
 import { PLACE_CATEGORY_META, placeCategoryLabel, type PlaceCategory } from "@/lib/places";
 import { toDateTimeLocalValue } from "@/lib/slot-edit-form";
@@ -27,41 +26,23 @@ export type SlotEditInitial = {
 };
 
 const COPY = {
-  en: {
-    header: "Edit slot",
-    placeLocked: "Place (locked)",
-    datetime: "Date and time",
-    spots: "Party size (including host)",
-    audience: "Who can join",
-    audienceAny: "Everyone",
-    audienceWomen: "Women only",
-    audienceMen: "Men only",
-    description: "Description (optional)",
-    save: "Save changes",
-    saving: "Saving…",
-    backManage: "Back to manage",
-    errDate: "Pick a date and time.",
-  },
-  pl: {
-    header: "Edytuj slot",
-    placeLocked: "Miejsce (zablokowane)",
-    datetime: "Data i godzina",
-    spots: "Wielkość party (z hostem)",
-    audience: "Kto może dołączyć",
-    audienceAny: "Wszyscy",
-    audienceWomen: "Tylko kobiety",
-    audienceMen: "Tylko mężczyźni",
-    description: "Opis (opcjonalnie)",
-    save: "Zapisz zmiany",
-    saving: "Zapisywanie…",
-    backManage: "Wróć do zarządzania",
-    errDate: "Wybierz datę i godzinę.",
-  },
+  header: "Edit slot",
+  placeLocked: "Place (locked)",
+  datetime: "Date and time",
+  spots: "Party size (including host)",
+  audience: "Who can join",
+  audienceAny: "Everyone",
+  audienceWomen: "Women only",
+  audienceMen: "Men only",
+  description: "Description (optional)",
+  save: "Save changes",
+  saving: "Saving…",
+  backManage: "Back to manage",
+  errDate: "Pick a date and time.",
 } as const;
 
 export function SlotEditForm({ initial }: { initial: SlotEditInitial }) {
-  const { lang } = useLanguage();
-  const t = COPY[lang];
+  const t = COPY;
   const router = useRouter();
   const [dateTime, setDateTime] = useState(() => toDateTimeLocalValue(initial.date_time));
   const [maxSpots, setMaxSpots] = useState(initial.max_spots);
@@ -104,22 +85,20 @@ export function SlotEditForm({ initial }: { initial: SlotEditInitial }) {
     }
   }
 
-  return (
-    <div>
+  return (<div>
       <PageHeader
         title={t.header}
         backHref={`/slots/${initial.slotId}/manage`}
         backLabel={t.backManage}
       />
       <form onSubmit={onSubmit} className="space-y-5 pb-8">
-        {initial.place && placeMeta ? (
-          <section className="floating-card rounded-lg border border-[var(--border-medium)] p-3">
+        {initial.place && placeMeta ? (<section className="floating-card rounded-lg border border-[var(--border-medium)] p-3">
             <p className="text-xs font-medium text-[var(--text-muted)]">{t.placeLocked}</p>
             <p className="mt-1 text-lg font-semibold text-[var(--text-primary)]">
               {placeMeta.icon} {initial.place.name}
             </p>
             <p className="text-sm text-[var(--text-muted)]">
-              {placeCategoryLabel(lang, initial.place.category)}
+              {placeCategoryLabel(initial.place.category)}
             </p>
           </section>
         ) : null}
@@ -127,7 +106,7 @@ export function SlotEditForm({ initial }: { initial: SlotEditInitial }) {
         <Input
           label={t.datetime}
           type="datetime-local"
-          lang={lang === "pl" ? "pl" : "en-US"}
+          lang="en-US"
           value={dateTime}
           onChange={(e) => setDateTime(e.target.value)}
           error={dateError}
@@ -152,16 +131,14 @@ export function SlotEditForm({ initial }: { initial: SlotEditInitial }) {
             {t.audience}
           </p>
           <div className="flex gap-2">
-            {(
-              [
+            {([
                 { key: "any" as const, icon: ICON_ANY, label: t.audienceAny },
                 { key: "female" as const, icon: ICON_FEMALE, label: t.audienceWomen },
                 { key: "male" as const, icon: ICON_MALE, label: t.audienceMen },
               ] as const
             ).map(({ key, icon, label }) => {
               const sel = genderScope === key;
-              return (
-                <button
+              return (<button
                   key={key}
                   type="button"
                   onClick={() => setGenderScope(key)}

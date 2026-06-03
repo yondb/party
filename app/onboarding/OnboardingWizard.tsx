@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
-import { useLanguage } from "@/components/i18n/LanguageProvider";
 import { onboardingNavUi, onboardingStepsUi } from "@/lib/i18n-ui";
 
 const STORAGE_GOALS = "pf_onboarding_goals";
@@ -12,9 +11,8 @@ const STORAGE_CITY = "pf_onboarding_city";
 
 export function OnboardingWizard() {
   const router = useRouter();
-  const { lang } = useLanguage();
-  const steps = onboardingStepsUi(lang);
-  const nav = onboardingNavUi(lang);
+  const steps = onboardingStepsUi();
+  const nav = onboardingNavUi();
   const [i, setI] = useState(0);
   const [loading, setLoading] = useState(false);
   const [goals, setGoals] = useState("");
@@ -33,8 +31,7 @@ export function OnboardingWizard() {
 
   const step = steps[i] ?? steps[0];
 
-  return (
-    <div className="floating-card w-full max-w-md rounded-lg p-8">
+  return (<div className="floating-card w-full max-w-md rounded-lg p-8">
       <AnimatePresence mode="wait">
         <motion.div
           key={i}
@@ -45,16 +42,14 @@ export function OnboardingWizard() {
         >
           <h1 className="text-2xl font-bold font-bold text-[var(--text-primary)]">{step.title}</h1>
           <p className="mt-3 text-[var(--text-secondary)]">{step.body}</p>
-          {i === 3 ? (
-            <textarea
+          {i === 3 ? (<textarea
               className="input-wow mt-4 min-h-[5rem] w-full resize-y rounded-md border border-[var(--border-medium)] bg-[var(--bg-input)] p-3 text-sm text-[var(--text-primary)]"
               placeholder={nav.goalPlaceholder}
               value={goals}
               onChange={(e) => setGoals(e.target.value)}
             />
           ) : null}
-          {i === 4 ? (
-            <input
+          {i === 4 ? (<input
               type="text"
               className="input-wow mt-4 w-full rounded-md border border-[var(--border-medium)] bg-[var(--bg-input)] p-3 text-sm text-[var(--text-primary)]"
               placeholder={nav.cityPlaceholder}
@@ -65,19 +60,15 @@ export function OnboardingWizard() {
         </motion.div>
       </AnimatePresence>
       <div className="mt-8 flex gap-2">
-        {i > 0 ? (
-          <Button type="button" variant="secondary" className="flex-1" onClick={() => setI((x) => x - 1)}>
+        {i > 0 ? (<Button type="button" variant="secondary" className="flex-1" onClick={() => setI((x) => x - 1)}>
             {nav.back}
           </Button>
-        ) : (
-          <span className="flex-1" />
+        ) : (<span className="flex-1" />
         )}
-        {i < steps.length - 1 ? (
-          <Button type="button" variant="primary" className="flex-1" onClick={() => setI((x) => x + 1)}>
+        {i < steps.length - 1 ? (<Button type="button" variant="primary" className="flex-1" onClick={() => setI((x) => x + 1)}>
             {nav.next}
           </Button>
-        ) : (
-          <Button type="button" variant="primary" className="flex-1" disabled={loading} onClick={finish}>
+        ) : (<Button type="button" variant="primary" className="flex-1" disabled={loading} onClick={finish}>
             {loading ? nav.busy : nav.finish}
           </Button>
         )}

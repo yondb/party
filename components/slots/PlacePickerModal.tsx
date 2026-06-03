@@ -47,8 +47,7 @@ export function PlacePickerModal({
 
   placesRef.current = places;
 
-  const geoJson = useMemo(
-    (): GeoJSON.FeatureCollection => ({
+  const geoJson = useMemo((): GeoJSON.FeatureCollection => ({
       type: 'FeatureCollection',
       features: places.map((p) => ({
         type: 'Feature',
@@ -145,64 +144,58 @@ export function PlacePickerModal({
 
   const canConfirm = Boolean(selectedExisting || picked);
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-graphite/40 p-4 backdrop-blur-sm">
+  return (<div className="fixed inset-0 z-50 flex items-center justify-center bg-graphite/40 p-4 backdrop-blur-sm">
       <div className="flex w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-ash-200/60 bg-surface shadow-lg">
         <div className="flex items-center justify-between border-b border-ash-200/60 px-5 py-4">
           <div>
-            <h2 className="font-display text-heading-md text-ash-900">Wybierz na mapie</h2>
+            <h2 className="font-display text-heading-md text-ash-900">Pick on map</h2>
             <p className="text-body-sm text-ash-500">
-              Kliknij pomarańczowy punkt (istniejące miejsce) lub dowolne miejsce, aby dodać pin.
+              Click an orange pin (existing place) or anywhere on the map to drop a new pin.
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Zamknij"
+            aria-label="Close"
             className="rounded-full p-1.5 text-ash-400 hover:bg-ash-100 hover:text-ash-700 transition"
           >
             <X className="size-5" />
           </button>
         </div>
 
-        {token ? (
-          <div ref={ref} className="h-[50vh] min-h-[280px] w-full" />
-        ) : (
-          <div className="flex h-[40vh] items-center justify-center p-8 text-center">
+        {token ? (<div ref={ref} className="h-[50vh] min-h-[280px] w-full" />
+        ) : (<div className="flex h-[40vh] items-center justify-center p-8 text-center">
             <p className="text-body-sm text-ash-600">
-              Ustaw <code className="text-honey-700">NEXT_PUBLIC_MAPBOX_TOKEN</code> w .env.local
+              Set <code className="text-honey-700">NEXT_PUBLIC_MAPBOX_TOKEN</code> in .env.local
             </p>
           </div>
         )}
 
         <div className="space-y-3 border-t border-ash-200/60 p-5">
           <Input
-            label="Nazwa miejsca"
-            placeholder="np. Boisko przy Wiśle"
+            label="Place name"
+            placeholder="e.g. Riverside basketball court"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
-          {selectedExisting ? (
-            <p className="flex items-center gap-1.5 text-body-sm text-success">
+          {selectedExisting ? (<p className="flex items-center gap-1.5 text-body-sm text-success">
               <MapPin className="size-3.5 shrink-0" />
-              Wybrano: <span className="font-medium text-ash-900">{selectedExisting.name}</span>
+              Selected: <span className="font-medium text-ash-900">{selectedExisting.name}</span>
               {selectedExisting.district ? ` · ${selectedExisting.district}` : ''}
             </p>
-          ) : picked ? (
-            <p className="flex items-center gap-1.5 font-mono text-caption text-ash-500">
+          ) : picked ? (<p className="flex items-center gap-1.5 font-mono text-caption text-ash-500">
               <MapPin className="size-3.5" />
-              Nowy punkt: {picked.lat.toFixed(5)}, {picked.lng.toFixed(5)}
+              New pin: {picked.lat.toFixed(5)}, {picked.lng.toFixed(5)}
             </p>
-          ) : (
-            <p className="text-caption text-ash-400">
+          ) : (<p className="text-caption text-ash-400">
               {places.length > 0
-                ? `${places.length} miejsc na mapie — kliknij punkt lub mapę.`
-                : 'Nie wybrano jeszcze punktu.'}
+                ? `${places.length} places on the map — click a pin or the map.`
+                : 'No pin selected yet.'}
             </p>
           )}
           <div className="flex gap-2">
             <Button variant="secondary" fullWidth onClick={onClose}>
-              Anuluj
+              Cancel
             </Button>
             <Button
               fullWidth
@@ -223,11 +216,11 @@ export function PlacePickerModal({
                   kind: 'custom',
                   lat: picked.lat,
                   lng: picked.lng,
-                  name: name.trim() || 'Wybrane miejsce',
+                  name: name.trim() || 'Selected place',
                 });
               }}
             >
-              Użyj tego miejsca
+              Use this place
             </Button>
           </div>
         </div>

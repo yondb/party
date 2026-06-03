@@ -4,17 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { submitMyRatings, type RatingInput } from "@/app/actions/ratings";
-import { useLanguage } from "@/components/i18n/LanguageProvider";
 import { slotRateUi } from "@/lib/i18n-ui";
 
 type Peer = { id: string; name: string };
 
 export function SlotRateForm({ slotId, peers }: { slotId: string; peers: Peer[] }) {
-  const { lang } = useLanguage();
-  const t = slotRateUi(lang);
+  const t = slotRateUi();
   const router = useRouter();
-  const [rows, setRows] = useState<Record<string, { score: number; showed_up: boolean; comment: string }>>(
-    () =>
+  const [rows, setRows] = useState<Record<string, { score: number; showed_up: boolean; comment: string }>>(() =>
       Object.fromEntries(peers.map((p) => [p.id, { score: 5, showed_up: true, comment: "" }])),
   );
   const [loading, setLoading] = useState(false);
@@ -46,11 +43,9 @@ export function SlotRateForm({ slotId, peers }: { slotId: string; peers: Peer[] 
     return <p className="text-sm text-[var(--text-muted)]">{t.noPeers}</p>;
   }
 
-  return (
-    <div className="floating-card space-y-4 rounded-lg p-4">
+  return (<div className="floating-card space-y-4 rounded-lg p-4">
       <p className="text-sm font-semibold text-[var(--text-primary)]">{t.title}</p>
-      {peers.map((p) => (
-        <div key={p.id} className="rounded border border-[var(--border-medium)] p-3">
+      {peers.map((p) => (<div key={p.id} className="rounded border border-[var(--border-medium)] p-3">
           <p className="font-semibold text-[var(--accent)]">{p.name}</p>
           <div className="mt-2 grid gap-2 sm:grid-cols-2">
             <label className="text-xs text-[var(--text-muted)]">

@@ -24,8 +24,7 @@ export function TopBar({ userName = 'BRE', userLevel = 1, avatarUrl, isGuest, un
     router.push(q ? `/map?q=${encodeURIComponent(q)}` : '/map');
   }
 
-  return (
-    <header className="sticky top-0 z-40 border-b border-ash-200/70 bg-surface/95 backdrop-blur-md shadow-xs">
+  return (<header className="sticky top-0 z-40 border-b border-ash-200/70 bg-surface/95 backdrop-blur-md shadow-xs">
       <div className="mx-auto max-w-7xl h-14 lg:h-16 px-4 lg:px-6 flex items-center justify-between gap-4">
         <div className="shrink-0 lg:hidden">
           <Logo size="sm" href="/map" />
@@ -40,30 +39,27 @@ export function TopBar({ userName = 'BRE', userLevel = 1, avatarUrl, isGuest, un
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Szukaj miejsca lub kategorii..."
+              placeholder="Search places or categories..."
               className="w-full h-10 pl-10 pr-4 rounded-full border border-ash-200/80 bg-surface-2 text-body-sm text-ash-900 placeholder:text-ash-400 focus:outline-none focus:border-ash-400 focus:ring-2 focus:ring-ash-200/80 transition"
             />
           </div>
         </form>
 
         <div className="flex items-center gap-2 lg:gap-3">
-          {!isGuest ? (
-            <Link href="/slots/new" className="hidden lg:inline-flex">
+          {!isGuest ? (<Link href="/slots/new" className="hidden lg:inline-flex">
               <span className="inline-flex h-9 items-center justify-center gap-2 rounded-2xl bg-graphite px-3.5 text-body-sm font-medium text-surface shadow-md transition hover:bg-graphite-soft">
                 <Plus className="size-4" />
-                Nowy slot
+                New slot
               </span>
             </Link>
           ) : null}
-          {!isGuest ? (
-            <Link
+          {!isGuest ? (<Link
               href="/notifications"
               className="relative size-10 rounded-full hover:bg-ash-100 flex items-center justify-center transition"
-              aria-label="Powiadomienia"
+              aria-label="Notifications"
             >
               <Bell className="size-5 text-ash-700" />
-              {unreadCount > 0 ? (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[1.1rem] h-[1.1rem] px-1 rounded-full bg-honey-500 text-graphite text-[10px] font-bold leading-none ring-2 ring-surface flex items-center justify-center">
+              {unreadCount > 0 ? (<span className="absolute -top-0.5 -right-0.5 min-w-[1.1rem] h-[1.1rem] px-1 rounded-full bg-honey-500 text-graphite text-[10px] font-bold leading-none ring-2 ring-surface flex items-center justify-center">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               ) : null}

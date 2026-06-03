@@ -4,8 +4,7 @@ type StatBlockProps = {
 };
 
 export function StatBlock({ label, value }: StatBlockProps) {
-  return (
-    <div className="flex flex-col items-center justify-center rounded-2xl bg-[var(--bg-surface-2)] px-3 py-4 text-center">
+  return (<div className="flex flex-col items-center justify-center rounded-2xl bg-[var(--bg-surface-2)] px-3 py-4 text-center">
       <span
         className="text-2xl font-bold tabular-nums leading-none"
         style={{ color: "var(--text-primary)" }}

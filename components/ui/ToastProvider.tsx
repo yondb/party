@@ -38,15 +38,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(() => ({ push }), [push]);
 
-  return (
-    <ToastContext.Provider value={value}>
+  return (<ToastContext.Provider value={value}>
       {children}
       <div
         className="pointer-events-none fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] z-[100] flex flex-col items-center gap-2 px-3 sm:bottom-6"
         aria-live="polite"
       >
-        {items.map((t) => (
-          <div
+        {items.map((t) => (<div
             key={t.id}
             className={`pointer-events-auto max-w-md rounded-md border px-4 py-3 text-center text-sm shadow-lg ${
               t.kind === "error"

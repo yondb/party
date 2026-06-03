@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Map, Sparkles, User } from "lucide-react";
-import { useLanguage } from "@/components/i18n/LanguageProvider";
 import { navUi } from "@/lib/i18n-ui";
 import { cn } from "@/lib/utils";
 
@@ -15,23 +14,19 @@ const links = [
 
 export function Sidebar({ isGuest = false }: { isGuest?: boolean }) {
   const pathname = usePathname();
-  const { lang } = useLanguage();
-  const n = navUi(lang);
+  const n = navUi();
 
-  return (
-    <aside className="hidden lg:flex sticky top-16 h-[calc(100vh-4rem)] w-20 shrink-0 flex-col items-center py-6 gap-2 border-r border-ash-200/40 bg-bg">
-      <nav className="flex flex-col items-center gap-2" aria-label={lang === "pl" ? "Nawigacja" : "Navigation"}>
+  return (<aside className="hidden lg:flex sticky top-16 h-[calc(100vh-4rem)] w-20 shrink-0 flex-col items-center py-6 gap-2 border-r border-ash-200/40 bg-bg">
+      <nav className="flex flex-col items-center gap-2" aria-label="Navigation">
         {links.map((l) => {
           const href =
             isGuest && l.key === "profile" ? "/auth" : isGuest && l.key !== "map" ? "/map" : l.href;
           const active = pathname === href || pathname.startsWith(`${href}/`);
           const Icon = l.Icon;
-          return (
-            <Link
+          return (<Link
               key={l.key}
               href={href}
-              className={cn(
-                "flex flex-col items-center gap-1 rounded-2xl px-3 py-2.5 transition-all duration-fast",
+              className={cn("flex flex-col items-center gap-1 rounded-2xl px-3 py-2.5 transition-all duration-fast",
                 active ? "bg-graphite text-surface" : "text-ash-500 hover:bg-ash-100 hover:text-ash-900",
               )}
               aria-current={active ? "page" : undefined}

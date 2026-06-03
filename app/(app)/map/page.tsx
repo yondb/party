@@ -49,8 +49,7 @@ export default async function MapPage({
     acceptedBySlot.set(a.slot_id, list);
   }
 
-  const userIds = Array.from(
-    new Set([
+  const userIds = Array.from(new Set([
       ...slotRows.map((s) => s.host_id),
       ...(apps ?? []).map((a) => a.applicant_id),
     ]),
@@ -64,8 +63,7 @@ export default async function MapPage({
   const placePins = buildPlaceMapPins(placeRows, slotRows);
   const mapSlots = buildMapSlots(placeRows, slotRows, usersById, acceptedBySlot);
 
-  return (
-    <div className="relative w-full h-[calc(100dvh-var(--nav-height)-var(--dock-height))] min-h-[420px] lg:h-[calc(100dvh-var(--nav-height))] lg:min-h-[560px]">
+  return (<div className="relative w-full h-[calc(100dvh-var(--nav-height)-var(--dock-height))] min-h-[420px] lg:h-[calc(100dvh-var(--nav-height))] lg:min-h-[560px]">
       <MapPlacesClient places={placePins} slots={mapSlots} initialQuery={q?.trim() || ""} />
     </div>
   );

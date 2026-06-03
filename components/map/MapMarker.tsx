@@ -13,12 +13,10 @@ interface Props {
 
 export function MapMarker({ category, count, active, joined, onClick }: Props) {
   const cat = CATEGORIES[category] ?? getCategory(category);
-  return (
-    <button
+  return (<button
       type="button"
-      aria-label={`${cat.label}, ${count} osób`}
-      className={cn(
-        'relative inline-flex items-center gap-1 px-2.5 py-1 rounded-full cursor-pointer',
+      aria-label={`${cat.label}, ${count} people`}
+      className={cn('relative inline-flex items-center gap-1 px-2.5 py-1 rounded-full cursor-pointer',
         'transition-all duration-200 ease-spring',
         'hover:scale-110 active:scale-95',
         active && 'scale-110 ring-2 ring-surface',
@@ -54,8 +52,7 @@ export function MapMarker({ category, count, active, joined, onClick }: Props) {
 }
 
 export function MapClusterMarker({ count, onClick }: { count: number; onClick?: () => void }) {
-  return (
-    <button
+  return (<button
       type="button"
       aria-label={`Cluster of ${count} places`}
       className="size-12 rounded-full bg-graphite text-surface font-mono font-bold flex items-center justify-center shadow-md hover:scale-110 transition active:scale-95 cursor-pointer"
@@ -73,8 +70,7 @@ export function MapClusterMarker({ count, onClick }: { count: number; onClick?: 
 }
 
 export function UserLocationMarker() {
-  return (
-    <div className="relative">
+  return (<div className="relative">
       <div className="size-4 rounded-full bg-honey-500 ring-4 ring-honey-500/30" />
       <div className="absolute inset-0 size-4 rounded-full bg-honey-500 animate-ping" />
     </div>

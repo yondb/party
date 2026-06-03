@@ -8,20 +8,17 @@ import { useToast } from "@/components/ui/ToastProvider";
 import { updateNotificationPrefs } from "@/app/actions/settings-prefs";
 import { deleteOwnAccount, exportUserDataJson } from "@/app/actions/account-gdpr";
 import { createClient } from "@/lib/supabase/client";
-import type { Lang } from "@/lib/i18n-lang";
 import { settingsUi } from "@/lib/i18n-ui";
 import { DEFAULT_SUPPORT_EMAIL } from "@/lib/site";
 
 export function SettingsAccountPanel({
-  lang,
   initialEmailTransactional,
   initialMarketing,
 }: {
-  lang: Lang;
   initialEmailTransactional: boolean;
   initialMarketing: boolean;
 }) {
-  const t = settingsUi(lang);
+  const t = settingsUi();
   const router = useRouter();
   const toast = useToast();
   const [emailOn, setEmailOn] = useState(initialEmailTransactional);
@@ -36,7 +33,7 @@ export function SettingsAccountPanel({
         marketing_opt_in: marketing,
       });
       if ("error" in res && res.error) toast.push(res.error, "error");
-      else toast.push(lang === "pl" ? "Zapisano." : "Saved.", "success");
+      else toast.push("Saved.", "success");
       router.refresh();
     } finally {
       setBusy(null);
@@ -58,28 +55,21 @@ export function SettingsAccountPanel({
       a.download = res.filename;
       a.click();
       URL.revokeObjectURL(url);
-      toast.push(lang === "pl" ? "Pobrano plik." : "Download started.", "success");
+      toast.push("Download started.", "success");
     } finally {
       setBusy(null);
     }
   }
 
   async function onDelete() {
-    const sure = window.confirm(
-      lang === "pl"
-        ? "Na pewno usunąć konto? Tej operacji nie cofniesz."
-        : "Permanently delete your account? This cannot be undone.",
-    );
+    const sure = window.confirm("Permanently delete your account? This cannot be undone.");
     if (!sure) return;
     setBusy("delete");
     try {
       const res = await deleteOwnAccount();
       if (!res.ok) {
         if (res.error === "no_service_role") {
-          toast.push(
-            lang === "pl"
-              ? "Brak SUPABASE_SERVICE_ROLE_KEY — skonfiguruj serwer lub usuń konto z panelu Supabase."
-              : "Missing SUPABASE_SERVICE_ROLE_KEY — configure the server or delete the account in Supabase.",
+          toast.push("Missing SUPABASE_SERVICE_ROLE_KEY — configure the server or delete the account in Supabase.",
             "error",
           );
         } else {
@@ -95,8 +85,7 @@ export function SettingsAccountPanel({
     }
   }
 
-  return (
-    <div className="mt-6 space-y-6">
+  return (<div className="mt-6 space-y-6">
       <section className="floating-card rounded-lg p-4">
         <h2 className="text-xs font-medium text-[var(--text-secondary)]">{t.notifyHeading}</h2>
         <p className="mt-2 text-xs text-[var(--text-muted)]">{t.notifyEmailHint}</p>
@@ -109,7 +98,7 @@ export function SettingsAccountPanel({
           {t.marketingOptIn}
         </label>
         <Button type="button" variant="primary" className="mt-4" fullWidth disabled={busy !== null} onClick={() => void savePrefs()}>
-          {busy === "prefs" ? "…" : lang === "pl" ? "Zapisz preferencje" : "Save preferences"}
+          {busy === "prefs" ? "…" : "Save preferences"}
         </Button>
       </section>
 
@@ -141,10 +130,10 @@ export function SettingsAccountPanel({
         <h2 className="text-xs font-medium text-[var(--text-secondary)]">{t.legalHeading}</h2>
         <div className="mt-3 flex flex-col gap-2 text-sm">
           <Link href="/legal/privacy" className="text-[var(--accent)] hover:text-[var(--accent)]">
-            {lang === "pl" ? "Polityka prywatności" : "Privacy policy"}
+            Privacy policy
           </Link>
           <Link href="/legal/terms" className="text-[var(--accent)] hover:text-[var(--accent)]">
-            {lang === "pl" ? "Regulamin" : "Terms of use"}
+            Terms of use
           </Link>
         </div>
       </section>

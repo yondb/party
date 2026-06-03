@@ -1,16 +1,13 @@
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { getServerLang } from "@/lib/i18n-server";
 import { pageHeaderUi, premiumUi } from "@/lib/i18n-ui";
 
 export const dynamic = "force-dynamic";
 
 export default async function PremiumPage() {
-  const lang = await getServerLang();
-  const t = premiumUi(lang);
-  const back = pageHeaderUi(lang);
-  return (
-    <div className="pb-6">
+  const t = premiumUi();
+  const back = pageHeaderUi();
+  return (<div className="pb-6">
       <PageHeader title={t.title} backHref="/settings" backLabel={back.back} />
       <div className="floating-card mt-4 rounded-lg p-5">
         <p className="text-base leading-relaxed text-[var(--text-secondary)]">{t.body}</p>

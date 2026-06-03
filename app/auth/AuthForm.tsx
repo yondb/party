@@ -50,8 +50,7 @@ export function AuthForm() {
     }
   }
 
-  return (
-    <form className="mt-8 space-y-4" onSubmit={onSubmit}>
+  return (<form className="mt-8 space-y-4" onSubmit={onSubmit}>
       <div className="grid grid-cols-2 gap-2">
         <Button
           type="button"

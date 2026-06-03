@@ -34,8 +34,7 @@ async function count(table: string): Promise<number> {
 
 async function main() {
   console.log("== PURGE DEMO ==");
-  console.log(
-    `Przed: sloty=${await count("slots")}, aplikacje=${await count("applications")}, miejsca=${await count("places")}`,
+  console.log(`Przed: sloty=${await count("slots")}, aplikacje=${await count("applications")}, miejsca=${await count("places")}`,
   );
 
   const { data, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
@@ -52,8 +51,7 @@ async function main() {
   }
   console.log(`Usunięto ${deleted}/${demo.length} demo-userów (kaskadowo ich sloty/aplikacje).`);
 
-  console.log(
-    `Po: sloty=${await count("slots")}, aplikacje=${await count("applications")}, miejsca=${await count("places")}`,
+  console.log(`Po: sloty=${await count("slots")}, aplikacje=${await count("applications")}, miejsca=${await count("places")}`,
   );
   console.log("Gotowe — fejkowe spotkania usunięte, realne miejsca nietknięte.");
 }

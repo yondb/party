@@ -1,7 +1,6 @@
 ﻿import Link from 'next/link';
 import { Sun, ArrowRight, CalendarPlus, MapPin } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
-import { getServerLang } from '@/lib/i18n-server';
 import { feedUi } from '@/lib/i18n-ui';
 import { toCategoryId, CATEGORY_LIST, CATEGORIES, categoryLabel, type CategoryId } from '@/lib/categories';
 import { SlotCard, type SlotData } from '@/components/slot/SlotCard';
@@ -35,8 +34,7 @@ export default async function FeedPage({
 }: {
   searchParams: Promise<{ category?: string }>;
 }) {
-  const lang = await getServerLang();
-  const ui = feedUi(lang);
+  const ui = feedUi();
   const sp = await searchParams;
   const activeCategory: CategoryId | null =
     sp.category && sp.category in CATEGORIES ? (sp.category as CategoryId) : null;
@@ -48,8 +46,7 @@ export default async function FeedPage({
   const nowIso = new Date().toISOString();
   const { data: slotsData } = await supabase
     .from('slots')
-    .select(
-      'id, title, activity_type, date_time, location_name, max_spots, spots_taken, status, place_id, host_id',
+    .select('id, title, activity_type, date_time, location_name, max_spots, spots_taken, status, place_id, host_id',
     )
     .in('status', ['open', 'full'])
     .gte('date_time', nowIso)
@@ -68,8 +65,7 @@ export default async function FeedPage({
     : { data: [] as { slot_id: string; applicant_id: string }[] };
   const apps = (appsData ?? []) as { slot_id: string; applicant_id: string }[];
 
-  const userIds = Array.from(
-    new Set([
+  const userIds = Array.from(new Set([
       ...slots.map((s) => s.host_id),
       ...apps.map((a) => a.applicant_id),
       ...(user ? [user.id] : []),
@@ -83,8 +79,7 @@ export default async function FeedPage({
     : { data: [] as UserRow[] };
   const userMap = new Map<string, UserRow>((usersData ?? []).map((u) => [u.id, u as UserRow]));
 
-  const placeIds = Array.from(
-    new Set(slots.map((s) => s.place_id).filter((v): v is string => Boolean(v))),
+  const placeIds = Array.from(new Set(slots.map((s) => s.place_id).filter((v): v is string => Boolean(v))),
   );
   const { data: placesData } = placeIds.length
     ? await supabase.from('places').select('id, name, category').in('id', placeIds)
@@ -123,36 +118,32 @@ export default async function FeedPage({
     return acc;
   }, {});
 
-  const cards = (activeCategory ? allCards.filter((c) => c.category === activeCategory) : allCards).slice(
-    0,
+  const cards = (activeCategory ? allCards.filter((c) => c.category === activeCategory) : allCards).slice(0,
     24,
   );
 
   const userName =
     (user && userMap.get(user.id)?.name) ||
     (user?.user_metadata?.name as string | undefined) ||
-    (lang === 'pl' ? 'Cześć' : 'Hi');
+    'Hi';
 
-  const todayLabel = new Intl.DateTimeFormat(lang === 'pl' ? 'pl-PL' : 'en-GB', {
+  const todayLabel = new Intl.DateTimeFormat('en-US', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
   }).format(new Date());
 
-  return (
-    <div className="mx-auto max-w-5xl px-4 py-5 lg:px-8 lg:py-8">
+  return (<div className="mx-auto max-w-5xl px-4 py-5 lg:px-8 lg:py-8">
       <div className="space-y-6">
         <section className="panel-ash flex items-start justify-between gap-4 p-5 lg:p-6">
           <div className="space-y-1.5">
             <p className="text-caption uppercase tracking-wider text-ash-500">{todayLabel}</p>
             <h1 className="font-display text-display-xl text-ash-900 lg:text-display-2xl">
-              {lang === 'pl' ? 'Cześć' : 'Hi'}, <span className="honey-highlight">{userName}</span> 👋
+              Hi, <span className="honey-highlight">{userName}</span> 👋
             </h1>
             <p className="max-w-md text-body text-ash-600">
               {allCards.length > 0
-                ? lang === 'pl'
-                  ? `W okolicy ${allCards.length} aktywnych slotów — wybierz coś dla siebie.`
-                  : `${allCards.length} active slots nearby — pick something for you.`
+                ? `${allCards.length} active slots nearby — pick something for you.`
                 : ui.emptySubtitle}
             </p>
           </div>
@@ -171,13 +162,12 @@ export default async function FeedPage({
                 : 'border-ash-200 bg-surface text-ash-700 hover:bg-ash-50'
             }`}
           >
-            {lang === 'pl' ? 'Wszystko' : 'All'}
+            {ui.allActivities}
           </Link>
           {CATEGORY_LIST.map((cat) => {
             const active = activeCategory === cat.id;
             const count = countByCategory[cat.id] ?? 0;
-            return (
-              <Link
+            return (<Link
                 key={cat.id}
                 href={`/feed?category=${cat.id}`}
                 className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition sm:px-4 sm:py-2 sm:text-body-sm ${
@@ -187,7 +177,7 @@ export default async function FeedPage({
                 }`}
               >
                 <span className="mr-1.5">{cat.emoji}</span>
-                {categoryLabel(lang, cat.id)}
+                {categoryLabel(cat.id)}
                 {count > 0 ? <span className={`ml-1.5 ${active ? 'text-surface/70' : 'text-ash-400'}`}>{count}</span> : null}
               </Link>
             );
@@ -197,24 +187,21 @@ export default async function FeedPage({
         <section>
           <div className="mb-3 flex items-center justify-between">
             <h2 className="font-display text-display-md text-ash-900">
-              {activeCategory ? categoryLabel(lang, activeCategory) : ui.nearbySection}
+              {activeCategory ? categoryLabel(activeCategory) : ui.nearbySection}
             </h2>
             <Link
               href="/map"
               className="inline-flex items-center gap-1 text-body-sm font-medium text-ash-600 hover:text-ash-900"
             >
-              {lang === 'pl' ? 'Mapa' : 'Map'} <ArrowRight className="size-4" />
+              Map <ArrowRight className="size-4" />
             </Link>
           </div>
 
-          {cards.length > 0 ? (
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
-              {cards.map((slot) => (
-                <SlotCard key={slot.id} slot={slot} compact />
+          {cards.length > 0 ? (<div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
+              {cards.map((slot) => (<SlotCard key={slot.id} slot={slot} compact />
               ))}
             </div>
-          ) : (
-            <div className="panel-ash flex flex-col items-center gap-4 p-10 text-center">
+          ) : (<div className="panel-ash flex flex-col items-center gap-4 p-10 text-center">
               <CalendarPlus className="size-10 text-ash-400" strokeWidth={1.5} />
               <div className="space-y-2">
                 <h3 className="font-display text-display-md text-ash-900">{ui.emptyTitle}</h3>

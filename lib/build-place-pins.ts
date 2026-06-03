@@ -19,8 +19,7 @@ type SlotRow = {
   spots_taken: number;
 };
 
-export function buildPlaceMapPins(
-  places: PlaceRow[],
+export function buildPlaceMapPins(places: PlaceRow[],
   slots: SlotRow[],
 ): PlaceMapPin[] {
   const byPlace = new Map<string, PlaceSlotPreview[]>();
@@ -37,8 +36,7 @@ export function buildPlaceMapPins(
   }
 
   return places
-    .filter(
-      (p) =>
+    .filter((p) =>
         p.is_free !== false &&
         isPlaceCategory(p.category) &&
         Number.isFinite(p.lat) &&

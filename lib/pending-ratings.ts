@@ -16,8 +16,7 @@ type SlotRow = {
   date_time: string;
 };
 
-export async function getPendingRatingSlots(
-  supabase: SupabaseClient,
+export async function getPendingRatingSlots(supabase: SupabaseClient,
   userId: string,
 ): Promise<PendingRatingSlot[]> {
   const { data: hosted } = await supabase

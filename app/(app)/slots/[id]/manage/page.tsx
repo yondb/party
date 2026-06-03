@@ -4,17 +4,15 @@ import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ApplicationCard, type ApplicantRow } from "@/components/slots/ApplicationCard";
 import { HostManageToolbar } from "@/components/slots/HostManageToolbar";
-import { getServerLang } from "@/lib/i18n-server";
 import { applicationCardUi, pageHeaderUi, slotManageUi } from "@/lib/i18n-ui";
 
 export const dynamic = "force-dynamic";
 
 export default async function ManageSlotPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const lang = await getServerLang();
-  const m = slotManageUi(lang);
-  const card = applicationCardUi(lang);
-  const back = pageHeaderUi(lang);
+  const m = slotManageUi();
+  const card = applicationCardUi();
+  const back = pageHeaderUi();
 
   const supabase = await createClient();
   const {
@@ -69,19 +67,16 @@ export default async function ManageSlotPage({ params }: { params: Promise<{ id:
   const pending = rows.filter((r) => r.status === "pending");
   const rejected = rows.filter((r) => r.status === "rejected");
 
-  return (
-    <div className="pb-6">
+  return (<div className="pb-6">
       <PageHeader title={m.title} backHref={`/slots/${slot.id}`} backLabel={back.back} />
       <p className="mb-4 text-sm text-[var(--text-muted)]">{slot.title}</p>
 
       <HostManageToolbar slotId={slot.id} canMutate={canMutateQuest} />
 
-      {accepted.length ? (
-        <section className="mb-6">
+      {accepted.length ? (<section className="mb-6">
           <h2 className="mb-2 text-xs font-medium text-[var(--status-open)]">{m.inParty}</h2>
           <ul className="flex flex-col gap-3">
-            {accepted.map((r, i) => (
-              <li key={r.applicationId}>
+            {accepted.map((r, i) => (<li key={r.applicationId}>
                 <ApplicationCard row={r} index={i} copy={card} hostControls />
               </li>
             ))}
@@ -89,12 +84,10 @@ export default async function ManageSlotPage({ params }: { params: Promise<{ id:
         </section>
       ) : null}
 
-      {pending.length ? (
-        <section className="mb-6">
+      {pending.length ? (<section className="mb-6">
           <h2 className="mb-2 text-xs font-medium text-[var(--status-pending)]">{m.pending}</h2>
           <ul className="flex flex-col gap-3">
-            {pending.map((r, i) => (
-              <li key={r.applicationId}>
+            {pending.map((r, i) => (<li key={r.applicationId}>
                 <ApplicationCard row={r} index={i} copy={card} hostControls />
               </li>
             ))}
@@ -102,12 +95,10 @@ export default async function ManageSlotPage({ params }: { params: Promise<{ id:
         </section>
       ) : null}
 
-      {rejected.length ? (
-        <section className="mb-6">
+      {rejected.length ? (<section className="mb-6">
           <h2 className="mb-2 text-xs font-medium text-[var(--text-muted)]">{m.rejected}</h2>
           <ul className="flex flex-col gap-3">
-            {rejected.map((r, i) => (
-              <li key={r.applicationId}>
+            {rejected.map((r, i) => (<li key={r.applicationId}>
                 <ApplicationCard row={r} index={i} copy={card} hostControls />
               </li>
             ))}
@@ -117,17 +108,15 @@ export default async function ManageSlotPage({ params }: { params: Promise<{ id:
 
       {rows.length === 0 ? <p className="text-center text-sm text-[var(--text-muted)]">{m.noApplications}</p> : null}
 
-      {slot.status === "completed" && acceptedParticipants.length > 0 ? (
-        <Link
+      {slot.status === "completed" && acceptedParticipants.length > 0 ? (<Link
           href={`/slots/${slot.id}/rate`}
           className="btn-primary mt-6 flex min-h-[2.75rem] px-4 text-sm"
         >
-          {lang === "pl" ? "Oceń uczestników" : "Rate participants"}
+          Rate participants
         </Link>
       ) : null}
 
-      {slot.status === "cancelled" ? (
-        <p className="mt-4 text-center text-sm text-[var(--text-muted)]">{m.questDone}</p>
+      {slot.status === "cancelled" ? (<p className="mt-4 text-center text-sm text-[var(--text-muted)]">{m.questDone}</p>
       ) : null}
 
       <Link href={`/slots/${slot.id}`} className="mt-6 block text-center text-sm text-[var(--accent)]">

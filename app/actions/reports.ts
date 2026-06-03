@@ -2,14 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getServerLang } from "@/lib/i18n-server";
 import { commonErrors } from "@/lib/i18n-ui";
 import { isOverRateLimit } from "@/lib/action-rate-limit";
 
 export async function reportProfile(reportedUserId: string, reason: string) {
   const supabase = await createClient();
-  const lang = await getServerLang();
-  const errs = commonErrors(lang);
+  const errs = commonErrors();
   const {
     data: { user },
   } = await supabase.auth.getUser();

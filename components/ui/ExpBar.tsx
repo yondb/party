@@ -12,10 +12,8 @@ type ExpBarProps = {
 export function ExpBar({ progress, label, className = "", comfortable }: ExpBarProps) {
   const p = Math.min(1, Math.max(0, progress));
   const pct = Math.round(p * 100);
-  return (
-    <div className={`w-full ${className}`}>
-      {label ? (
-        <div
+  return (<div className={`w-full ${className}`}>
+      {label ? (<div
           className={
             comfortable
               ? "mb-2 flex items-end justify-between gap-3 text-sm text-[var(--text-secondary)]"
@@ -23,8 +21,7 @@ export function ExpBar({ progress, label, className = "", comfortable }: ExpBarP
           }
         >
           <span className={comfortable ? "min-w-0 flex-1" : ""}>{label}</span>
-          {comfortable ? (
-            <span className="shrink-0 text-sm font-bold tabular-nums" style={{ color: "var(--accent)" }}>
+          {comfortable ? (<span className="shrink-0 text-sm font-bold tabular-nums" style={{ color: "var(--accent)" }}>
               {pct}%
             </span>
           ) : null}

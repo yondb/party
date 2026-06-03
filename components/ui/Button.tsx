@@ -14,8 +14,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   fullWidth?: boolean;
 }
 
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = 'primary', size = 'md', loading, icon, fullWidth, className, children, disabled, ...props }, ref) => {
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({ variant = 'primary', size = 'md', loading, icon, fullWidth, className, children, disabled, ...props }, ref) => {
     const base =
       'inline-flex items-center justify-center gap-2 font-medium ' +
       'transition-all duration-150 ease-out-soft ' +
@@ -46,17 +45,14 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         'bg-danger text-surface shadow-md hover:bg-danger/90',
     };
 
-    return (
-      <button
+    return (<button
         ref={ref}
         disabled={disabled || loading}
         className={cn(base, sizes[size], variants[variant], fullWidth && 'w-full', className)}
         {...props}
       >
-        {loading ? (
-          <Loader2 className="size-4 animate-spin" />
-        ) : icon ? (
-          <span className="inline-flex shrink-0">{icon}</span>
+        {loading ? (<Loader2 className="size-4 animate-spin" />
+        ) : icon ? (<span className="inline-flex shrink-0">{icon}</span>
         ) : null}
         {children}
       </button>

@@ -48,8 +48,7 @@ export default async function SlotChatPage({ params }: { params: Promise<{ id: s
     });
   }
 
-  return (
-    <SlotChat
+  return (<SlotChat
       slotId={slot.id}
       hostId={slot.host_id}
       title={slot.title}

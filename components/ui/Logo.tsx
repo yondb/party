@@ -14,8 +14,7 @@ const config: Record<
 
 /** Honey badge — two soft circles = people meeting up */
 function LogoMark({ size, gradId }: { size: number; gradId: string }) {
-  return (
-    <svg
+  return (<svg
       width={size}
       height={size}
       viewBox="0 0 40 40"
@@ -47,8 +46,7 @@ function LogoMark({ size, gradId }: { size: number; gradId: string }) {
 }
 
 function LogoWordmark({ className }: { className: string }) {
-  return (
-    <span
+  return (<span
       className={`font-display font-extrabold tracking-[-0.045em] text-graphite ${className}`}
     >
       lf
@@ -70,8 +68,7 @@ export function Logo({
   const gradId = useId().replace(/:/g, "");
   const c = config[size];
 
-  const inner = (
-    <span className={`inline-flex items-center ${c.gap} leading-none`}>
+  const inner = (<span className={`inline-flex items-center ${c.gap} leading-none`}>
       <LogoMark size={c.mark} gradId={gradId} />
       {showWordmark && c.showWord ? <LogoWordmark className={c.text} /> : null}
     </span>
@@ -79,8 +76,7 @@ export function Logo({
 
   if (href === "") return inner;
 
-  return (
-    <Link
+  return (<Link
       href={href}
       className="inline-flex no-underline transition-opacity hover:opacity-[0.88] active:opacity-80"
     >

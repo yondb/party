@@ -12,8 +12,7 @@ const SLOT_MAX = 20;
 export type RateLimitKind = "messages" | "applications" | "reports" | "slots";
 
 /** Returns true if over limit (then block the action). */
-export async function isOverRateLimit(
-  supabase: SupabaseClient,
+export async function isOverRateLimit(supabase: SupabaseClient,
   userId: string,
   kind: RateLimitKind,
 ): Promise<boolean> {

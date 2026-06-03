@@ -1,11 +1,8 @@
-"use client";
-
-import { LanguageToggle } from "@/components/i18n/LanguageToggle";
+import { Logo } from "@/components/ui/Logo";
 
 export function LandingTopBar() {
-  return (
-    <div className="fixed right-3 top-[max(0.75rem,env(safe-area-inset-top))] z-30 sm:right-5">
-      <LanguageToggle />
-    </div>
+  return (<header className="flex items-center justify-between px-5 py-4">
+      <Logo size="md" href="/landing" />
+    </header>
   );
 }

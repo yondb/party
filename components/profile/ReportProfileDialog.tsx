@@ -1,33 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { useLanguage } from "@/components/i18n/LanguageProvider";
 import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Textarea";
 import { reportProfile } from "@/app/actions/reports";
 
 const COPY = {
-  en: {
-    button: "Report profile",
-    title: "Report this profile",
-    hint: "Describe the issue (min. 10 characters). An admin will review it manually.",
-    submit: "Submit report",
-    cancel: "Cancel",
-    sent: "Report sent. Thank you.",
-  },
-  pl: {
-    button: "Zgłoś profil",
-    title: "Zgłoś ten profil",
-    hint: "Opisz problem (min. 10 znaków). Administrator oceni zgłoszenie ręcznie.",
-    submit: "Wyślij zgłoszenie",
-    cancel: "Anuluj",
-    sent: "Zgłoszenie wysłane. Dziękujemy.",
-  },
+  button: "Report profile",
+  title: "Report this profile",
+  hint: "Describe the issue (min. 10 characters). An admin will review it manually.",
+  submit: "Submit report",
+  cancel: "Cancel",
+  sent: "Report sent. Thank you.",
 } as const;
 
 export function ReportProfileDialog({ reportedUserId }: { reportedUserId: string }) {
-  const { lang } = useLanguage();
-  const t = COPY[lang];
+  const t = COPY;
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(false);
@@ -53,21 +41,16 @@ export function ReportProfileDialog({ reportedUserId }: { reportedUserId: string
     }
   }
 
-  return (
-    <div className="mb-4">
-      {!open ? (
-        <Button type="button" variant="secondary" className="!min-h-0 !py-2 !text-sm" onClick={() => setOpen(true)}>
+  return (<div className="mb-4">
+      {!open ? (<Button type="button" variant="secondary" className="!min-h-0 !py-2 !text-sm" onClick={() => setOpen(true)}>
           {t.button}
         </Button>
-      ) : (
-        <div className="floating-card rounded-lg border border-[var(--border-medium)] p-4">
+      ) : (<div className="floating-card rounded-lg border border-[var(--border-medium)] p-4">
           <p className="text-sm font-medium text-[var(--accent)]">
             {t.title}
           </p>
-          {done ? (
-            <p className="mt-3 text-sm text-[var(--status-open)]">{t.sent}</p>
-          ) : (
-            <>
+          {done ? (<p className="mt-3 text-sm text-[var(--status-open)]">{t.sent}</p>
+          ) : (<>
               <div className="mt-3">
                 <Textarea
                   label={t.hint}

@@ -3,7 +3,6 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { SlotRateForm } from "@/components/slots/SlotRateForm";
-import { getServerLang } from "@/lib/i18n-server";
 import { pageHeaderUi, slotRateUi } from "@/lib/i18n-ui";
 import { peersForSlot, isSlotParticipant } from "@/lib/slot-participants";
 import { runSlotLifecycle } from "@/lib/slot-lifecycle";
@@ -12,9 +11,8 @@ export const dynamic = "force-dynamic";
 
 export default async function RateSlotPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const lang = await getServerLang();
-  const t = slotRateUi(lang);
-  const back = pageHeaderUi(lang);
+  const t = slotRateUi();
+  const back = pageHeaderUi();
   const supabase = await createClient();
   await runSlotLifecycle(supabase);
 
@@ -55,8 +53,7 @@ export default async function RateSlotPage({ params }: { params: Promise<{ id: s
   const remainingIds = peerIds.filter((id) => !already.has(id));
 
   if (remainingIds.length === 0) {
-    return (
-      <div className="pb-6">
+    return (<div className="pb-6">
         <PageHeader title={t.title} backHref={`/slots/${id}`} backLabel={back.back} />
         <p className="floating-card rounded-lg p-6 text-center text-sm text-[var(--text-muted)]">{t.allDone}</p>
         <Link href="/profile" className="mt-4 block text-center text-sm text-[var(--accent)]">
@@ -72,8 +69,7 @@ export default async function RateSlotPage({ params }: { params: Promise<{ id: s
   const placeRow = slot.places as { name?: string } | { name?: string }[] | null;
   const placeName = Array.isArray(placeRow) ? placeRow[0]?.name : placeRow?.name;
 
-  return (
-    <div className="pb-6">
+  return (<div className="pb-6">
       <PageHeader title={t.title} backHref={`/slots/${id}`} backLabel={back.back} />
       <p className="mb-1 text-lg font-semibold text-[var(--text-primary)]">{placeName ?? slot.title}</p>
       <p className="mb-4 text-sm text-[var(--text-muted)]">{t.subtitle}</p>

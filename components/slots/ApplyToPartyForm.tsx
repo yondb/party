@@ -4,12 +4,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Textarea";
 import { applyToSlot } from "@/app/actions/applications";
-import { useLanguage } from "@/components/i18n/LanguageProvider";
 import { applyFormUi } from "@/lib/i18n-ui";
 
 export function ApplyToPartyForm({ slotId }: { slotId: string }) {
-  const { lang } = useLanguage();
-  const t = applyFormUi(lang);
+  const t = applyFormUi();
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,15 +27,13 @@ export function ApplyToPartyForm({ slotId }: { slotId: string }) {
   }
 
   if (done) {
-    return (
-      <p className="rounded border border-[var(--status-pending)] bg-[var(--bg-input)] p-3 text-center text-sm text-[var(--text-secondary)]">
+    return (<p className="rounded border border-[var(--status-pending)] bg-[var(--bg-input)] p-3 text-center text-sm text-[var(--text-secondary)]">
         {t.done}
       </p>
     );
   }
 
-  return (
-    <form onSubmit={onSubmit} className="space-y-3">
+  return (<form onSubmit={onSubmit} className="space-y-3">
       <Textarea
         label={t.messageLabel}
         value={msg}

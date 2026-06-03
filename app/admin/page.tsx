@@ -127,8 +127,7 @@ export default async function AdminDashboardPage() {
   }
 
   if (error) {
-    return (
-      <div className="floating-card rounded-lg p-6 text-[var(--status-full)]">
+    return (<div className="floating-card rounded-lg p-6 text-[var(--status-full)]">
         <p className="text-xs font-medium">Admin data error</p>
         <p className="mt-2 text-sm">{error}</p>
         <p className="mt-3 text-xs text-[var(--text-muted)]">
@@ -139,8 +138,7 @@ export default async function AdminDashboardPage() {
     );
   }
 
-  return (
-    <div className="space-y-8">
+  return (<div className="space-y-8">
       <section>
         <h2 className="mb-3 text-xs font-medium text-[var(--text-muted)]">Overview</h2>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -164,11 +162,8 @@ export default async function AdminDashboardPage() {
           Manual queue: read the reason, then dismiss the report or ban the reported account (Auth + app block).
         </p>
         <ul className="space-y-3 text-sm">
-          {pendingReports.length === 0 ? (
-            <li className="text-[var(--text-muted)]">No pending reports.</li>
-          ) : (
-            pendingReports.map((r) => (
-              <li key={r.id} className="floating-card rounded-md px-3 py-3">
+          {pendingReports.length === 0 ? (<li className="text-[var(--text-muted)]">No pending reports.</li>
+          ) : (pendingReports.map((r) => (<li key={r.id} className="floating-card rounded-md px-3 py-3">
                 <p className="text-[var(--text-primary)]">
                   <span className="text-[var(--text-muted)]">Reported:</span>{" "}
                   {userNames.get(r.reported_user_id) ?? r.reported_user_id}
@@ -231,11 +226,8 @@ export default async function AdminDashboardPage() {
           Latest slots
         </h2>
         <ul className="space-y-2 text-sm">
-          {recentSlots.length === 0 ? (
-            <li className="text-[var(--text-muted)]">No slots yet.</li>
-          ) : (
-            recentSlots.map((s) => (
-              <li key={s.id} className="floating-card rounded-md px-3 py-2">
+          {recentSlots.length === 0 ? (<li className="text-[var(--text-muted)]">No slots yet.</li>
+          ) : (recentSlots.map((s) => (<li key={s.id} className="floating-card rounded-md px-3 py-2">
                 <span className="font-semibold text-[var(--text-primary)]">{s.title}</span>
                 <span className="mx-2 text-[var(--text-muted)]">·</span>
                 <span className="text-[var(--text-secondary)]">{s.activity_type}</span>
@@ -256,11 +248,8 @@ export default async function AdminDashboardPage() {
           Latest applications
         </h2>
         <ul className="space-y-2 text-sm">
-          {recentApps.length === 0 ? (
-            <li className="text-[var(--text-muted)]">No applications yet.</li>
-          ) : (
-            recentApps.map((a) => (
-              <li key={a.id} className="floating-card rounded-md px-3 py-2">
+          {recentApps.length === 0 ? (<li className="text-[var(--text-muted)]">No applications yet.</li>
+          ) : (recentApps.map((a) => (<li key={a.id} className="floating-card rounded-md px-3 py-2">
                 <span className="text-[var(--text-secondary)]">{userNames.get(a.applicant_id) ?? a.applicant_id}</span>
                 <span className="mx-2 text-[var(--text-muted)]">→</span>
                 <span className="font-mono text-xs text-[var(--text-muted)]">{a.slot_id.slice(0, 8)}…</span>
@@ -287,8 +276,7 @@ export default async function AdminDashboardPage() {
 }
 
 function Stat({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="floating-card rounded-md px-3 py-2">
+  return (<div className="floating-card rounded-md px-3 py-2">
       <p className="text-xs font-medium text-[var(--text-muted)]">{label}</p>
       <p className="mt-1 text-xl font-bold text-[var(--accent)]">{value}</p>
     </div>
