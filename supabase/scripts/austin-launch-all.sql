@@ -1,16 +1,13 @@
 -- Austin launch — paste entire file into Supabase SQL Editor and Run once.
--- Order: nine categories → consolidated patches → dog_walk pivot.
+-- If this failed before: run the DIAGNOSTIC block below first, then re-run this file.
 
--- ═══ 1/3: nine free categories ═══
+-- ═══ DIAGNOSTIC (optional — run alone to see bad rows) ═══
+-- SELECT category, city, count(*) FROM public.places GROUP BY 1, 2 ORDER BY 1, 2;
+
+-- ═══ 0) Drop category constraint — do NOT re-add until data is clean ═══
 ALTER TABLE public.places DROP CONSTRAINT IF EXISTS places_category_check;
-ALTER TABLE public.places ADD CONSTRAINT places_category_check CHECK (
-  category IN (
-    'running', 'cycling', 'gym', 'basketball', 'hiking', 'playground',
-    'walking', 'football', 'park', 'padel', 'tennis'
-  )
-);
 
--- ═══ 2/3: consolidated patches ═══
+-- ═══ 1) Consolidated patches (safe to re-run) ═══
 ALTER TABLE public.slots ADD COLUMN IF NOT EXISTS gender_scope text;
 UPDATE public.slots SET gender_scope = 'any'
 WHERE gender_scope IS NULL OR trim(gender_scope) NOT IN ('any', 'female', 'male');
@@ -68,10 +65,28 @@ CREATE POLICY applications_insert_self_open_slot ON public.applications FOR INSE
     )
   );
 
--- ═══ 3/3: dog_walk pivot (DROP constraint BEFORE update) ═══
-ALTER TABLE public.places DROP CONSTRAINT IF EXISTS places_category_check;
+-- ═══ 2) Clean place categories BEFORE adding constraint ═══
+-- walking → dog_walk (Austin pivot)
 UPDATE public.places SET category = 'dog_walk' WHERE category = 'walking';
 UPDATE public.slots SET activity_type = 'dog_walk' WHERE activity_type = 'walking';
+
+-- Legacy Warsaw / old categories → nearest valid bucket
+UPDATE public.places SET category = 'park'
+WHERE category IN ('board_games', 'volleyball', 'coffee', 'yoga', 'movies', 'food', 'study', 'other');
+
+UPDATE public.places SET category = 'football' WHERE category = 'soccer';
+
+-- Remove rows that still cannot map (should be none after above)
+DELETE FROM public.places
+WHERE category NOT IN (
+  'running', 'cycling', 'gym', 'basketball', 'hiking', 'playground',
+  'dog_walk', 'football', 'park', 'padel', 'tennis'
+);
+
+-- Optional: drop non-Austin places before OSM re-import (uncomment if needed)
+-- DELETE FROM public.places WHERE city IS DISTINCT FROM 'austin';
+
+-- ═══ 3) Add final constraint (dog_walk, not walking) ═══
 ALTER TABLE public.places ADD CONSTRAINT places_category_check CHECK (
   category IN (
     'running', 'cycling', 'gym', 'basketball', 'hiking', 'playground',
@@ -82,4 +97,4 @@ ALTER TABLE public.places ADD CONSTRAINT places_category_check CHECK (
 NOTIFY pgrst, 'reload schema';
 
 -- Verify:
--- SELECT city, category, count(*) FROM places GROUP BY 1, 2 ORDER BY 1, 2;
+-- SELECT category, city, count(*) FROM public.places GROUP BY 1, 2 ORDER BY 1, 2;
