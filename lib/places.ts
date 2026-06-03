@@ -6,7 +6,7 @@ export type PlaceCategory =
   | "hiking"
   | "gym" // outdoor street-workout / fitness stations only — NOT indoor gyms
   | "playground"
-  | "walking"
+  | "dog_walk"
   | "football"
   | "park";
 
@@ -18,7 +18,7 @@ export const FREE_PLACE_CATEGORIES: PlaceCategory[] = [
   "hiking",
   "gym",
   "playground",
-  "walking",
+  "dog_walk",
   "football",
   "park",
 ];
@@ -52,7 +52,7 @@ export const PLACE_CATEGORY_META: Record<
   hiking: { icon: "⛰️", color: "#84CC16", cssVar: "var(--accent)" },
   gym: { icon: "💪", color: "#7C3AED", cssVar: "var(--accent)" },
   playground: { icon: "🛝", color: "#EC4899", cssVar: "var(--accent)" },
-  walking: { icon: "🚶", color: "#22C55E", cssVar: "var(--accent)" },
+  dog_walk: { icon: "🐕", color: "#D97706", cssVar: "var(--accent)" },
   football: { icon: "⚽", color: "#2563EB", cssVar: "var(--accent)" },
   park: { icon: "🌳", color: "#059669", cssVar: "var(--accent)" },
 };
@@ -70,7 +70,7 @@ export function placeCategoryLabel(lang: "en" | "pl", category: PlaceCategory): 
     hiking: "Hiking",
     gym: "Outdoor gym",
     playground: "Playground",
-    walking: "Walks",
+    dog_walk: "Dog walk",
     football: "Football",
     park: "Park meetup",
   };
@@ -81,7 +81,7 @@ export function placeCategoryLabel(lang: "en" | "pl", category: PlaceCategory): 
     hiking: "Wędrówki",
     gym: "Siłownia plenerowa",
     playground: "Plac zabaw",
-    walking: "Spacery",
+    dog_walk: "Spacer z psem",
     football: "Piłka nożna",
     park: "Park",
   };
@@ -99,7 +99,7 @@ export function isFreePlaceCategory(raw: string): raw is PlaceCategory {
 const GENERIC_SPOT_LABELS: Partial<Record<PlaceCategory, { en: string; pl: string }>> = {
   gym: { en: "outdoor gym", pl: "siłownia plenerowa" },
   playground: { en: "playground", pl: "plac zabaw" },
-  walking: { en: "walking route", pl: "trasa spacerowa" },
+  dog_walk: { en: "dog park", pl: "park dla psów" },
   football: { en: "football pitch", pl: "boisko piłkarskie" },
   park: { en: "park", pl: "park" },
 };
@@ -113,7 +113,8 @@ const GENERIC_PLACE_NAMES = new Set([
   "hiking spot",
   "volleyball spot",
   "playground spot",
-  "walking spot",
+  "dog walk spot",
+  "dog park spot",
   "football spot",
   "park spot",
   ...Object.values(GENERIC_SPOT_LABELS).flatMap((l) => [l.en, l.pl]),

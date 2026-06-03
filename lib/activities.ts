@@ -7,6 +7,10 @@ export type ActivityKey =
   | "gym"
   | "hiking"
   | "walking"
+  | "dog_walk"
+  | "playground"
+  | "football"
+  | "park"
   | "yoga"
   | "movies"
   | "food"
@@ -81,6 +85,34 @@ export const ACTIVITIES: Record<ActivityKey, ActivityDef> = {
     gradient: "linear-gradient(135deg, #4ADE80, #22C55E)",
     cssVar: "var(--accent)",
   },
+  dog_walk: {
+    label: "Dog walk",
+    icon: "🐕",
+    color: "#D97706",
+    gradient: "linear-gradient(135deg, #FBBF24, #D97706)",
+    cssVar: "var(--accent)",
+  },
+  playground: {
+    label: "Playground",
+    icon: "🛝",
+    color: "#EC4899",
+    gradient: "linear-gradient(135deg, #F472B6, #EC4899)",
+    cssVar: "var(--accent)",
+  },
+  football: {
+    label: "Football",
+    icon: "⚽",
+    color: "#2563EB",
+    gradient: "linear-gradient(135deg, #60A5FA, #2563EB)",
+    cssVar: "var(--accent)",
+  },
+  park: {
+    label: "Park",
+    icon: "🌳",
+    color: "#059669",
+    gradient: "linear-gradient(135deg, #34D399, #059669)",
+    cssVar: "var(--accent)",
+  },
   yoga: {
     label: "Yoga",
     icon: "🧘",
@@ -143,6 +175,7 @@ export const ACTIVITY_KEYS = Object.keys(ACTIVITIES) as ActivityKey[];
 
 /** Maps DB `activity_type` string to known key; unknown → `other`. */
 export function normalizeActivityKey(raw: string): ActivityKey {
+  if (raw === "walking") return "dog_walk";
   if (raw in ACTIVITIES) return raw as ActivityKey;
   return "other";
 }

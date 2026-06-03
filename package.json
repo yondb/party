@@ -16,6 +16,7 @@
     "test:e2e": "playwright test",
     "seed:places": "node --experimental-strip-types scripts/seed-places.ts",
     "import:places": "node --experimental-strip-types scripts/import-places.ts",
+    "purge:legacy-places": "node --experimental-strip-types scripts/purge-legacy-places.ts",
     "purge:demo": "node --experimental-strip-types scripts/purge-demo.ts",
     "purge:paid-places": "node --experimental-strip-types scripts/purge-paid-places.ts"
   },

@@ -67,7 +67,7 @@ export function PlacePickerModal({
     const map = new mapboxgl.Map({
       container: ref.current,
       style: MAP_STYLE_URL,
-      center: [21.0122, 52.2297],
+      center: [-97.7431, 30.2672],
       zoom: 11,
       attributionControl: false,
     });

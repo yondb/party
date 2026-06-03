@@ -14,6 +14,10 @@ const ACTIVITY_PL: Record<ActivityKey, string> = {
   gym: "Siłownia",
   hiking: "Trekking",
   walking: "Spacer",
+  dog_walk: "Spacer z psem",
+  playground: "Plac zabaw",
+  football: "Piłka nożna",
+  park: "Park",
   yoga: "Joga",
   movies: "Kino",
   food: "Jedzenie",
@@ -38,6 +42,10 @@ export function activityLabel(lang: Lang, key: string): string {
     gym: "Gym",
     hiking: "Hiking",
     walking: "Walking",
+    dog_walk: "Dog walk",
+    playground: "Playground",
+    football: "Football",
+    park: "Park meetup",
     yoga: "Yoga",
     movies: "Movies",
     food: "Food",
@@ -111,7 +119,9 @@ export function feedUi(lang: Lang) {
         allActivities: "Wszystkie",
         allDates: "Wszystkie daty",
         emptyTitle: "Brak questów w okolicy",
-        emptySubtitle: "Bądź pierwszy — stwórz slot na mapie",
+        emptySubtitle: "Bądź pierwszy — wybierz miejsce na mapie i zaproś ekipę.",
+        emptyBody:
+          "Nikt jeszcze nie zaplanował aktywności w pobliżu. Jedno spotkanie uruchamia pętlę — udostępnij link znajomym.",
         goToMap: "Przejdź do mapy",
         createQuest: "Stwórz slot",
         signIn: "Zaloguj się, żeby zobaczyć feed.",
@@ -126,7 +136,9 @@ export function feedUi(lang: Lang) {
         allActivities: "All",
         allDates: "All dates",
         emptyTitle: "No quests nearby",
-        emptySubtitle: "Be the first — create a slot on the map",
+        emptySubtitle: "Be the first — pick a place on the map and invite your crew.",
+        emptyBody:
+          "Nobody has planned anything nearby yet. One meetup starts the loop — share the link with friends.",
         goToMap: "Go to map",
         createQuest: "Create slot",
         signIn: "You need to sign in to see quests.",
@@ -210,6 +222,7 @@ export function slotDetailUi(lang: Lang) {
         rejected: "Host odrzucił aplikację.",
         full: "Party jest pełne.",
         hostTag: "host",
+        shareInvite: "Zaproś znajomych",
       }
     : {
         quest: "Quest",
@@ -223,6 +236,33 @@ export function slotDetailUi(lang: Lang) {
         rejected: "The host rejected your application.",
         full: "Party is full.",
         hostTag: "host",
+        shareInvite: "Invite friends",
+      };
+}
+
+export function growthUi(lang: Lang) {
+  return lang === "pl"
+    ? {
+        shareTitle: "Udostępnij spotkanie",
+        shareHint: "Wygeneruj zaproszenie i wyślij link — każde udostępnienie przyciąga nowych ludzi.",
+        shareButton: "Udostępnij",
+        copy: "Kopiuj tekst",
+        copied: "Skopiowano",
+        prepare: "Przygotuj tekst",
+        loading: "Generuję…",
+        loadError: "Nie udało się przygotować zaproszenia.",
+        copyError: "Nie udało się skopiować.",
+      }
+    : {
+        shareTitle: "Share this meetup",
+        shareHint: "Generate an invite and send the link — each share brings new people.",
+        shareButton: "Share",
+        copy: "Copy text",
+        copied: "Copied",
+        prepare: "Prepare text",
+        loading: "Generating…",
+        loadError: "Could not prepare the invite.",
+        copyError: "Could not copy.",
       };
 }
 
@@ -382,9 +422,9 @@ export function landingUi(lang: Lang) {
         terms: "Regulamin",
       }
     : {
-        hero: "FIND YOUR PARTY",
-        tagline: "Running. Coffee. Volleyball. Anything.",
-        activePlayers: "active players near you today",
+        hero: "FIND YOUR CREW IN AUSTIN",
+        tagline: "Dog walks. Runs. Parks. Real meetups — share a link, fill your party.",
+        activePlayers: "active players in Austin today",
         ctaJoin: "Join the adventure",
         ctaHow: "Show me how it works",
         questsTitle: "Active quests nearby",
@@ -676,7 +716,7 @@ export function onboardingNavUi(lang: Lang) {
         busy: "…",
         step: (i: number, total: number) => `Krok ${i + 1} / ${total}`,
         goalPlaceholder: "Np. regularne bieganie, nowi znajomi…",
-        cityPlaceholder: "Np. Warszawa, Mokotów",
+        cityPlaceholder: "e.g. Austin, Zilker",
       }
     : {
         back: "Back",

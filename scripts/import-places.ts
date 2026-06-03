@@ -1,12 +1,13 @@
 /**
  * Opcjonalny import z OpenStreetMap (Overpass) — często 429 z domu.
- * Zalecane: npm run seed:places (data/places-warsaw.json, bez API).
+ * Austin launch: npm run purge:legacy-places && npm run import:places
  *
  * Requires in .env.local: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
  * Run: npm run import:places
  */
 
 import { createClient } from "@supabase/supabase-js";
+import { MARKET_BBOX, MARKET_CITY } from "../lib/market.ts";
 import { loadEnvLocal } from "./load-env.ts";
 
 loadEnvLocal();
@@ -22,9 +23,8 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
-const CITY = "warsaw";
-/** south,west,north,east */
-const CITY_BBOX = "52.0978,20.8515,52.3682,21.2711";
+const CITY = MARKET_CITY;
+const CITY_BBOX = MARKET_BBOX;
 
 /**
  * FREE activities only — places where you don't pay a venue fee.
@@ -39,7 +39,7 @@ const queries: Record<
   | "basketball"
   | "hiking"
   | "playground"
-  | "walking"
+  | "dog_walk"
   | "football"
   | "park",
   string
@@ -90,14 +90,15 @@ const queries: Record<
     );
     out center 60;
   `,
-  walking: `
+  dog_walk: `
     [out:json][timeout:60];
     (
-      way["route"="foot"](${CITY_BBOX});
-      relation["route"="foot"](${CITY_BBOX});
-      way["highway"="pedestrian"]["name"](${CITY_BBOX});
+      node["leisure"="dog_park"](${CITY_BBOX});
+      way["leisure"="dog_park"](${CITY_BBOX});
+      node["leisure"="park"]["dog"="yes"](${CITY_BBOX});
+      way["leisure"="park"]["dog"="yes"](${CITY_BBOX});
     );
-    out center 40;
+    out center 60;
   `,
   football: `
     [out:json][timeout:60];
@@ -196,7 +197,7 @@ async function fetchFromOverpass(query: string, attempt = 1): Promise<{ elements
 const GENERIC_SPOT_NAMES: Record<string, string> = {
   gym: "outdoor gym",
   playground: "playground",
-  walking: "walking route",
+  dog_walk: "dog park",
   football: "football pitch",
   park: "park",
 };

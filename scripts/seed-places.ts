@@ -1,5 +1,5 @@
 /**
- * Niezawodny import miejsc z pliku data/places-warsaw.json (bez Overpass API).
+ * Legacy Warsaw JSON seed — prefer npm run import:places (Austin OSM).
  *
  * Wymaga .env.local: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
  *
@@ -52,7 +52,7 @@ async function main() {
     category: p.category,
     lat: p.lat,
     lng: p.lng,
-    city: "warsaw",
+    city: "warsaw", // legacy file only — use import:places for Austin
     district: p.district ?? null,
     is_free: true,
     osm_id: p.osm_id,
@@ -94,7 +94,7 @@ async function main() {
     "basketball",
     "hiking",
     "playground",
-    "walking",
+    "dog_walk",
     "football",
     "park",
   ]) {

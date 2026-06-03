@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { MapPlacesClient } from "@/components/map/MapPlacesClient";
 import { buildPlaceMapPins } from "@/lib/build-place-pins";
 import { buildMapSlots } from "@/lib/map-slots";
+import { MARKET_CITY } from "@/lib/market";
 import { FREE_PLACE_CATEGORIES } from "@/lib/places";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +19,7 @@ export default async function MapPage({
       .from("places")
       .select("id, name, category, lat, lng, district, is_free")
       .eq("is_free", true)
+      .eq("city", MARKET_CITY)
       .in("category", [...FREE_PLACE_CATEGORIES])
       .order("name"),
     supabase

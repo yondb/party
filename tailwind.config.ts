@@ -72,7 +72,7 @@ const config: Config = {
           volleyball: '#0EA5E9',
           football: '#2563EB',
           playground: '#EC4899',
-          walking: '#22C55E',
+          dog_walk: '#D97706',
           park: '#059669',
           hiking: '#16A34A',
         },

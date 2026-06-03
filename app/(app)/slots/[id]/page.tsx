@@ -1,17 +1,66 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { getActivity } from "@/lib/activities";
 import { getServerLang } from "@/lib/i18n-server";
-import { pageHeaderUi, slotAudienceBadge, slotDetailUi } from "@/lib/i18n-ui";
+import { activityLabel, pageHeaderUi, slotAudienceBadge, slotDetailUi } from "@/lib/i18n-ui";
 import { ActivityIcon } from "@/components/slots/ActivityIcon";
+import { ApplyToPartyForm } from "@/components/slots/ApplyToPartyForm";
+import { ShareSlotPanel } from "@/components/slots/ShareSlotPanel";
 import { Avatar } from "@/components/ui/Avatar";
 import { LevelBadge } from "@/components/ui/LevelBadge";
 import { ReliabilityScore } from "@/components/ui/ReliabilityScore";
-import { ApplyToPartyForm } from "@/components/slots/ApplyToPartyForm";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const lang = await getServerLang();
+  const locale = lang === "pl" ? "pl-PL" : "en-GB";
+  const supabase = await createClient();
+  const { data: slot } = await supabase
+    .from("slots")
+    .select("title, location_name, date_time, activity_type")
+    .eq("id", id)
+    .single();
+
+  if (!slot) {
+    return { title: "Quest" };
+  }
+
+  const activity = activityLabel(lang, slot.activity_type);
+  const when = new Date(slot.date_time).toLocaleString(locale, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const description = `${activity} · ${when} · ${slot.location_name}`;
+  const path = `/slots/${id}`;
+
+  return {
+    title: slot.title,
+    description,
+    openGraph: {
+      title: slot.title,
+      description,
+      url: path,
+      type: "website",
+    },
+    twitter: {
+      card: "summary",
+      title: slot.title,
+      description,
+    },
+  };
+}
 
 export default async function SlotDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -70,6 +119,8 @@ export default async function SlotDetailPage({ params }: { params: Promise<{ id:
   const guestCap = Math.max(1, slot.max_spots - 1);
   const full = slot.status === "full" || slot.spots_taken >= guestCap;
   const canHostEdit = isHost && (slot.status === "open" || slot.status === "full");
+  const canShare =
+    (isHost || inParty) && (slot.status === "open" || slot.status === "full");
 
   const act = getActivity(slot.activity_type);
   const audienceLine = slotAudienceBadge(lang, (slot as { gender_scope?: string | null }).gender_scope);
@@ -184,6 +235,8 @@ export default async function SlotDetailPage({ params }: { params: Promise<{ id:
               </Link>
             ) : null}
           </div>
+
+          {canShare ? <ShareSlotPanel slotId={slot.id} lang={lang} /> : null}
 
           {!isHost && !full && myApp === "none" ? <ApplyToPartyForm slotId={slot.id} /> : null}
           {!isHost && myApp === "pending" ? (

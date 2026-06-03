@@ -71,10 +71,25 @@ export function ActivityGlyph({ activityKey, size, className = "" }: Props) {
           </>
         );
       case "walking":
+      case "dog_walk":
         return (
           <>
-            <circle cx="10" cy="5" r="2" {...c} />
-            <path d="M8 22v-7l-1-3h4l1 3v7M12 12l4 2 2 5" {...c} />
+            <path d="M9 14c1.5-2 3-3 5-3 2 0 3.5 1 4.5 3M6 18c1-2 2.5-3 4-3.5M14 10l1-2 2 1-1 3" {...c} />
+            <circle cx="8" cy="9" r="2" {...c} />
+            <path d="M5 20h3M16 20h3" {...c} />
+          </>
+        );
+      case "playground":
+        return (
+          <>
+            <path d="M8 20V10l4-4 4 4v10M6 20h12" {...c} />
+          </>
+        );
+      case "football":
+      case "park":
+        return (
+          <>
+            <circle cx="12" cy="12" r="7" {...c} />
           </>
         );
       case "yoga":

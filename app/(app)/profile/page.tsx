@@ -71,7 +71,7 @@ export default async function OwnProfilePage() {
     "boardgames",
     "gym",
     "hiking",
-    "walking",
+    "dog_walk",
     "yoga",
     "movies",
   ];
@@ -112,7 +112,7 @@ export default async function OwnProfilePage() {
           hosted: profile.total_hosted ?? 0,
           rating: avg != null ? avg.toFixed(1) : null,
         }}
-        city={homeCity || "Warszawa"}
+        city={homeCity || "Austin"}
         badges={badges}
       />
       <form action={signOut} className="pb-12 text-center">

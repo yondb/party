@@ -67,7 +67,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
     "boardgames",
     "gym",
     "hiking",
-    "walking",
+    "dog_walk",
     "yoga",
     "movies",
   ];
@@ -108,7 +108,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
         hosted: profile.total_hosted ?? 0,
         rating: avg != null ? avg.toFixed(1) : null,
       }}
-      city={homeCity || "Warszawa"}
+      city={homeCity || "Austin"}
       bio={profile.bio}
       badges={badges}
       isOwn={isOwn}

@@ -1,5 +1,5 @@
 ﻿import Link from 'next/link';
-import { Sun, ArrowRight, CalendarPlus } from 'lucide-react';
+import { Sun, ArrowRight, CalendarPlus, MapPin } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getServerLang } from '@/lib/i18n-server';
 import { feedUi } from '@/lib/i18n-ui';
@@ -153,9 +153,7 @@ export default async function FeedPage({
                 ? lang === 'pl'
                   ? `W okolicy ${allCards.length} aktywnych slotów — wybierz coś dla siebie.`
                   : `${allCards.length} active slots nearby — pick something for you.`
-                : lang === 'pl'
-                  ? 'Brak aktywnych slotów. Może stwórz pierwszy?'
-                  : 'No active slots yet. Maybe create the first one?'}
+                : ui.emptySubtitle}
             </p>
           </div>
           <Sun
@@ -218,18 +216,26 @@ export default async function FeedPage({
           ) : (
             <div className="panel-ash flex flex-col items-center gap-4 p-10 text-center">
               <CalendarPlus className="size-10 text-ash-400" strokeWidth={1.5} />
-              <p className="max-w-sm text-body text-ash-600">
-                {lang === 'pl'
-                  ? 'Nikt jeszcze nie zaplanował aktywności w pobliżu. Bądź pierwszy i zaproś ekipę.'
-                  : 'Nobody has planned anything nearby yet. Be the first and gather a crew.'}
-              </p>
-              <Link
-                href="/slots/new"
-                className="inline-flex items-center gap-2 rounded-full bg-graphite px-5 py-2.5 text-body-sm font-medium text-surface transition hover:opacity-90"
-              >
-                <CalendarPlus className="size-4" />
-                {lang === 'pl' ? 'Stwórz slot' : 'Create slot'}
-              </Link>
+              <div className="space-y-2">
+                <h3 className="font-display text-display-md text-ash-900">{ui.emptyTitle}</h3>
+                <p className="max-w-md text-body text-ash-600">{ui.emptyBody}</p>
+              </div>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <Link
+                  href="/slots/new"
+                  className="inline-flex items-center gap-2 rounded-full bg-graphite px-5 py-2.5 text-body-sm font-medium text-surface transition hover:opacity-90"
+                >
+                  <CalendarPlus className="size-4" />
+                  {ui.createQuest}
+                </Link>
+                <Link
+                  href="/map"
+                  className="inline-flex items-center gap-2 rounded-full border border-ash-200 bg-surface px-5 py-2.5 text-body-sm font-medium text-ash-800 transition hover:bg-ash-50"
+                >
+                  <MapPin className="size-4" />
+                  {ui.goToMap}
+                </Link>
+              </div>
             </div>
           )}
         </section>

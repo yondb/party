@@ -6,7 +6,7 @@ import {
   CircleDot,
   Mountain,
   Baby,
-  PersonStanding,
+  Dog,
   TreePine,
   LandPlot,
 } from 'lucide-react';
@@ -36,7 +36,7 @@ export const CATEGORIES: Record<CategoryId, Category> = {
   hiking:     { id: 'hiking',     label: 'Wędrówki',           emoji: '⛰️', color: '#16A34A', colorDark: '#15803D', icon: Mountain },
   gym:        { id: 'gym',        label: 'Siłownia plenerowa', emoji: '💪', color: '#7C3AED', colorDark: '#5B21B6', icon: Dumbbell },
   playground: { id: 'playground', label: 'Plac zabaw',         emoji: '🛝', color: '#EC4899', colorDark: '#BE185D', icon: Baby },
-  walking:    { id: 'walking',    label: 'Spacery',            emoji: '🚶', color: '#22C55E', colorDark: '#15803D', icon: PersonStanding },
+  dog_walk:   { id: 'dog_walk',   label: 'Dog walk',           emoji: '🐕', color: '#D97706', colorDark: '#B45309', icon: Dog },
   football:   { id: 'football',   label: 'Piłka nożna',        emoji: '⚽', color: '#2563EB', colorDark: '#1D4ED8', icon: LandPlot },
   park:       { id: 'park',       label: 'Park',               emoji: '🌳', color: '#059669', colorDark: '#047857', icon: TreePine },
 };
@@ -56,7 +56,8 @@ const ACTIVITY_TO_CATEGORY: Record<string, CategoryId> = {
   hiking: 'hiking',
   gym: 'gym',
   playground: 'playground',
-  walking: 'walking',
+  walking: 'dog_walk',
+  dog_walk: 'dog_walk',
   football: 'football',
   soccer: 'football',
   park: 'park',

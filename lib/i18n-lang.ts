@@ -43,6 +43,7 @@ export function detectLangFromGeoAndLocale(
 ): Lang {
   const country = (countryCode ?? "").trim().toUpperCase();
   if (country === "PL") return "pl";
+  if (country === "US") return "en";
 
   const al = (acceptLanguage ?? "").toLowerCase();
   if (/(^|,|\s)pl(-|;|,|$)/.test(al)) return "pl";

@@ -16,6 +16,7 @@ import {
 import { useLanguage } from "@/components/i18n/LanguageProvider";
 import { mapUi } from "@/lib/i18n-ui";
 import { Chip } from "@/components/ui/Chip";
+import { MARKET_CENTER } from "@/lib/market";
 import { cn } from "@/lib/utils";
 import { MapMarker, MapClusterMarker } from "@/components/map/MapMarker";
 import { SlotPreviewCard } from "@/components/map/SlotPreviewCard";
@@ -413,7 +414,7 @@ export function MapPlaces({
       ? [myPosition.lng, myPosition.lat]
       : places[0]
         ? [places[0].lng, places[0].lat]
-        : [21.0122, 52.2297];
+        : MARKET_CENTER;
 
     setMapError(null);
     const map = new mapboxgl.Map({

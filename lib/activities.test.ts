@@ -4,8 +4,10 @@ import { normalizeActivityKey, ACTIVITY_KEYS } from "@/lib/activities";
 describe("normalizeActivityKey", () => {
   it("returns known keys unchanged", () => {
     for (const k of ACTIVITY_KEYS) {
+      if (k === "walking") continue;
       expect(normalizeActivityKey(k)).toBe(k);
     }
+    expect(normalizeActivityKey("walking")).toBe("dog_walk");
   });
 
   it("maps place categories padel, tennis, basketball", () => {

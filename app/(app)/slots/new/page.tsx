@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NewSlotWizard, type PlaceOption } from "@/components/slots/NewSlotWizard";
+import { MARKET_CITY } from "@/lib/market";
 import { FREE_PLACE_CATEGORIES } from "@/lib/places";
 
 export const dynamic = "force-dynamic";
@@ -13,6 +14,7 @@ export default async function NewSlotPage({ searchParams }: { searchParams: Prom
     .from("places")
     .select("id, name, lat, lng, city, district, category")
     .eq("is_free", true)
+    .eq("city", MARKET_CITY)
     .in("category", [...FREE_PLACE_CATEGORIES])
     .order("name");
 

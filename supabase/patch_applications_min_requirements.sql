@@ -1,3 +1,4 @@
+-- Superseded by migrations/20250530_consolidate_patches.sql (kept for reference).
 -- ---------------------------------------------------------------------------
 -- Patch: enforce slot min_level / min_reliability at the RLS layer
 -- ---------------------------------------------------------------------------
