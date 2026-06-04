@@ -317,8 +317,13 @@ export function MapPlaces({
 
   const dragRef = useRef<{ startY: number; startH: number } | null>(null);
   const onSheetPointerDown = (e: React.PointerEvent) => {
+    if (e.button !== 0) return;
     dragRef.current = { startY: e.clientY, startH: sheetHeight };
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const stopSheetDrag = (e: React.PointerEvent) => {
+    e.stopPropagation();
   };
   const onSheetPointerMove = (e: React.PointerEvent) => {
     if (!dragRef.current) return;
@@ -838,11 +843,11 @@ export function MapPlaces({
           <button
             type="button"
             aria-label="Close"
-            className="pointer-events-auto absolute inset-0 z-[25] bg-graphite/30 backdrop-blur-[2px]"
+            className="pointer-events-auto absolute inset-0 z-[35] bg-graphite/30 backdrop-blur-[2px]"
             onClick={closeNearby}
           />
           <div
-            className="map-bottom-sheet pointer-events-auto"
+            className="map-bottom-sheet pointer-events-auto z-[40]"
             style={{
               height: nearbyMode === "prompt" ? "auto" : `${sheetHeight}dvh`,
               maxHeight: nearbyMode === "prompt" ? "none" : "75dvh",
@@ -856,6 +861,7 @@ export function MapPlaces({
                   <button
                     type="button"
                     onClick={closeNearby}
+                    onPointerDown={stopSheetDrag}
                     className="rounded-full p-1.5 text-ash-400 hover:bg-ash-100 hover:text-ash-700"
                     aria-label="Close"
                   >
@@ -886,8 +892,27 @@ export function MapPlaces({
                 </div>
               </div>
             ) : (<>
+                <div className="flex w-full items-start justify-between gap-2 px-4 pt-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-display text-heading-md text-ash-900">{listTitle}</p>
+                    <p className="mt-0.5 text-caption text-ash-500">
+                      {locationEnabled && myPosition
+                        ? m.nearbyWithin(radiusKm)
+                        : m.nearbyTapHint}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={closeNearby}
+                    onPointerDown={stopSheetDrag}
+                    className="shrink-0 rounded-full p-1.5 text-ash-400 hover:bg-ash-100 hover:text-ash-700"
+                    aria-label="Close"
+                  >
+                    <X className="size-5" />
+                  </button>
+                </div>
                 <div
-                  className="flex w-full cursor-grab touch-none flex-col items-center pt-2 pb-1 active:cursor-grabbing lg:cursor-default"
+                  className="flex w-full cursor-grab touch-none flex-col items-center pt-2 pb-1 active:cursor-grabbing lg:hidden"
                   onPointerDown={onSheetPointerDown}
                   onPointerMove={onSheetPointerMove}
                   onPointerUp={onSheetPointerUp}
@@ -895,41 +920,23 @@ export function MapPlaces({
                   role="separator"
                   aria-label="Drag to resize"
                 >
-                  <span className="mb-2 h-1.5 w-10 rounded-full bg-ash-300 lg:hidden" />
-                  <div className="flex w-full items-start justify-between gap-2 px-4">
-                    <div className="min-w-0 flex-1">
-                      <p className="font-display text-heading-md text-ash-900">{listTitle}</p>
-                      <p className="mt-0.5 text-caption text-ash-500">
-                        {locationEnabled && myPosition
-                          ? m.nearbyWithin(radiusKm)
-                          : m.nearbyTapHint}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={closeNearby}
-                      className="shrink-0 rounded-full p-1.5 text-ash-400 hover:bg-ash-100 hover:text-ash-700"
-                      aria-label="Close"
-                    >
-                      <X className="size-5" />
-                    </button>
-                  </div>
-                  {locationEnabled ? (<div className="mt-3 w-full px-4">
-                      <input
-                        type="range"
-                        min={1}
-                        max={25}
-                        value={radiusKm}
-                        onChange={(e) => setRadiusKm(Number(e.target.value))}
-                        className="h-2 w-full accent-honey-500"
-                        aria-label={m.radius}
-                      />
-                      <p className="mt-1 text-center text-caption text-ash-400">
-                        {m.nearbyCount(nearbyPlaces.length)} · {radiusKm} {m.km}
-                      </p>
-                    </div>
-                  ) : null}
+                  <span className="mb-1 h-1.5 w-10 rounded-full bg-ash-300" />
                 </div>
+                {locationEnabled ? (<div className="mt-2 w-full px-4">
+                    <input
+                      type="range"
+                      min={1}
+                      max={25}
+                      value={radiusKm}
+                      onChange={(e) => setRadiusKm(Number(e.target.value))}
+                      className="h-2 w-full accent-honey-500"
+                      aria-label={m.radius}
+                    />
+                    <p className="mt-1 text-center text-caption text-ash-400">
+                      {m.nearbyCount(nearbyPlaces.length)} · {radiusKm} {m.km}
+                    </p>
+                  </div>
+                ) : null}
                 <div className="flex-1 overflow-y-auto px-2 pb-4 pt-1">{listContent}</div>
               </>
             )}

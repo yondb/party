@@ -4,14 +4,35 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import {
+  attributionToUserMetadata,
+  readAttributionFromCookies,
+} from "@/lib/growth/attribution";
 
-export function AuthForm() {
+type Props = {
+  nextPath?: string;
+};
+
+export function AuthForm({ nextPath }: Props) {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
+
+  function redirectAfterAuth() {
+    const attr = readAttributionFromCookies();
+    if (nextPath) {
+      window.location.href = nextPath;
+      return;
+    }
+    if (attr.referred_by_slot_id) {
+      window.location.href = `/slots/${attr.referred_by_slot_id}`;
+      return;
+    }
+    window.location.href = "/feed";
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -22,6 +43,8 @@ export function AuthForm() {
       const supabase = createClient();
       const cleanEmail = email.trim().toLowerCase();
       let err: Error | null = null;
+      const attr = readAttributionFromCookies();
+      const attrMeta = attributionToUserMetadata(attr);
 
       if (mode === "signin") {
         const result = await supabase.auth.signInWithPassword({
@@ -33,10 +56,26 @@ export function AuthForm() {
         const result = await supabase.auth.signUp({
           email: cleanEmail,
           password,
+          options: {
+            data: {
+              ...attrMeta,
+            },
+          },
         });
         err = result.error;
         if (!err) {
           setInfo("Account created. If email confirmation is enabled, check your inbox.");
+          if (Object.keys(attrMeta).length > 0) {
+            void fetch("/api/growth/track", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                event_name: "signup_with_attribution",
+                slot_id: attr.referred_by_slot_id ?? null,
+                properties: attrMeta,
+              }),
+            });
+          }
         }
       }
 
@@ -44,7 +83,7 @@ export function AuthForm() {
         setError(err.message);
         return;
       }
-      window.location.href = "/feed";
+      redirectAfterAuth();
     } finally {
       setLoading(false);
     }

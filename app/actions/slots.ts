@@ -161,6 +161,15 @@ export async function createSlotAction(input: CreateSlotInput) {
     .single();
 
   if (error) return { error: error.message };
+
+  void import("@/lib/growth/track").then(({ trackGrowthEvent }) =>
+    trackGrowthEvent({
+      event_name: "slot_created",
+      user_id: user.id,
+      slot_id: data.id,
+    }),
+  );
+
   revalidatePath("/");
   revalidatePath("/feed");
   revalidatePath("/map");

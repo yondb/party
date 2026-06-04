@@ -12,6 +12,7 @@ const PUBLIC_PREFIXES = [
   "/landing",
   "/map",
   "/places",
+  "/invite",
   "/onboarding",
   "/auth",
   "/dev",
@@ -93,7 +94,13 @@ export async function updateSession(request: NextRequest) {
     }
 
     const setupDone = user.user_metadata?.setup_done === true;
-    if (!setupDone && path !== "/setup" && path !== "/auth" && !path.startsWith("/dev")) {
+    if (
+      !setupDone &&
+      path !== "/setup" &&
+      path !== "/auth" &&
+      !path.startsWith("/invite") &&
+      !path.startsWith("/dev")
+    ) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = "/setup";
       return attachLangToRedirect(request, NextResponse.redirect(redirectUrl));

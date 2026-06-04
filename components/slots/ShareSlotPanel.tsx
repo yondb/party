@@ -41,6 +41,15 @@ export function ShareSlotPanel({ slotId }: Props) {
       setText(nextText);
       setUrl(nextUrl);
       setAiGenerated(Boolean(data.aiGenerated));
+      void fetch('/api/growth/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event_name: 'share_copy_generated',
+          slot_id: slotId,
+          properties: { ai: Boolean(data.aiGenerated) },
+        }),
+      });
       return { text: nextText, url: nextUrl };
     } catch {
       setError(t.loadError);
@@ -59,6 +68,11 @@ export function ShareSlotPanel({ slotId }: Props) {
     if (!copyText) return;
     try {
       await navigator.clipboard.writeText(copyText);
+      void fetch('/api/growth/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event_name: 'share_copied', slot_id: slotId }),
+      });
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -82,6 +96,11 @@ export function ShareSlotPanel({ slotId }: Props) {
           title: 'lfparty',
           text: shareText,
           url: shareUrl ?? undefined,
+        });
+        void fetch('/api/growth/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ event_name: 'share_native_clicked', slot_id: slotId }),
         });
         return;
       } catch (e) {

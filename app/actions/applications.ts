@@ -67,6 +67,15 @@ export async function applyToSlot(slotId: string, message?: string) {
   });
 
   if (error) return { error: error.message || errs.generic };
+
+  void import("@/lib/growth/track").then(({ trackGrowthEvent }) =>
+    trackGrowthEvent({
+      event_name: "application_sent",
+      user_id: user.id,
+      slot_id: slotId,
+    }),
+  );
+
   revalidatePath("/");
   revalidatePath("/feed");
   revalidatePath(`/slots/${slotId}`);

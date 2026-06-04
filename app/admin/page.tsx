@@ -48,6 +48,13 @@ export default async function AdminDashboardPage() {
   let recentSlots: SlotRow[] = [];
   let recentApps: AppRow[] = [];
   let pendingReports: ProfileReportRow[] = [];
+  let growthInviteViews = 0;
+  let growthInviteCta = 0;
+  let growthSignups = 0;
+  let growthShares = 0;
+  let socialQueueReady = 0;
+  type QueueRow = { id: string; channel: string; title: string; body: string; invite_url: string; created_at: string };
+  let socialQueue: QueueRow[] = [];
   const userNames = new Map<string, string>();
 
   try {
@@ -122,6 +129,36 @@ export default async function AdminDashboardPage() {
       if (usersErr) throw new Error(usersErr.message);
       users?.forEach((row) => userNames.set(row.id, row.name));
     }
+
+    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const growthRes = await admin
+      .from("growth_events")
+      .select("event_name")
+      .gte("created_at", since);
+    if (!growthRes.error && growthRes.data) {
+      for (const row of growthRes.data) {
+        if (row.event_name === "invite_viewed") growthInviteViews += 1;
+        if (row.event_name === "invite_cta_clicked") growthInviteCta += 1;
+        if (row.event_name === "signup_with_attribution") growthSignups += 1;
+        if (
+          row.event_name === "share_copied" ||
+          row.event_name === "share_native_clicked"
+        ) {
+          growthShares += 1;
+        }
+      }
+    }
+
+    const queueRes = await admin
+      .from("growth_content_queue")
+      .select("id, channel, title, body, invite_url, created_at")
+      .eq("status", "ready")
+      .order("created_at", { ascending: false })
+      .limit(10);
+    if (!queueRes.error && queueRes.data) {
+      socialQueue = queueRes.data as QueueRow[];
+      socialQueueReady = socialQueue.length;
+    }
   } catch (e) {
     error = e instanceof Error ? e.message : "Could not load admin metrics";
   }
@@ -152,6 +189,45 @@ export default async function AdminDashboardPage() {
           <Stat label="Apps rejected" value={appsRejected} />
           <Stat label="Notif. unread" value={notifUnread} />
         </div>
+      </section>
+
+      <section>
+        <h2 className="mb-3 text-xs font-medium text-[var(--text-muted)]">Growth funnel (7d)</h2>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <Stat label="Invite views" value={growthInviteViews} />
+          <Stat label="Invite CTA" value={growthInviteCta} />
+          <Stat label="Attrib. signups" value={growthSignups} />
+          <Stat label="Shares" value={growthShares} />
+        </div>
+        <p className="mt-2 text-xs text-[var(--text-muted)]">
+          Viral loop: share → /invite → signup. Crons: see docs/GROWTH_STATUS.md
+        </p>
+      </section>
+
+      <section>
+        <h2 className="mb-3 text-xs font-medium text-[var(--text-muted)]">
+          Social queue (auto-generated, {socialQueueReady} ready)
+        </h2>
+        <p className="mb-3 text-sm text-[var(--text-secondary)]">
+          Copy/paste or wire Buffer — system writes posts, you do not author from scratch.
+        </p>
+        <ul className="space-y-3 text-sm">
+          {socialQueue.length === 0 ? (
+            <li className="text-[var(--text-muted)]">No ready posts — run cron job=social or wait for 06:30 UTC.</li>
+          ) : (
+            socialQueue.map((q) => (
+              <li key={q.id} className="floating-card rounded-md px-3 py-3">
+                <p className="font-medium text-[var(--text-primary)]">
+                  [{q.channel}] {q.title}
+                </p>
+                <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap text-xs text-[var(--text-secondary)]">
+                  {q.body}
+                </pre>
+                <p className="mt-2 break-all text-xs text-[var(--accent)]">{q.invite_url}</p>
+              </li>
+            ))
+          )}
+        </ul>
       </section>
 
       <section>

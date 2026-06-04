@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/growth?job=all",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/growth?job=nudge",
+      "schedule": "0 15 * * *"
+    }
+  ]
+}

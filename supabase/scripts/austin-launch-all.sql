@@ -94,6 +94,32 @@ ALTER TABLE public.places ADD CONSTRAINT places_category_check CHECK (
   )
 );
 
+-- ═══ 4) Growth events (viral loop analytics) ═══
+CREATE TABLE IF NOT EXISTS public.growth_events (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  event_name text NOT NULL,
+  user_id uuid REFERENCES auth.users (id) ON DELETE SET NULL,
+  slot_id uuid REFERENCES public.slots (id) ON DELETE SET NULL,
+  place_id uuid REFERENCES public.places (id) ON DELETE SET NULL,
+  properties jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_growth_events_name_created
+  ON public.growth_events (event_name, created_at DESC);
+ALTER TABLE public.growth_events ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS public.growth_content_queue (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  slot_id uuid REFERENCES public.slots (id) ON DELETE CASCADE,
+  channel text NOT NULL CHECK (channel IN ('reddit', 'nextdoor', 'facebook', 'copy')),
+  title text NOT NULL,
+  body text NOT NULL,
+  invite_url text NOT NULL,
+  status text NOT NULL DEFAULT 'ready' CHECK (status IN ('ready', 'posted', 'skipped')),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  posted_at timestamptz
+);
+
 NOTIFY pgrst, 'reload schema';
 
 -- Verify:
